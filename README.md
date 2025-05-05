@@ -1,5 +1,6 @@
 # CASA0022_Obscura-No.7
 
+## Concept
 
 The air in the bar was thick with engine oil and burned ozone, lit only by the dull orange glow of gas-lamps flickering in the riveted ceiling. Somewhere in the corner, a broken radio whispered forgotten frequencies. He sat hunched at a warped brass table, goggles pushed up into his graying hair, coat scorched at the edges like it had seen too many exits from bad situations.
 
@@ -12,10 +13,10 @@ He didn’t look up. Just ran a finger along its side, then spoke like gravel sc
 <table>
   <tr>
     <td align="center">
-      <img src="img/concept2.png" alt="concept 1" width="350"/>
+      <img src="img/concept2.png" alt="concept 1" width="500"/>
     </td>
     <td align="center">
-      <img src="img/concept1.png" alt="concept 2" width="430" />
+      <img src="img/concept1.png" alt="concept 2" width="500" />
     </td>
   </tr>
 </table>
