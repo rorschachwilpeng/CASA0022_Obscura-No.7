@@ -16,7 +16,7 @@ He didn’t look up. Just ran a finger along its side, then spoke like gravel sc
       <img src="img/concept2.png" alt="concept 1" width="500"/>
     </td>
     <td align="center">
-      <img src="img/concept1.png" alt="concept 2" width="500" />
+      <img src="img/concept3.png" alt="concept 2" width="500" />
     </td>
   </tr>
 </table>
