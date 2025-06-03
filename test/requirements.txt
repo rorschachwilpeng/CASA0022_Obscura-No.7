@@ -1,0 +1,8 @@
+requests>=2.25.0
+pillow>=8.0.0
+matplotlib>=3.3.0
+python-dotenv>=0.15.0
+argparse>=1.4.0
+RPi.GPIO>=0.7.0
+spidev>=3.5.0
+numpy>=1.19.0 
