@@ -341,7 +341,7 @@ def signal_handler(sig, frame):
 def main():
     """主函数"""
     # 使用默认值，避免命令行参数问题
-    bus_number = 22
+    bus_number = 3
     address = 0x36
     duration = 30
     
