@@ -7,9 +7,10 @@ Local Environment Setup & Mock Process Validation
 功能：
 1. 搭建本地Python环境，安装必要依赖 (OpenAI, requests, flask等)
 2. 实现OpenWeather API数据获取模块 (基于已有代码)
-3. 创建Mock ML模型 (简单的线性回归或随机预测)
-4. 集成OpenAI DALL-E API进行AI图片生成
-5. 本地测试完整流程：环境数据 → Mock预测 → AI图片生成 → 本地保存
+3. 集成Google Maps API获取建筑和POI信息
+4. 创建Mock ML模型 (简单的线性回归或随机预测)
+5. 集成OpenAI DALL-E API进行AI图片生成
+6. 本地测试完整流程：环境数据 → Mock预测 → AI图片生成 → 本地保存
 """
 
 import os
@@ -21,7 +22,7 @@ import requests
 import numpy as np
 from datetime import datetime, timedelta
 from dataclasses import dataclass
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 import logging
 
 # 添加项目根目录到路径，确保能找到.env文件
@@ -41,6 +42,7 @@ except ImportError:
 # API密钥（从环境变量中获取，与weather_art_generator.py保持一致）
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 # 尝试导入可选依赖，如果没有安装会给出提示
 try:
@@ -69,6 +71,16 @@ except ImportError:
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+@dataclass
+class LocationData:
+    """位置数据结构"""
+    latitude: float
+    longitude: float
+    formatted_address: str
+    nearby_places: List[Dict[str, Any]]
+    place_types: List[str]
+    timestamp: str
 
 @dataclass
 class EnvironmentalData:
@@ -171,6 +183,11 @@ def check_api_keys():
     else:
         logger.info("✅ OpenAI API密钥已设置")
     
+    if not GOOGLE_MAPS_API_KEY:
+        issues.append("GOOGLE_MAPS_API_KEY 未设置 (将使用模拟位置数据)")
+    else:
+        logger.info("✅ Google Maps API密钥已设置")
+    
     if issues:
         logger.warning("⚠️  API密钥配置问题：")
         for issue in issues:
@@ -180,6 +197,7 @@ def check_api_keys():
             logger.info("\n📖 请检查项目根目录的.env文件是否包含:")
             logger.info("   OPENWEATHER_API_KEY=你的密钥")
             logger.info("   OPENAI_API_KEY=你的密钥")
+            logger.info("   GOOGLE_MAPS_API_KEY=你的密钥")
             return False
     
     logger.info("✅ API密钥配置检查完成！")
@@ -355,6 +373,128 @@ class MockMLPredictor:
             joblib.dump(model_data, filepath)
             logger.info(f"💾 模型已保存到: {filepath}")
 
+class GoogleMapsClient:
+    """Google Maps API客户端"""
+    
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://maps.googleapis.com/maps/api"
+    
+    def get_location_details(self, latitude: float, longitude: float) -> Optional[LocationData]:
+        """获取位置详细信息和周围兴趣点"""
+        if not self.api_key or self.api_key == "mock_key":
+            logger.info("🎭 Google Maps API密钥未配置，使用模拟数据")
+            return self._create_mock_location_data(latitude, longitude)
+        
+        try:
+            # 获取地址信息
+            address = self._get_formatted_address(latitude, longitude)
+            
+            # 获取周围兴趣点
+            nearby_places = self._get_nearby_places(latitude, longitude)
+            
+            location_data = LocationData(
+                latitude=latitude,
+                longitude=longitude,
+                formatted_address=address,
+                nearby_places=nearby_places,
+                place_types=self._extract_place_types(nearby_places),
+                timestamp=datetime.now().isoformat()
+            )
+            
+            logger.info(f"✅ 位置信息获取成功: {address}")
+            return location_data
+            
+        except Exception as e:
+            logger.error(f"❌ 获取位置信息时出错: {e}")
+            return self._create_mock_location_data(latitude, longitude)
+    
+    def _get_formatted_address(self, latitude: float, longitude: float) -> str:
+        """获取格式化地址"""
+        try:
+            url = f"{self.base_url}/geocode/json"
+            params = {
+                'latlng': f"{latitude},{longitude}",
+                'key': self.api_key
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data['results']:
+                    return data['results'][0]['formatted_address']
+            
+            return f"Location at {latitude}, {longitude}"
+            
+        except Exception as e:
+            logger.warning(f"地址获取失败: {e}")
+            return f"Location at {latitude}, {longitude}"
+    
+    def _get_nearby_places(self, latitude: float, longitude: float, radius: int = 1000) -> List[Dict[str, Any]]:
+        """获取周围兴趣点"""
+        try:
+            url = f"{self.base_url}/place/nearbysearch/json"
+            params = {
+                'location': f"{latitude},{longitude}",
+                'radius': radius,
+                'key': self.api_key
+            }
+            
+            response = requests.get(url, params=params, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                places = []
+                
+                for place in data.get('results', [])[:10]:  # 限制为前10个
+                    places.append({
+                        'name': place.get('name', ''),
+                        'types': place.get('types', []),
+                        'rating': place.get('rating', 0),
+                        'vicinity': place.get('vicinity', ''),
+                        'place_id': place.get('place_id', '')
+                    })
+                
+                return places
+            
+            return []
+            
+        except Exception as e:
+            logger.warning(f"兴趣点获取失败: {e}")
+            return []
+    
+    def _extract_place_types(self, places: List[Dict[str, Any]]) -> List[str]:
+        """提取兴趣点类型"""
+        place_types = []
+        for place in places:
+            for place_type in place.get('types', []):
+                if place_type not in place_types and place_type != 'establishment':
+                    place_types.append(place_type)
+        
+        return place_types[:5]  # 限制为前5种类型
+    
+    def _create_mock_location_data(self, latitude: float, longitude: float) -> LocationData:
+        """创建模拟位置数据"""
+        logger.info("🎭 创建模拟位置数据...")
+        
+        mock_places = [
+            {"name": "Central Park", "types": ["park"], "rating": 4.5, "vicinity": "Manhattan"},
+            {"name": "Coffee Shop", "types": ["cafe"], "rating": 4.2, "vicinity": "Downtown"},
+            {"name": "Museum of Art", "types": ["museum"], "rating": 4.7, "vicinity": "Cultural District"},
+            {"name": "Shopping Mall", "types": ["shopping_mall"], "rating": 4.0, "vicinity": "City Center"},
+            {"name": "Restaurant", "types": ["restaurant"], "rating": 4.3, "vicinity": "Dining District"}
+        ]
+        
+        return LocationData(
+            latitude=latitude,
+            longitude=longitude,
+            formatted_address=f"Mock Address, City, Country ({latitude}, {longitude})",
+            nearby_places=mock_places,
+            place_types=["park", "cafe", "museum", "shopping_mall", "restaurant"],
+            timestamp=datetime.now().isoformat()
+        )
+
 class AIImageGenerator:
     """AI图片生成器"""
     
@@ -365,34 +505,56 @@ class AIImageGenerator:
         if api_key and OPENAI_AVAILABLE:
             self.client = OpenAI(api_key=api_key)
     
-    def create_weather_prompt(self, env_data: EnvironmentalData, prediction: PredictionResult) -> str:
-        """创建基于天气数据的图片生成prompt"""
+    def create_weather_prompt(self, env_data: EnvironmentalData, prediction: PredictionResult, location_data: LocationData) -> str:
+        """创建基于Template的图片生成prompt"""
         
-        location_desc = f"in {env_data.location_name}" if env_data.location_name != "Unknown" else "in a distant location"
+        # 获取当前时间信息
+        current_time = datetime.now()
+        time_of_day = current_time.strftime("%I:%M %p")
+        current_date = current_time.strftime("%B %d, %Y")
         
-        prompt = f"""A realistic landscape photograph {location_desc}, showing the future weather conditions. 
-        The scene depicts {prediction.predicted_weather_condition} weather with a temperature of {prediction.predicted_temperature}°C 
-        and humidity of {prediction.predicted_humidity}%. 
+        # 处理兴趣点信息
+        nearby_places = []
+        if location_data.nearby_places:
+            for place in location_data.nearby_places[:3]:  # 取前3个
+                nearby_places.append(place['name'])
         
-        Current conditions: {env_data.weather_description}, {env_data.temperature}°C
-        Predicted conditions: {prediction.predicted_weather_condition}, {prediction.predicted_temperature}°C
+        if not nearby_places:
+            nearby_places = ["urban buildings", "local landmarks"]
         
-        The image should be atmospheric and moody, capturing the essence of the predicted weather. 
-        Style: photorealistic, high quality, professional photography, dramatic lighting"""
+        # 构建Template Prompt
+        prompt = f"""A realistic landscape photograph taken at {location_data.formatted_address}. 
+        
+Time of day: {time_of_day}
+Address: {location_data.formatted_address}
+Weather: {env_data.weather_description} transitioning to {prediction.predicted_weather_condition}
+Temperature: {env_data.temperature}°C (predicted: {prediction.predicted_temperature}°C)
+Humidity: {env_data.humidity}% (predicted: {prediction.predicted_humidity}%)
+Pressure: {env_data.pressure} hPa
+Wind Speed: {env_data.wind_speed} m/s
+Date: {current_date}
+Nearby there is {', '.join(nearby_places[:-1])}{' and ' + nearby_places[-1] if len(nearby_places) > 1 else nearby_places[0] if nearby_places else ''}.
+
+The scene shows the environmental changes from current conditions ({env_data.temperature}°C, {env_data.weather_description}) 
+to predicted future conditions ({prediction.predicted_temperature}°C, {prediction.predicted_weather_condition}). 
+The atmosphere should reflect the humidity level of {prediction.predicted_humidity}% and atmospheric pressure of {env_data.pressure} hPa.
+
+Style: photorealistic, atmospheric, professional photography, dramatic environmental storytelling, 
+showing the transition from current to predicted weather conditions in an artistic way."""
         
         return prompt
     
-    def generate_image(self, env_data: EnvironmentalData, prediction: PredictionResult) -> Optional[str]:
+    def generate_image(self, env_data: EnvironmentalData, prediction: PredictionResult, location_data: LocationData) -> Optional[str]:
         """生成AI图片"""
         
         if not self.client:
             logger.warning("⚠️  OpenAI客户端未配置，创建模拟图片...")
-            return self._create_mock_image(env_data, prediction)
+            return self._create_mock_image(env_data, prediction, location_data)
         
         try:
-            prompt = self.create_weather_prompt(env_data, prediction)
+            prompt = self.create_weather_prompt(env_data, prediction, location_data)
             logger.info("🎨 正在生成AI图片...")
-            logger.info(f"Prompt: {prompt[:100]}...")
+            logger.info(f"Prompt Preview: {prompt[:150]}...")
             
             response = self.client.images.generate(
                 model="dall-e-3",
@@ -406,13 +568,13 @@ class AIImageGenerator:
             logger.info("✅ AI图片生成成功")
             
             # 下载并保存图片
-            return self._download_and_save_image(image_url, env_data, prediction)
+            return self._download_and_save_image(image_url, env_data, prediction, location_data)
             
         except Exception as e:
             logger.error(f"❌ AI图片生成失败: {e}")
-            return self._create_mock_image(env_data, prediction)
+            return self._create_mock_image(env_data, prediction, location_data)
     
-    def _download_and_save_image(self, image_url: str, env_data: EnvironmentalData, prediction: PredictionResult) -> str:
+    def _download_and_save_image(self, image_url: str, env_data: EnvironmentalData, prediction: PredictionResult, location_data: LocationData) -> str:
         """下载并保存图片"""
         try:
             response = requests.get(image_url, timeout=30)
@@ -420,7 +582,9 @@ class AIImageGenerator:
             if response.status_code == 200:
                 # 创建文件名
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                filename = f"weather_prediction_{timestamp}_{prediction.predicted_temperature}C.png"
+                clean_address = "".join(c for c in location_data.formatted_address[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+                clean_address = clean_address.replace(' ', '_')
+                filename = f"weather_prediction_{timestamp}_{clean_address}_{prediction.predicted_temperature}C.png"
                 filepath = os.path.join("generated_images", filename)
                 
                 # 确保目录存在
@@ -440,7 +604,7 @@ class AIImageGenerator:
             logger.error(f"❌ 保存图片时出错: {e}")
             return None
     
-    def _create_mock_image(self, env_data: EnvironmentalData, prediction: PredictionResult) -> str:
+    def _create_mock_image(self, env_data: EnvironmentalData, prediction: PredictionResult, location_data: LocationData) -> str:
         """创建模拟图片"""
         if not PIL_AVAILABLE:
             logger.warning("⚠️  PIL不可用，跳过图片创建")
@@ -451,7 +615,9 @@ class AIImageGenerator:
             img = Image.new('RGB', (512, 512), color='lightblue')
             
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"mock_weather_prediction_{timestamp}_{prediction.predicted_temperature}C.png"
+            clean_address = "".join(c for c in location_data.formatted_address[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            clean_address = clean_address.replace(' ', '_')
+            filename = f"mock_weather_prediction_{timestamp}_{clean_address}_{prediction.predicted_temperature}C.png"
             filepath = os.path.join("generated_images", filename)
             
             os.makedirs("generated_images", exist_ok=True)
@@ -467,8 +633,9 @@ class AIImageGenerator:
 class WorkflowOrchestrator:
     """工作流程协调器"""
     
-    def __init__(self, openweather_api_key: str, openai_api_key: Optional[str] = None):
+    def __init__(self, openweather_api_key: str, openai_api_key: Optional[str] = None, google_maps_api_key: Optional[str] = None):
         self.data_collector = EnvironmentDataCollector(openweather_api_key)
+        self.maps_client = GoogleMapsClient(google_maps_api_key)
         self.ml_predictor = MockMLPredictor()
         self.image_generator = AIImageGenerator(openai_api_key)
         
@@ -482,25 +649,37 @@ class WorkflowOrchestrator:
         
         workflow_start_time = time.time()
         
-        # 第一步：获取环境数据
-        logger.info("📊 步骤1: 获取环境数据")
+        # 第一步：获取位置信息和建筑数据
+        logger.info("🗺️  步骤1: 获取位置信息和周围建筑")
+        location_data = self.maps_client.get_location_details(latitude, longitude)
+        
+        # 第二步：获取环境数据
+        logger.info("📊 步骤2: 获取环境数据")
         env_data = self.data_collector.get_weather_data(latitude, longitude)
         
         if not env_data:
-            logger.info("使用模拟数据...")
+            logger.info("使用模拟环境数据...")
             env_data = self.data_collector.create_mock_data(latitude, longitude)
         
-        # 第二步：ML预测
-        logger.info("🤖 步骤2: 机器学习预测")
+        # 第三步：ML预测
+        logger.info("🤖 步骤3: 机器学习预测")
         prediction = self.ml_predictor.predict_weather(env_data, hours_ahead)
         
-        # 第三步：AI图片生成
-        logger.info("🎨 步骤3: AI图片生成")
-        image_path = self.image_generator.generate_image(env_data, prediction)
+        # 第四步：AI图片生成
+        logger.info("🎨 步骤4: AI图片生成")
+        image_path = self.image_generator.generate_image(env_data, prediction, location_data)
         
-        # 第四步：保存结果
-        logger.info("💾 步骤4: 保存工作流结果")
+        # 第五步：保存结果
+        logger.info("💾 步骤5: 保存工作流结果")
         workflow_result = {
+            'location_data': {
+                'latitude': location_data.latitude,
+                'longitude': location_data.longitude,
+                'formatted_address': location_data.formatted_address,
+                'nearby_places': location_data.nearby_places,
+                'place_types': location_data.place_types,
+                'timestamp': location_data.timestamp
+            },
             'environmental_data': {
                 'latitude': env_data.latitude,
                 'longitude': env_data.longitude,
@@ -527,7 +706,7 @@ class WorkflowOrchestrator:
             'workflow_metadata': {
                 'execution_time_seconds': time.time() - workflow_start_time,
                 'hours_ahead': hours_ahead,
-                'workflow_version': '1.1.0'
+                'workflow_version': '1.1.1'
             }
         }
         
@@ -546,18 +725,22 @@ class WorkflowOrchestrator:
     
     def print_workflow_summary(self, result: Dict[str, Any]):
         """打印工作流程摘要"""
-        print("\n" + "="*60)
+        print("\n" + "="*80)
         print("🔭 Obscura No.7 - 工作流程执行摘要")
-        print("="*60)
+        print("="*80)
         
+        loc = result['location_data']
         env = result['environmental_data']
         pred = result['prediction_result']
         img = result['generated_image']
         meta = result['workflow_metadata']
         
-        print(f"📍 位置: {env['location_name']} ({env['latitude']}, {env['longitude']})")
+        print(f"📍 位置: {loc['formatted_address']}")
+        print(f"🏢 周围建筑: {', '.join([place['name'] for place in loc['nearby_places'][:3]])}")
+        print(f"🏷️  地点类型: {', '.join(loc['place_types'][:3])}")
+        print(f"")
         print(f"🌡️  当前天气: {env['weather_description']}, {env['temperature']}°C")
-        print(f"💨 湿度: {env['humidity']}%, 气压: {env['pressure']}hPa")
+        print(f"💨 湿度: {env['humidity']}%, 气压: {env['pressure']}hPa, 风速: {env['wind_speed']}m/s")
         print(f"")
         print(f"🔮 {meta['hours_ahead']}小时后预测:")
         print(f"🌡️  温度: {pred['predicted_temperature']}°C")
@@ -568,12 +751,12 @@ class WorkflowOrchestrator:
         print(f"🎨 生成图片: {img['image_path'] or '未生成'}")
         print(f"⚙️  生成方式: {img['generation_method']}")
         print(f"⏱️  执行时间: {meta['execution_time_seconds']:.2f}秒")
-        print("="*60)
+        print("="*80)
 
 def main():
     """主函数"""
-    print("🔭 Obscura No.7 - 1.1 本地环境搭建与Mock流程验证")
-    print("="*60)
+    print("🔭 Obscura No.7 - 1.1 本地环境搭建与Mock流程验证 (含Google Maps集成)")
+    print("="*80)
     
     # 1. 检查依赖
     dependency_checker = DependencyChecker()
@@ -585,11 +768,14 @@ def main():
     # 2. 检查API密钥配置
     if not check_api_keys():
         print("\n⚠️  请检查项目根目录的.env文件配置")
+        print("需要的API密钥：")
+        print("  OPENWEATHER_API_KEY=你的OpenWeather密钥")
+        print("  OPENAI_API_KEY=你的OpenAI密钥")
+        print("  GOOGLE_MAPS_API_KEY=你的Google Maps密钥")
         return
     
     # 3. 初始化工作流程
-    # 即使没有OpenAI密钥也继续，会使用模拟图片生成
-    orchestrator = WorkflowOrchestrator(OPENWEATHER_API_KEY, OPENAI_API_KEY)
+    orchestrator = WorkflowOrchestrator(OPENWEATHER_API_KEY, OPENAI_API_KEY, GOOGLE_MAPS_API_KEY)
     
     # 4. 测试位置 (伦敦市中心)
     test_latitude = 51.5074

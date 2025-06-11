@@ -1,0 +1,164 @@
+{
+  "location_data": {
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "formatted_address": "123 Victoria St, London SW1E 6DE, UK",
+    "nearby_places": [
+      {
+        "name": "London",
+        "types": [
+          "locality",
+          "political"
+        ],
+        "rating": 0,
+        "vicinity": "London",
+        "place_id": "ChIJdd4hrwug2EcRmSrV3Vo6llI"
+      },
+      {
+        "name": "The Clermont London, Charing Cross",
+        "types": [
+          "bar",
+          "lodging",
+          "restaurant",
+          "point_of_interest",
+          "food",
+          "establishment"
+        ],
+        "rating": 4.5,
+        "vicinity": "Strand, London",
+        "place_id": "ChIJZf2Jlc4EdkgRklHks51KYBo"
+      },
+      {
+        "name": "Corinthia London",
+        "types": [
+          "lodging",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.7,
+        "vicinity": "Whitehall Place, London",
+        "place_id": "ChIJ0dU6L88EdkgRSRva6TI0lsY"
+      },
+      {
+        "name": "The Royal Horseguards Hotel & One Whitehall Place, London",
+        "types": [
+          "bar",
+          "lodging",
+          "restaurant",
+          "point_of_interest",
+          "food",
+          "establishment"
+        ],
+        "rating": 4.4,
+        "vicinity": "2 Whitehall Court, London",
+        "place_id": "ChIJc9zIO88EdkgRtiF_0UhDLZk"
+      },
+      {
+        "name": "Radisson Blu Hotel, London Leicester Square",
+        "types": [
+          "lodging",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.3,
+        "vicinity": "31-36 Leicester Square, London",
+        "place_id": "ChIJF-WCA9IEdkgRnhW704RFvCI"
+      },
+      {
+        "name": "Premier Inn London Leicester Square hotel",
+        "types": [
+          "lodging",
+          "restaurant",
+          "point_of_interest",
+          "food",
+          "establishment"
+        ],
+        "rating": 4.1,
+        "vicinity": "Queens House, 1 Leicester Square, London",
+        "place_id": "ChIJJUyxFNIEdkgRajb-0tlYT_0"
+      },
+      {
+        "name": "W London",
+        "types": [
+          "lodging",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.2,
+        "vicinity": "10 Wardour Street, London",
+        "place_id": "ChIJ24-dOtIEdkgRUdpPyAD1PmI"
+      },
+      {
+        "name": "The Savoy",
+        "types": [
+          "lodging",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.7,
+        "vicinity": "Strand, London",
+        "place_id": "ChIJTVquz8sEdkgRKdz7pP3v9BU"
+      },
+      {
+        "name": "Strand Palace",
+        "types": [
+          "lodging",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.1,
+        "vicinity": "372 Strand, London",
+        "place_id": "ChIJa7MYyssEdkgRW0GxGFyDvWw"
+      },
+      {
+        "name": "The Cavendish London Hotel",
+        "types": [
+          "city_hall",
+          "lodging",
+          "local_government_office",
+          "point_of_interest",
+          "establishment"
+        ],
+        "rating": 4.4,
+        "vicinity": "81 Jermyn Street, London",
+        "place_id": "ChIJ_S_nWNYEdkgRbwBTLQTISZM"
+      }
+    ],
+    "place_types": [
+      "locality",
+      "political",
+      "bar",
+      "lodging",
+      "restaurant"
+    ],
+    "timestamp": "2025-06-11T22:00:34.275004"
+  },
+  "environmental_data": {
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "temperature": 16.22,
+    "humidity": 68,
+    "pressure": 1017,
+    "wind_speed": 7.2,
+    "weather_description": "scattered clouds",
+    "location_name": "London",
+    "timestamp": "2025-06-11T22:00:34.338531"
+  },
+  "prediction_result": {
+    "predicted_temperature": 17.2,
+    "predicted_humidity": 68.0,
+    "predicted_weather_condition": "mild",
+    "confidence_score": 0.79,
+    "prediction_timestamp": "2025-06-11T22:00:34.338970",
+    "model_version": "mock_v1.0"
+  },
+  "generated_image": {
+    "image_path": "generated_images/weather_prediction_20250611_220058_123_Victoria_St_London_SW1E_6_17.2C.png",
+    "generation_method": "openai"
+  },
+  "workflow_metadata": {
+    "execution_time_seconds": 25.032845973968506,
+    "hours_ahead": 24,
+    "workflow_version": "1.1.1"
+  }
+}
