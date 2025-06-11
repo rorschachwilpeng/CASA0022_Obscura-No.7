@@ -1,0 +1,30 @@
+{
+  "environmental_data": {
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "temperature": 16.45,
+    "humidity": 67,
+    "pressure": 1017,
+    "wind_speed": 7.2,
+    "weather_description": "scattered clouds",
+    "location_name": "London",
+    "timestamp": "2025-06-11T21:43:14.168391"
+  },
+  "prediction_result": {
+    "predicted_temperature": 16.6,
+    "predicted_humidity": 66.7,
+    "predicted_weather_condition": "mild",
+    "confidence_score": 0.8,
+    "prediction_timestamp": "2025-06-11T21:43:14.168798",
+    "model_version": "mock_v1.0"
+  },
+  "generated_image": {
+    "image_path": "generated_images/weather_prediction_20250611_214332_16.6C.png",
+    "generation_method": "openai"
+  },
+  "workflow_metadata": {
+    "execution_time_seconds": 18.603428840637207,
+    "hours_ahead": 24,
+    "workflow_version": "1.1.0"
+  }
+}
