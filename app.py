@@ -1,25 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Obscura No.7 - Railway部署的主应用文件
+Obscura No.7 - Render部署的主应用文件
 Flask API服务器
 """
 
 import os
 import sys
+import importlib.util
 from flask import Flask, request, jsonify, render_template_string
 from datetime import datetime
 import json
 
-# 添加WorkFlow路径以导入我们的脚本
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'WorkFlow', 'NonRasberryPi_Workflow'))
+# 添加WorkFlow路径
+workflow_path = os.path.join(os.path.dirname(__file__), 'WorkFlow', 'NonRasberryPi_Workflow')
+sys.path.insert(0, workflow_path)
 
+# 使用importlib动态导入模块
 try:
-    from 1_1_local_environment_setup_and_mock_process_validation import WorkflowOrchestrator
+    spec = importlib.util.spec_from_file_location(
+        "workflow_module", 
+        os.path.join(workflow_path, "1_1_local_environment_setup_and_mock_process_validation.py")
+    )
+    workflow_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(workflow_module)
+    WorkflowOrchestrator = workflow_module.WorkflowOrchestrator
     WORKFLOW_AVAILABLE = True
-except ImportError as e:
+except Exception as e:
     print(f"Warning: Workflow module not available: {e}")
     WORKFLOW_AVAILABLE = False
+    WorkflowOrchestrator = None
 
 app = Flask(__name__)
 
@@ -83,7 +93,7 @@ Content-Type: application/json
 }
         </pre>
         
-        <p><em>Deployed on Railway • {{ timestamp }}</em></p>
+        <p><em>Deployed on Render • {{ timestamp }}</em></p>
     </body>
     </html>
     """
@@ -113,7 +123,7 @@ def health():
 @app.route('/predict', methods=['POST'])
 def predict():
     """生成天气预测和AI图片"""
-    if not WORKFLOW_AVAILABLE:
+    if not WORKFLOW_AVAILABLE or not WorkflowOrchestrator:
         return jsonify({
             "error": "Workflow engine not available",
             "message": "Please check server configuration"
@@ -153,5 +163,5 @@ def predict():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))
+    port = int(os.environ.get('PORT', 10000))  # Render使用10000端口
     app.run(host='0.0.0.0', port=port, debug=False) 
