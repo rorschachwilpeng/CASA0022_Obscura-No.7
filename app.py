@@ -178,6 +178,13 @@ def save_prediction_to_db(result_data, image_url):
         loc_data = result_data.get('location_data', {})
         meta_data = result_data.get('workflow_metadata', {})
         
+        # 转换所有数值为标准Python类型，避免numpy数据类型问题
+        def convert_to_python_type(value):
+            """将numpy数据类型转换为Python标准数据类型"""
+            if hasattr(value, 'item'):  # numpy数据类型有item()方法
+                return value.item()
+            return value
+        
         cursor.execute("""
             INSERT INTO predictions (
                 latitude, longitude, current_temperature, predicted_temperature,
@@ -187,19 +194,19 @@ def save_prediction_to_db(result_data, image_url):
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """, (
-            env_data.get('latitude'),
-            env_data.get('longitude'),
-            env_data.get('temperature'),
-            pred_data.get('predicted_temperature'),
-            env_data.get('humidity'),
-            pred_data.get('predicted_humidity'),
+            convert_to_python_type(env_data.get('latitude')),
+            convert_to_python_type(env_data.get('longitude')),
+            convert_to_python_type(env_data.get('temperature')),
+            convert_to_python_type(pred_data.get('predicted_temperature')),
+            convert_to_python_type(env_data.get('humidity')),
+            convert_to_python_type(pred_data.get('predicted_humidity')),
             env_data.get('weather_description'),
             pred_data.get('predicted_weather_condition'),
             image_url,
             env_data.get('location_name'),
             loc_data.get('formatted_address'),
-            pred_data.get('confidence_score'),
-            meta_data.get('execution_time_seconds'),
+            convert_to_python_type(pred_data.get('confidence_score')),
+            convert_to_python_type(meta_data.get('execution_time_seconds')),
             json.dumps(result_data)
         ))
         
