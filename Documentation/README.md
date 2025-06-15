@@ -12,7 +12,8 @@
 ## 🎯 Project Stages Overview
 ---
 **FLOW CHART**
-```Mermaid
+
+```mermaid
 graph TD
     A[🚀 Project Start<br/>May 6, 2025] --> B[📋 Stage 1: Preparation<br/>7 days]
     
