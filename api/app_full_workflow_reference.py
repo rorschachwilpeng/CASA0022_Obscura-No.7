@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Obscura No.7 - Render部署的主应用文件
-Flask API服务器 (集成Cloudinary + PostgreSQL)
+REFERENCE ONLY - 完整工作流参考实现
+此文件包含完整的数据库、Cloudinary、图片处理功能
+在Stage 2后续开发中可能需要参考
+当前使用的是模块化版本: app.py
 """
 
 import os
