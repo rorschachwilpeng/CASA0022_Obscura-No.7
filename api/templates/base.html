@@ -38,7 +38,7 @@
         <div class="nav-container">
             <!-- Brand Section -->
             <div class="nav-brand">
-                <a href="{{ url_for('home') }}" class="brand-link" aria-label="Obscura No.7 Home">
+                <a href="{{ url_for('frontend.home') }}" class="brand-link" aria-label="Obscura No.7 Home">
                     <div class="brass-plate">
                         <span class="telescope-icon" aria-hidden="true">🔭</span>
                         <span class="brand-text">OBSCURA NO.7</span>
@@ -49,8 +49,8 @@
             
             <!-- Navigation Menu -->
             <div class="nav-menu" role="menubar">
-                <a href="{{ url_for('home') }}" 
-                   class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" 
+                <a href="{{ url_for('frontend.home') }}" 
+                   class="nav-link {% if request.endpoint == 'frontend.home' %}active{% endif %}" 
                    role="menuitem"
                    aria-label="System Status Page">
                     <div class="nav-button">
@@ -58,8 +58,8 @@
                         <span>System Status</span>
                     </div>
                 </a>
-                <a href="{{ url_for('gallery') }}" 
-                   class="nav-link {% if request.endpoint == 'gallery' %}active{% endif %}" 
+                <a href="{{ url_for('frontend.gallery') }}" 
+                   class="nav-link {% if request.endpoint == 'frontend.gallery' %}active{% endif %}" 
                    role="menuitem"
                    aria-label="Image Gallery">
                     <div class="nav-button">
