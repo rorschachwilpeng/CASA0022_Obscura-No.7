@@ -52,6 +52,9 @@ logger = logging.getLogger(__name__)
 # 创建Flask应用
 app = Flask(__name__)
 
+# 立即添加这行配置
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
+
 # 注册蓝图
 app.register_blueprint(ml_bp)
 app.register_blueprint(health_bp)
