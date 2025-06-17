@@ -25,10 +25,28 @@ def upload_image():
     返回: 图片信息JSON
     """
     try:
+        # 添加调试代码 - 开始
+        logger.info("=== DEBUG: Upload request received ===")
+        logger.info(f"Request content type: {request.content_type}")
+        logger.info(f"Request files keys: {list(request.files.keys())}")
+        logger.info(f"Request form keys: {list(request.form.keys())}")
+        
+        # 检查所有files
+        for key in request.files:
+            file_obj = request.files[key]
+            logger.info(f"File key '{key}': filename={file_obj.filename}, content_type={file_obj.content_type}")
+        
+        # 检查所有form数据
+        for key in request.form:
+            logger.info(f"Form key '{key}': value={request.form[key]}")
+        # 调试代码 - 结束
+        
         # 1. 获取表单数据
         file = request.files.get('file')
         description = request.form.get('description', '')
         prediction_id = request.form.get('prediction_id')
+        
+        logger.info(f"Extracted - file: {file}, description: {description}, prediction_id: {prediction_id}")
         
         # 2. 验证必要参数
         if not file:
