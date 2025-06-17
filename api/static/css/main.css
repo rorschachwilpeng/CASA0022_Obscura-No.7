@@ -1,0 +1,556 @@
+/* Obscura No.7 - Steampunk Main Styles */
+
+/* CSS Variables for Steampunk Color Palette */
+:root {
+    --brass-primary: #CD853F;
+    --brass-dark: #B8860B;
+    --brass-light: #DAA520;
+    --copper: #D2691E;
+    --bronze: #CD7F32;
+    --steel: #4F4F4F;
+    --iron: #2F2F2F;
+    --amber: #FFBF00;
+    --warm-white: #FDF5E6;
+    --parchment: #F5E6D3;
+    --leather: #8B4513;
+    --coal: #1C1C1C;
+    --steam: rgba(255, 255, 255, 0.1);
+    
+    /* Gradients */
+    --brass-gradient: linear-gradient(145deg, var(--brass-light), var(--brass-primary), var(--brass-dark));
+    --metal-gradient: linear-gradient(145deg, var(--steel), var(--iron));
+    --copper-gradient: linear-gradient(145deg, #FFD700, var(--copper), var(--bronze));
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(205, 133, 63, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(218, 165, 32, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+    color: var(--warm-white);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* Steampunk Navigation */
+.steampunk-nav {
+    background: var(--brass-gradient);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    border-bottom: 3px solid var(--brass-dark);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+}
+
+.nav-brand .brass-plate {
+    background: var(--copper-gradient);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: 2px solid var(--brass-dark);
+    box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.telescope-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.brand-text {
+    font-weight: bold;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--coal);
+}
+
+.subtitle {
+    font-size: 0.7rem;
+    color: var(--iron);
+    font-style: italic;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-button {
+    background: var(--metal-gradient);
+    padding: 0.8rem 1.2rem;
+    border-radius: 6px;
+    border: 2px solid var(--steel);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nav-button:hover {
+    background: var(--brass-gradient);
+    border-color: var(--brass-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.nav-link.active .nav-button {
+    background: var(--brass-gradient);
+    border-color: var(--brass-dark);
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nav-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-indicator {
+    background: var(--metal-gradient);
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    border: 2px solid var(--steel);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-light {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Main Content */
+.main-content {
+    min-height: calc(100vh - 120px);
+    padding: 2rem 0;
+}
+
+.steampunk-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Brass Panels */
+.brass-panel {
+    background: var(--brass-gradient);
+    border: 3px solid var(--brass-dark);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.brass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* Hero Section */
+.hero-section {
+    margin-bottom: 3rem;
+}
+
+.main-panel {
+    padding: 3rem;
+    text-align: center;
+}
+
+.steampunk-title {
+    font-size: 3.5rem;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: var(--coal);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+.steampunk-subtitle {
+    font-size: 1.5rem;
+    color: var(--iron);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    letter-spacing: 2px;
+}
+
+.project-description {
+    font-size: 1.1rem;
+    color: var(--coal);
+    max-width: 600px;
+    margin: 0 auto;
+    font-style: italic;
+    line-height: 1.8;
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--brass-light);
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 2px;
+}
+
+.brass-line {
+    width: 200px;
+    height: 3px;
+    background: var(--brass-gradient);
+    margin: 0 auto;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Status Grid */
+.status-section {
+    margin-bottom: 3rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.status-card {
+    background: var(--metal-gradient);
+    border: 2px solid var(--steel);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.status-card:hover::before {
+    left: 100%;
+}
+
+.status-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.status-card.operational {
+    border-color: var(--brass-light);
+    background: linear-gradient(145deg, var(--steel), var(--brass-dark));
+}
+
+.status-card.malfunction {
+    border-color: #cc4444;
+    background: linear-gradient(145deg, var(--steel), #662222);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.service-icon {
+    font-size: 2rem;
+}
+
+.card-header h4 {
+    font-size: 1.2rem;
+    color: var(--warm-white);
+}
+
+.status-card .status-indicator {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: 0.5rem;
+}
+
+.operational .status-light {
+    background: #44cc44;
+    box-shadow: 0 0 8px #44cc44;
+}
+
+.malfunction .status-light {
+    background: #cc4444;
+    box-shadow: 0 0 8px #cc4444;
+}
+
+.service-description {
+    color: var(--parchment);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* Controls Section */
+.controls-section {
+    margin-bottom: 3rem;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.control-button {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--brass-gradient);
+    border: 3px solid var(--brass-dark);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.control-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+}
+
+.control-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.control-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.control-button.secondary {
+    background: var(--copper-gradient);
+}
+
+.control-button.tertiary {
+    background: var(--metal-gradient);
+}
+
+.button-content {
+    position: relative;
+    z-index: 1;
+}
+
+.button-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.button-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+    color: var(--coal);
+}
+
+.button-desc {
+    font-size: 0.9rem;
+    color: var(--iron);
+    font-style: italic;
+}
+
+/* Info Section */
+.info-section {
+    margin-bottom: 3rem;
+}
+
+.info-panel {
+    padding: 2rem;
+}
+
+.info-title {
+    font-size: 1.5rem;
+    color: var(--coal);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid var(--brass-dark);
+}
+
+.info-label {
+    font-weight: bold;
+    color: var(--coal);
+}
+
+.info-value {
+    color: var(--warm-white);
+    font-family: 'Courier New', monospace;
+}
+
+.info-value.operational {
+    color: #44cc44;
+    font-weight: bold;
+}
+
+/* Footer */
+.steampunk-footer {
+    background: var(--metal-gradient);
+    border-top: 3px solid var(--brass-dark);
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.brass-frame {
+    background: var(--brass-gradient);
+    border: 2px solid var(--brass-dark);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 
+        inset 0 2px 4px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.footer-quote {
+    font-style: italic;
+    color: var(--iron);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .steampunk-title {
+        font-size: 2.5rem;
+    }
+    
+    .status-grid,
+    .controls-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-panel {
+        padding: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .steampunk-container {
+        padding: 0 1rem;
+    }
+    
+    .steampunk-title {
+        font-size: 2rem;
+        letter-spacing: 2px;
+    }
+    
+    .control-button {
+        padding: 1.5rem;
+    }
+}

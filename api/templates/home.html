@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}System Status - Obscura No.7{% endblock %}
+
+{% block og_title %}System Status - Obscura No.7 Virtual Telescope{% endblock %}
+
+{% block content %}
+<div class="steampunk-container">
+    <!-- Main Title Section -->
+    <section class="hero-section" aria-labelledby="main-title">
+        <div class="brass-panel main-panel">
+            <div class="panel-header">
+                <h1 id="main-title" class="steampunk-title">OBSCURA NO.7</h1>
+                <h2 class="steampunk-subtitle">Interactive Virtual Telescope System</h2>
+                <p class="project-description">
+                    "A mechanical contraption that peers through time's veils, 
+                    revealing environmental futures through the marriage of brass gears and artificial minds."
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Status Grid -->
+    <section class="status-section" aria-labelledby="status-title">
+        <div class="section-header">
+            <h3 id="status-title" class="section-title">⚙️ SYSTEM STATUS MONITOR</h3>
+            <div class="brass-line" aria-hidden="true"></div>
+        </div>
+        
+        <div class="status-grid" role="grid" aria-label="System Services Status">
+            <!-- Weather Engine Status -->
+            <div class="status-card {% if openweather_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="openweather" 
+                 role="gridcell"
+                 aria-labelledby="weather-engine-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">🌡️</span>
+                    <h4 id="weather-engine-title">Weather Engine</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if openweather_status %}OPERATIONAL{% else %}DISCONNECTED{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">OpenWeather API Integration</p>
+            </div>
+
+            <!-- Artificial Mind Status -->
+            <div class="status-card {% if openai_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="openai" 
+                 role="gridcell"
+                 aria-labelledby="ai-mind-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">🧠</span>
+                    <h4 id="ai-mind-title">Artificial Mind</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if openai_status %}OPERATIONAL{% else %}DISCONNECTED{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">OpenAI Vision Generator</p>
+            </div>
+
+            <!-- Navigation System Status -->
+            <div class="status-card {% if google_maps_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="google_maps" 
+                 role="gridcell"
+                 aria-labelledby="navigation-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">🗺️</span>
+                    <h4 id="navigation-title">Navigation System</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if google_maps_status %}OPERATIONAL{% else %}DISCONNECTED{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">Google Maps Integration</p>
+            </div>
+
+            <!-- Image Archive Status -->
+            <div class="status-card {% if cloudinary_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="cloudinary" 
+                 role="gridcell"
+                 aria-labelledby="archive-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">☁️</span>
+                    <h4 id="archive-title">Image Archive</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if cloudinary_status %}OPERATIONAL{% else %}DISCONNECTED{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">Cloudinary Storage</p>
+            </div>
+
+            <!-- Memory Bank Status -->
+            <div class="status-card {% if database_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="database" 
+                 role="gridcell"
+                 aria-labelledby="memory-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">🗄️</span>
+                    <h4 id="memory-title">Memory Bank</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if database_status %}OPERATIONAL{% else %}DISCONNECTED{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">PostgreSQL Database</p>
+            </div>
+
+            <!-- Prediction Engine Status -->
+            <div class="status-card {% if workflow_status %}operational{% else %}malfunction{% endif %}" 
+                 data-service="ml_workflow" 
+                 role="gridcell"
+                 aria-labelledby="prediction-title">
+                <div class="card-header">
+                    <span class="service-icon" aria-hidden="true">🔮</span>
+                    <h4 id="prediction-title">Prediction Engine</h4>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text" role="status" aria-live="polite">
+                        {% if workflow_status %}OPERATIONAL{% else %}OFFLINE{% endif %}
+                    </span>
+                </div>
+                <p class="service-description">ML Workflow System</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Access Panel -->
+    <section class="controls-section" aria-labelledby="controls-title">
+        <div class="section-header">
+            <h3 id="controls-title" class="section-title">🔧 CONTROL PANEL</h3>
+            <div class="brass-line" aria-hidden="true"></div>
+        </div>
+        
+        <div class="controls-grid" role="list" aria-label="System Controls">
+            <a href="{{ url_for('gallery') }}" 
+               class="control-button primary" 
+               role="listitem"
+               aria-describedby="gallery-desc">
+                <div class="button-content">
+                    <span class="button-icon" aria-hidden="true">🖼️</span>
+                    <span class="button-text">VIEW GALLERY</span>
+                    <span id="gallery-desc" class="button-desc">Browse Generated Visions</span>
+                </div>
+            </a>
+            
+            <a href="/api/v1/ml/predict" 
+               class="control-button secondary" 
+               role="listitem"
+               aria-describedby="ml-api-desc"
+               target="_blank" 
+               rel="noopener">
+                <div class="button-content">
+                    <span class="button-icon" aria-hidden="true">🔮</span>
+                    <span class="button-text">ML API</span>
+                    <span id="ml-api-desc" class="button-desc">Prediction Interface</span>
+                </div>
+            </a>
+            
+            <a href="/health" 
+               class="control-button tertiary" 
+               role="listitem"
+               aria-describedby="diagnostics-desc"
+               target="_blank" 
+               rel="noopener">
+                <div class="button-content">
+                    <span class="button-icon" aria-hidden="true">💓</span>
+                    <span class="button-text">DIAGNOSTICS</span>
+                    <span id="diagnostics-desc" class="button-desc">System Health Check</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- System Information -->
+    <section class="info-section" aria-labelledby="info-title">
+        <div class="brass-panel info-panel">
+            <div class="panel-content">
+                <h4 id="info-title" class="info-title">📊 SYSTEM INFORMATION</h4>
+                <div class="info-grid" role="table" aria-label="System Information">
+                    <div class="info-item" role="row">
+                        <span class="info-label" role="rowheader">API Version:</span>
+                        <span class="info-value" role="cell">1.4.0</span>
+                    </div>
+                    <div class="info-item" role="row">
+                        <span class="info-label" role="rowheader">Last Updated:</span>
+                        <span class="info-value" role="cell" data-timestamp>{{ timestamp }}</span>
+                    </div>
+                    <div class="info-item" role="row">
+                        <span class="info-label" role="rowheader">Platform:</span>
+                        <span class="info-value" role="cell">Render Cloud</span>
+                    </div>
+                    <div class="info-item" role="row">
+                        <span class="info-label" role="rowheader">Status:</span>
+                        <span class="info-value {% if workflow_status %}operational{% endif %}" role="cell" aria-live="polite">
+                            {% if workflow_status %}READY{% else %}STANDBY{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Usage Example -->
+    <section class="api-section" aria-labelledby="api-title">
+        <div class="brass-panel api-panel">
+            <div class="panel-content">
+                <h4 id="api-title" class="info-title">🔌 API USAGE EXAMPLE</h4>
+                <p class="api-description">Test the ML Prediction Engine with environmental data:</p>
+                
+                <div class="code-container">
+                    <pre class="api-code" role="region" aria-label="API Usage Example Code"><code>POST /api/v1/ml/predict
+Content-Type: application/json
+
+{
+    "environmental_data": {
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "temperature": 16.5,
+        "humidity": 67,
+        "pressure": 1017,
+        "wind_speed": 7.2,
+        "weather_description": "scattered clouds",
+        "location_name": "London"
+    },
+    "hours_ahead": 24
+}</code></pre>
+                </div>
+                
+                <div class="api-actions">
+                    <button class="copy-button" onclick="copyApiExample()" aria-label="Copy API example to clipboard">
+                        📋 Copy Example
+                    </button>
+                    <a href="/api/v1/ml/predict" class="test-button" target="_blank" rel="noopener">
+                        🧪 Test API
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Copy API Example Script -->
+<script>
+function copyApiExample() {
+    const codeText = document.querySelector('.api-code code').textContent;
+    navigator.clipboard.writeText(codeText).then(() => {
+        window.obscuraApp?.showNotification('API example copied to clipboard!', 'success');
+    }).catch(() => {
+        window.obscuraApp?.showNotification('Failed to copy to clipboard', 'error');
+    });
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.api-section {
+    margin-bottom: 3rem;
+}
+
+.api-panel {
+    padding: 2rem;
+}
+
+.api-description {
+    color: var(--coal);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+    text-align: center;
+}
+
+.code-container {
+    background: var(--iron);
+    border: 2px solid var(--steel);
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.api-code {
+    color: var(--amber);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding: 1.5rem;
+    margin: 0;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.api-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.copy-button,
+.test-button {
+    background: var(--brass-gradient);
+    border: 2px solid var(--brass-dark);
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    color: var(--coal);
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copy-button:hover,
+.test-button:hover {
+    background: var(--copper-gradient);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.footer-links {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+}
+
+.footer-link {
+    color: var(--iron);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--warm-white);
+}
+
+.footer-separator {
+    margin: 0 0.5rem;
+    color: var(--iron);
+}
+
+@media (max-width: 768px) {
+    .api-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .copy-button,
+    .test-button {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

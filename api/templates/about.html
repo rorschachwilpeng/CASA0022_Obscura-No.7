@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}About - Obscura No.7{% endblock %}
+
+{% block content %}
+<div class="steampunk-container">
+    <section class="hero-section">
+        <div class="brass-panel main-panel">
+            <h1 class="steampunk-title">{{ project.name or "OBSCURA NO.7" }}</h1>
+            <h2 class="steampunk-subtitle">{{ project.subtitle or "Interactive Virtual Telescope Art Installation" }}</h2>
+            <p class="project-description">
+                {{ project.description or "A steampunk-inspired art installation that peers through time's veils." }}
+            </p>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="brass-panel info-panel">
+            <h3 class="info-title">📋 PROJECT INFORMATION</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Version:</span>
+                    <span class="info-value">{{ project.version or app_version }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Build Time:</span>
+                    <span class="info-value">{{ build_time|datetime_format }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %} 

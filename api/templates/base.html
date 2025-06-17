@@ -1,0 +1,135 @@
+<!-- Base template for Obscura No.7 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Obscura No.7 - Virtual Telescope{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🔭</text></svg>">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Meta Description -->
+    <meta name="description" content="Obscura No.7 - Interactive Virtual Telescope Art Installation. AI-generated environmental predictions through steampunk aesthetics.">
+    <meta name="keywords" content="virtual telescope, steampunk, AI art, environmental prediction, interactive installation">
+    <meta name="author" content="CASA0022 - Obscura No.7 Project">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}Obscura No.7 - Virtual Telescope{% endblock %}">
+    <meta property="og:description" content="Interactive Virtual Telescope Art Installation with AI-generated environmental visions">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    
+    <!-- Preload key resources -->
+    <link rel="preload" href="{{ url_for('static', filename='js/main.js') }}" as="script">
+    
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <!-- Steampunk Navigation Bar -->
+    <nav class="steampunk-nav" role="navigation" aria-label="Main Navigation">
+        <div class="nav-container">
+            <!-- Brand Section -->
+            <div class="nav-brand">
+                <a href="{{ url_for('home') }}" class="brand-link" aria-label="Obscura No.7 Home">
+                    <div class="brass-plate">
+                        <span class="telescope-icon" aria-hidden="true">🔭</span>
+                        <span class="brand-text">OBSCURA NO.7</span>
+                        <span class="subtitle">Virtual Telescope</span>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <div class="nav-menu" role="menubar">
+                <a href="{{ url_for('home') }}" 
+                   class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" 
+                   role="menuitem"
+                   aria-label="System Status Page">
+                    <div class="nav-button">
+                        <span class="gear-icon" aria-hidden="true">⚙️</span>
+                        <span>System Status</span>
+                    </div>
+                </a>
+                <a href="{{ url_for('gallery') }}" 
+                   class="nav-link {% if request.endpoint == 'gallery' %}active{% endif %}" 
+                   role="menuitem"
+                   aria-label="Image Gallery">
+                    <div class="nav-button">
+                        <span class="gallery-icon" aria-hidden="true">🖼️</span>
+                        <span>Gallery</span>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- System Status Indicator -->
+            <div class="nav-status">
+                <div class="status-indicator" id="system-status" title="System Status">
+                    <span class="status-light" aria-hidden="true"></span>
+                    <span class="status-text">CHECKING...</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Steampunk Footer -->
+    <footer class="steampunk-footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="brass-frame">
+                <p>&copy; 2025 CASA0022 - Interactive Virtual Telescope Art Installation</p>
+                <p class="footer-quote">"Ain't built to see where we're goin'. Built to see where we could've ended up."</p>
+                <div class="footer-links">
+                    <a href="/api/v1/ml/predict" class="footer-link">ML API</a>
+                    <span class="footer-separator">•</span>
+                    <a href="/health" class="footer-link">Health Check</a>
+                    <span class="footer-separator">•</span>
+                    <a href="https://github.com/your-username/CASA0022_Obscura-No.7" class="footer-link" target="_blank" rel="noopener">Source Code</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay (hidden by default) -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;" aria-hidden="true">
+        <div class="loading-content">
+            <div class="brass-spinner">
+                <div class="gear-spinner">⚙️</div>
+            </div>
+            <p class="loading-message">Processing through temporal mechanisms...</p>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+
+    <!-- Service Worker Registration (for future PWA features) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Service worker can be implemented later for offline functionality
+                console.log('🔧 Service Worker support detected');
+            });
+        }
+    </script>
+
+    {% block body_extra %}{% endblock %}
+</body>
+</html>

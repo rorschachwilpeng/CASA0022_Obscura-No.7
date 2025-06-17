@@ -10,6 +10,8 @@ import psycopg2
 import os
 import logging
 from datetime import datetime
+from werkzeug.datastructures import FileStorage
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -31,28 +33,55 @@ def upload_image():
         logger.info(f"Request files keys: {list(request.files.keys())}")
         logger.info(f"Request form keys: {list(request.form.keys())}")
         
-        # 检查所有files
-        for key in request.files:
-            file_obj = request.files[key]
-            logger.info(f"File key '{key}': filename={file_obj.filename}, content_type={file_obj.content_type}")
+        # 检查原始数据
+        logger.info(f"Request data length: {len(request.data)}")
+        logger.info(f"Request stream available: {hasattr(request, 'stream')}")
         
-        # 检查所有form数据
-        for key in request.form:
-            logger.info(f"Form key '{key}': value={request.form[key]}")
-        # 调试代码 - 结束
-        
-        # 1. 获取表单数据
-        file = request.files.get('file')
+        # 尝试手动解析文件 - 如果Flask解析失败
+        file = None
         description = request.form.get('description', '')
         prediction_id = request.form.get('prediction_id')
         
-        logger.info(f"Extracted - file: {file}, description: {description}, prediction_id: {prediction_id}")
+        # 方法1: 标准Flask方式
+        if 'file' in request.files:
+            file = request.files['file']
+            logger.info(f"Found file via Flask: {file.filename}")
         
-        # 2. 验证必要参数
+        # 方法2: 检查是否有None键（说明解析出错）
+        elif None in request.form:
+            # 文件内容被当作表单数据了，尝试重建FileStorage对象
+            file_content = request.form[None]
+            if file_content and file_content.startswith(b'\xff\xd8\xff') or file_content.startswith('JFIF'):
+                # 这是JPEG文件内容
+                file_bytes = file_content.encode('latin-1') if isinstance(file_content, str) else file_content
+                file = FileStorage(
+                    stream=io.BytesIO(file_bytes),
+                    filename="uploaded_image.jpg",
+                    content_type="image/jpeg"
+                )
+                logger.info("Reconstructed file from form data")
+        
+        # 方法3: 尝试从原始数据中提取
+        if not file and request.data:
+            try:
+                # 这里可以添加更复杂的multipart解析逻辑
+                logger.info("Trying to parse from raw request data")
+                # 暂时跳过，使用前两种方法
+            except Exception as e:
+                logger.error(f"Raw data parsing failed: {e}")
+        
+        logger.info(f"Final extracted - file: {file}, description: {description}, prediction_id: {prediction_id}")
+        
+        # 验证必要参数
         if not file:
             return jsonify({
                 "success": False,
-                "error": "Missing file parameter",
+                "error": "Missing file parameter - check if file field type is set to 'File' in Postman",
+                "debug": {
+                    "files_keys": list(request.files.keys()),
+                    "form_keys": list(request.form.keys()),
+                    "content_type": request.content_type
+                },
                 "timestamp": datetime.now().isoformat()
             }), 400
             
@@ -63,17 +92,25 @@ def upload_image():
                 "timestamp": datetime.now().isoformat()
             }), 400
         
-        # 3. 上传图片到Cloudinary
+        # 验证文件是否有效
+        if hasattr(file, 'filename') and not file.filename:
+            return jsonify({
+                "success": False,
+                "error": "No file selected",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # 上传图片到Cloudinary
         try:
             upload_result = cloudinary.uploader.upload(
                 file,
-                folder="obscura_images",  # 在Cloudinary中创建文件夹
+                folder="obscura_images",
                 use_filename=True,
                 unique_filename=True
             )
             
             image_url = upload_result['secure_url']
-            thumbnail_url = upload_result.get('secure_url', image_url)  # 如需缩略图可后续处理
+            thumbnail_url = upload_result.get('secure_url', image_url)
             
             logger.info(f"Image uploaded to Cloudinary: {image_url}")
             
@@ -85,12 +122,11 @@ def upload_image():
                 "timestamp": datetime.now().isoformat()
             }), 500
         
-        # 4. 保存图片信息到数据库
+        # 保存图片信息到数据库
         try:
             conn = psycopg2.connect(os.environ['DATABASE_URL'])
             cur = conn.cursor()
             
-            # 插入图片记录
             cur.execute("""
                 INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
                 VALUES (%s, %s, %s, %s, %s) 
@@ -114,7 +150,7 @@ def upload_image():
                 "timestamp": datetime.now().isoformat()
             }), 500
         
-        # 5. 返回成功响应
+        # 返回成功响应
         return jsonify({
             "success": True,
             "image": {
