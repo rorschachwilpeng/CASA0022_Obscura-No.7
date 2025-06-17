@@ -68,6 +68,9 @@ def create_app():
     # 设置错误处理
     setup_error_handlers(app)
     
+    # 执行启动检查（替代before_first_request）
+    startup_check(app)
+    
     logger.info("🔭 Obscura No.7 应用初始化完成")
     return app
 
@@ -77,8 +80,9 @@ def configure_app(app):
     app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1年缓存静态文件
     
-    # 安全配置
-    app.config['SESSION_COOKIE_SECURE'] = True
+    # 安全配置（仅在HTTPS环境下启用）
+    if os.environ.get('RENDER'):  # Render环境下启用安全cookie
+        app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     
@@ -164,29 +168,8 @@ def setup_error_handlers(app):
     
     logger.info("✅ 错误处理器设置完成")
 
-# 创建应用实例
-app = create_app()
-
-# 向后兼容的路由（如果需要）
-@app.route('/predict', methods=['POST'])
-def legacy_predict():
-    """遗留的预测端点（向后兼容）"""
-    from flask import jsonify
-    return jsonify({
-        "message": "This endpoint has been moved. Please use the new API endpoints.",
-        "new_endpoints": {
-            "ml_prediction": "/api/v1/ml/predict",
-            "image_upload": "/api/v1/images",
-            "system_status": "/api/status"
-        },
-        "documentation": "/",
-        "timestamp": datetime.now().isoformat()
-    }), 301
-
-# 应用启动检查
-@app.before_first_request
-def startup_check():
-    """应用启动时的检查"""
+def startup_check(app):
+    """应用启动时的检查（替代before_first_request）"""
     logger.info("🚀 Obscura No.7 Virtual Telescope System Starting...")
     
     # 检查关键环境变量
@@ -206,6 +189,25 @@ def startup_check():
     logger.info(f"   - ML工作流: {'✅' if app.config.get('WORKFLOW_AVAILABLE') else '❌'}")
     
     logger.info("🔭 Virtual Telescope System Ready!")
+
+# 创建应用实例
+app = create_app()
+
+# 向后兼容的路由（如果需要）
+@app.route('/predict', methods=['POST'])
+def legacy_predict():
+    """遗留的预测端点（向后兼容）"""
+    from flask import jsonify
+    return jsonify({
+        "message": "This endpoint has been moved. Please use the new API endpoints.",
+        "new_endpoints": {
+            "ml_prediction": "/api/v1/ml/predict",
+            "image_upload": "/api/v1/images",
+            "system_status": "/api/status"
+        },
+        "documentation": "/",
+        "timestamp": datetime.now().isoformat()
+    }), 301
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
