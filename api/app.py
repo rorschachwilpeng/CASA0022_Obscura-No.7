@@ -43,6 +43,7 @@ except ImportError:
 
 # 导入路由蓝图
 from api.routes import ml_bp, health_bp
+from api.routes.images import images_bp
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -54,6 +55,7 @@ app = Flask(__name__)
 # 注册蓝图
 app.register_blueprint(ml_bp)
 app.register_blueprint(health_bp)
+app.register_blueprint(images_bp)
 
 # 检查环境变量
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
