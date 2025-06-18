@@ -247,17 +247,32 @@ class GalleryApp {
     /**
      * Show image detail modal
      */
-    showImageDetail(image) {
+    async showImageDetail(image) {
         console.log('Show image detail:', image);
         
-        // Initialize modal if not already done
-        if (!this.imageModal && typeof ImageModal !== 'undefined') {
-            this.imageModal = new ImageModal();
-        }
+        // Use the global image modal instance
+        this.imageModal = window.imageModal || window.ImageModal?.instance;
         
         // Check if modal system is available
         if (this.imageModal) {
-            this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
+            try {
+                // Fetch complete image data with prediction details
+                const response = await fetch(`/api/v1/images/${image.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Use the complete data from the detail endpoint
+                    this.imageModal.show(data.image, this.images, this.images.findIndex(img => img.id === image.id));
+                } else {
+                    console.warn('Failed to fetch image details, using basic data:', data.error);
+                    // Fallback to basic image data
+                    this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
+                }
+            } catch (error) {
+                console.error('Error fetching image details:', error);
+                // Fallback to basic image data
+                this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
+            }
         } else {
             // Fallback: show notification and try to navigate to detail page
             this.showNotification(`Viewing: ${image.description || 'Image'}`, 'info');
