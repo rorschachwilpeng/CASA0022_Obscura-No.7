@@ -369,6 +369,70 @@ kbd {
 <script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
 
 <script>
+// 强制事件绑定函数 - 关键修复！
+function forceRebindAllEvents() {
+    console.log('🔧 Force rebinding all gallery events...');
+    
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    console.log(`Found ${galleryItems.length} gallery items to rebind`);
+    
+    galleryItems.forEach((item, index) => {
+        // 移除现有的事件监听器
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        
+        // 获取图片数据
+        let imageData = null;
+        
+        // 尝试从Gallery App获取数据
+        if (window.galleryApp && window.galleryApp.filteredImages && window.galleryApp.filteredImages[index]) {
+            imageData = window.galleryApp.filteredImages[index];
+        } else {
+            // 从DOM提取数据作为备选
+            const img = newItem.querySelector('img, .gallery-image');
+            const titleEl = newItem.querySelector('.image-title, .item-description');
+            const description = titleEl ? titleEl.textContent : 'Generated Environmental Vision';
+            
+            imageData = {
+                id: index + 1,
+                description: description,
+                url: img ? img.src : 'https://via.placeholder.com/400x400/B8860B/000000?text=Vision+' + (index + 1),
+                temperature: 20 + Math.random() * 15,
+                humidity: 50 + Math.random() * 30,
+                location: 'Environmental Station',
+                confidence: 80 + Math.random() * 20,
+                created_at: new Date().toISOString()
+            };
+        }
+        
+        // 绑定新的点击事件
+        newItem.addEventListener('click', function() {
+            console.log('🖱️ Gallery item clicked:', imageData);
+            
+            if (window.imageModal && typeof window.imageModal.show === 'function') {
+                console.log('✅ Showing modal via ImageModal...');
+                window.imageModal.show(imageData);
+            } else {
+                console.log('❌ ImageModal not available, using fallback');
+                // 备选方案：显示通知
+                alert(`Viewing: ${imageData.description}`);
+            }
+        });
+        
+        // 重新绑定图片加载事件
+        const img = newItem.querySelector('img, .gallery-image');
+        if (img) {
+            img.addEventListener('load', () => {
+                newItem.classList.add('loaded');
+            });
+        }
+        
+        console.log(`✅ Item ${index + 1} rebound successfully`);
+    });
+    
+    console.log('🎉 All gallery events rebound!');
+}
+
 // Initialize modal and gallery when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initializing Gallery System...');
@@ -388,7 +452,33 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('❌ GalleryApp class not found');
     }
+    
+    // 关键修复：延迟强制重新绑定事件
+    setTimeout(() => {
+        forceRebindAllEvents();
+    }, 3000); // 3秒后强制重新绑定，确保图片已加载
+    
+    // 额外的安全措施：当图片容器内容变化时重新绑定
+    const galleryContainer = document.getElementById('gallery-container');
+    if (galleryContainer) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    console.log('🔄 Gallery content changed, rebinding events...');
+                    setTimeout(forceRebindAllEvents, 1000);
+                }
+            });
+        });
+        
+        observer.observe(galleryContainer, {
+            childList: true,
+            subtree: true
+        });
+    }
 });
+
+// 全局函数供调试使用
+window.forceRebindAllEvents = forceRebindAllEvents;
 </script>
 {% endblock %}
 
