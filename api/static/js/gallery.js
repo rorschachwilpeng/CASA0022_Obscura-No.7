@@ -250,42 +250,31 @@ class GalleryApp {
     }
 
     /**
-     * 重新绑定所有图片的点击事件
+     * Rebind click events for all gallery items
      */
     rebindClickEvents() {
         const galleryItems = document.querySelectorAll('.gallery-item');
         console.log(`🔧 Rebinding click events for ${galleryItems.length} items`);
         
         galleryItems.forEach((item, index) => {
-            // 移除现有的事件监听器
+            // Remove existing event listeners
             const newItem = item.cloneNode(true);
             item.parentNode.replaceChild(newItem, item);
             
-            // 获取图片数据（从全局或构造测试数据）
-            const imageData = window.galleryApp?.filteredImages?.[index] || {
-                id: index + 1,
-                description: 'Test Image ' + (index + 1),
-                url: newItem.querySelector('img')?.src || '',
-                created_at: new Date().toISOString(),
-                temperature: 20 + Math.random() * 15,
-                humidity: 50 + Math.random() * 30,
-                location: 'Test Location',
-                confidence: 80 + Math.random() * 20
-            };
+            // Get corresponding image data
+            const imageData = this.filteredImages[index];
             
-            // 绑定新的点击事件
-            newItem.addEventListener('click', () => {
-                console.log('🖱️ Image clicked:', imageData);
+            if (imageData) {
+                // Bind new click event
+                newItem.addEventListener('click', () => {
+                    console.log('🖱️ Image clicked:', imageData);
+                    this.showImageDetail(imageData);
+                });
                 
-                if (window.imageModal && typeof window.imageModal.show === 'function') {
-                    console.log('✅ Showing new styled modal...');
-                    window.imageModal.show(imageData);
-                } else {
-                    console.log('❌ Modal not available');
-                }
-            });
-            
-            console.log(`✅ Item ${index + 1} rebound`);
+                console.log(`✅ Item ${index + 1} rebound with real data`);
+            } else {
+                console.warn(`❌ No data for item ${index + 1}`);
+            }
         });
     }
 
