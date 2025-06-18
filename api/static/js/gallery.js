@@ -251,10 +251,12 @@ class GalleryApp {
         console.log('Show image detail:', image);
         
         // Use the global image modal instance
-        this.imageModal = window.imageModal || window.ImageModal?.instance;
+        this.imageModal = window.imageModal;
         
         // Check if modal system is available
-        if (this.imageModal) {
+        console.log('🔍 ImageModal check:', this.imageModal);
+        
+        if (this.imageModal && typeof this.imageModal.show === 'function') {
             try {
                 // Fetch complete image data with prediction details
                 const response = await fetch(`/api/v1/images/${image.id}`);
@@ -275,6 +277,10 @@ class GalleryApp {
             }
         } else {
             // Fallback: show notification and try to navigate to detail page
+            console.warn('❌ ImageModal not available. Available:', {
+                'window.imageModal': window.imageModal,
+                'typeof ImageModal': typeof ImageModal
+            });
             this.showNotification(`Viewing: ${image.description || 'Image'}`, 'info');
             
             // Try to navigate to detail page

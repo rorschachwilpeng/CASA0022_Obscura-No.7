@@ -363,8 +363,33 @@ kbd {
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+<!-- Load ImageModal first -->
 <script src="{{ url_for('static', filename='js/image-modal.js') }}"></script>
+<!-- Then load Gallery which depends on ImageModal -->
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+
+<script>
+// Initialize modal and gallery when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing Gallery System...');
+    
+    // Initialize ImageModal globally
+    if (typeof ImageModal !== 'undefined') {
+        window.imageModal = new ImageModal();
+        console.log('✅ ImageModal initialized:', window.imageModal);
+    } else {
+        console.error('❌ ImageModal class not found');
+    }
+    
+    // Initialize Gallery App
+    if (typeof GalleryApp !== 'undefined') {
+        window.galleryApp = new GalleryApp();
+        console.log('✅ GalleryApp initialized:', window.galleryApp);
+    } else {
+        console.error('❌ GalleryApp class not found');
+    }
+});
+</script>
 {% endblock %}
 
 
