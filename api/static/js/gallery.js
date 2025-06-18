@@ -12,6 +12,7 @@ class GalleryApp {
         this.currentFilter = 'all';
         this.currentView = 'masonry';
         this.isLoading = false;
+        this.imageModal = null;
         this.init();
     }
 
@@ -249,12 +250,22 @@ class GalleryApp {
     showImageDetail(image) {
         console.log('Show image detail:', image);
         
+        // Initialize modal if not already done
+        if (!this.imageModal && typeof ImageModal !== 'undefined') {
+            this.imageModal = new ImageModal();
+        }
+        
         // Check if modal system is available
-        if (window.ImageModal) {
-            window.ImageModal.show(image);
+        if (this.imageModal) {
+            this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
         } else {
-            // Fallback: navigate to detail page
-            window.location.href = `/image/${image.id}`;
+            // Fallback: show notification and try to navigate to detail page
+            this.showNotification(`Viewing: ${image.description || 'Image'}`, 'info');
+            
+            // Try to navigate to detail page
+            if (image.id) {
+                window.location.href = `/image/${image.id}`;
+            }
         }
     }
 
@@ -429,6 +440,44 @@ class GalleryApp {
     }
 
     /**
+     * Show notification to user
+     */
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Position notification at top right
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--brass-gradient);
+            border: 2px solid var(--brass-dark);
+            color: var(--coal);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-weight: bold;
+            animation: notification-slide-in 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'notification-slide-out 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    /**
      * Refresh gallery data
      */
     refresh() {
@@ -487,6 +536,28 @@ const galleryStyles = `
     .retry-button:hover {
         background: var(--copper-gradient);
         transform: translateY(-2px);
+    }
+    
+    @keyframes notification-slide-in {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes notification-slide-out {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
 `;
 
