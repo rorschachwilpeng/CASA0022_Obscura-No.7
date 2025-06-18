@@ -244,12 +244,18 @@ class GalleryApp {
     }
 
     /**
-     * Show image detail (placeholder for future implementation)
+     * Show image detail modal
      */
     showImageDetail(image) {
         console.log('Show image detail:', image);
-        // Placeholder for detailed view functionality
-        window.obscuraApp?.showNotification(`Viewing: ${image.description}`, 'info');
+        
+        // Check if modal system is available
+        if (window.ImageModal) {
+            window.ImageModal.show(image);
+        } else {
+            // Fallback: navigate to detail page
+            window.location.href = `/image/${image.id}`;
+        }
     }
 
     /**
