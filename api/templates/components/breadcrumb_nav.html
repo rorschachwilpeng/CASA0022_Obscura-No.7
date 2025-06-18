@@ -1,0 +1,247 @@
+<!-- Obscura No.7 - Reusable Breadcrumb Navigation Component -->
+<!-- Usage: {% include 'components/breadcrumb_nav.html' with breadcrumb_items=[{'url': '/', 'label': 'Home', 'icon': '🏠'}, {'url': '/gallery', 'label': 'Gallery', 'icon': '📸'}, {'label': 'Current Page', 'icon': '🔍', 'current': true}] %} -->
+
+{% set default_separator = '⚙️' %}
+{% set separator = separator or default_separator %}
+
+<nav class="breadcrumb-nav" 
+     aria-label="Breadcrumb navigation"
+     role="navigation">
+    
+    <ol class="breadcrumb-list">
+        {% for item in breadcrumb_items %}
+        <li class="breadcrumb-item {% if item.current %}breadcrumb-current{% endif %}">
+            {% if item.current %}
+                <!-- Current page (no link) -->
+                <span class="breadcrumb-current-page" aria-current="page">
+                    {% if item.icon %}
+                    <span class="breadcrumb-icon" aria-hidden="true">{{ item.icon }}</span>
+                    {% endif %}
+                    <span class="breadcrumb-text">{{ item.label }}</span>
+                </span>
+            {% else %}
+                <!-- Navigation link -->
+                <a href="{{ item.url }}" 
+                   class="breadcrumb-link"
+                   aria-label="{{ item.label }}">
+                    {% if item.icon %}
+                    <span class="breadcrumb-icon" aria-hidden="true">{{ item.icon }}</span>
+                    {% endif %}
+                    <span class="breadcrumb-text">{{ item.label }}</span>
+                </a>
+            {% endif %}
+            
+            <!-- Separator (not after last item) -->
+            {% if not loop.last %}
+            <span class="breadcrumb-separator" aria-hidden="true">{{ separator }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+</nav>
+
+<!-- Breadcrumb Styles (Component-specific) -->
+<style>
+.breadcrumb-nav {
+    margin: 20px 0;
+}
+
+.breadcrumb-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breadcrumb-link {
+    color: var(--brass-dark);
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    background: rgba(28, 28, 28, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.breadcrumb-link:hover {
+    background: var(--coal);
+    color: var(--amber);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(28, 28, 28, 0.3);
+    border-color: var(--brass-primary);
+}
+
+.breadcrumb-link:focus {
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+}
+
+.breadcrumb-current-page {
+    color: var(--amber);
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    background: rgba(255, 191, 0, 0.1);
+    border: 2px solid var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-shadow: 0 0 8px rgba(255, 191, 0, 0.4);
+}
+
+.breadcrumb-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.breadcrumb-text {
+    white-space: nowrap;
+}
+
+.breadcrumb-separator {
+    color: var(--bronze);
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin: 0 4px;
+    opacity: 0.7;
+}
+
+/* Animation for separator */
+.breadcrumb-separator {
+    animation: separatorGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes separatorGlow {
+    from { 
+        text-shadow: 0 0 5px rgba(205, 133, 63, 0.3);
+        opacity: 0.7;
+    }
+    to { 
+        text-shadow: 0 0 10px rgba(205, 133, 63, 0.6);
+        opacity: 1;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .breadcrumb-list {
+        justify-content: flex-start;
+        gap: 4px;
+        font-size: 0.8rem;
+    }
+    
+    .breadcrumb-link,
+    .breadcrumb-current-page {
+        padding: 6px 12px;
+    }
+    
+    .breadcrumb-text {
+        display: none; /* Hide text on very small screens, keep icons */
+    }
+    
+    .breadcrumb-icon {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .breadcrumb-list {
+        gap: 2px;
+    }
+    
+    .breadcrumb-separator {
+        margin: 0 2px;
+        font-size: 1rem;
+    }
+    
+    .breadcrumb-link,
+    .breadcrumb-current-page {
+        padding: 5px 8px;
+        border-radius: 15px;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .breadcrumb-link {
+        border-width: 2px;
+        border-color: var(--brass-dark);
+    }
+    
+    .breadcrumb-current-page {
+        border-width: 3px;
+    }
+    
+    .breadcrumb-separator {
+        opacity: 1;
+        font-weight: 900;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .breadcrumb-separator {
+        animation: none;
+    }
+    
+    .breadcrumb-link:hover {
+        transform: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .breadcrumb-nav {
+        display: none;
+    }
+}
+
+/* Focus styles for accessibility */
+.breadcrumb-link:focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 3px;
+}
+
+/* Screen reader improvements */
+.breadcrumb-nav[aria-label]::before {
+    content: "";
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* RTL language support */
+[dir="rtl"] .breadcrumb-list {
+    direction: rtl;
+}
+
+[dir="rtl"] .breadcrumb-separator {
+    transform: scaleX(-1);
+}
+</style>
+
+<!-- Screen Reader Navigation Hints -->
+<div class="sr-only">
+    <p>You are here: 
+        {% for item in breadcrumb_items %}
+        {% if item.current %}{{ item.label }}{% else %}{{ item.label }}{% if not loop.last %}, then {% endif %}{% endif %}
+        {% endfor %}
+    </p>
+</div> 

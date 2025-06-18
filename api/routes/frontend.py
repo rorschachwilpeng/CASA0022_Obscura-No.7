@@ -121,6 +121,47 @@ def gallery():
         logger.error(f"图库页面渲染失败: {e}")
         return render_template('gallery.html'), 500
 
+@frontend_bp.route('/image/<int:image_id>')
+def image_detail(image_id):
+    """图片详情页面"""
+    try:
+        logger.info(f"渲染图片详情页面，图片ID: {image_id}")
+        
+        # 验证图片ID的有效性
+        if image_id <= 0:
+            logger.warning(f"无效的图片ID: {image_id}")
+            return render_template('404.html'), 404
+        
+        # 检查数据库连接
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            logger.error("数据库未配置")
+            return render_template('image_detail.html', error="Database not configured"), 503
+        
+        # 验证图片是否存在（基础检查）
+        try:
+            conn = psycopg2.connect(database_url)
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM images WHERE id = %s", (image_id,))
+            image_exists = cur.fetchone()
+            conn.close()
+            
+            if not image_exists:
+                logger.warning(f"图片不存在，ID: {image_id}")
+                return render_template('404.html'), 404
+        
+        except Exception as db_error:
+            logger.error(f"数据库查询失败: {db_error}")
+            # 即使数据库查询失败，也渲染页面，让JavaScript处理
+            pass
+        
+        # 渲染详情页面，数据将通过AJAX加载
+        return render_template('image_detail.html', image_id=image_id)
+    
+    except Exception as e:
+        logger.error(f"图片详情页面渲染失败: {e}")
+        return render_template('image_detail.html', error=str(e)), 500
+
 @frontend_bp.route('/api/status')
 def api_status():
     """API状态检查端点"""

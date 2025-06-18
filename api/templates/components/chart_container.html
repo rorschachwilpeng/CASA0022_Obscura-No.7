@@ -1,0 +1,267 @@
+<!-- Obscura No.7 - Reusable Chart Container Component -->
+<!-- Usage: {% include 'components/chart_container.html' with chart_id='trendChart', chart_title='Environmental Trends', chart_description='Temporal analysis of environmental patterns' %} -->
+
+{% set chart_id = chart_id or 'defaultChart' %}
+{% set chart_title = chart_title or 'Data Analysis' %}
+{% set chart_description = chart_description or 'Interactive data visualization' %}
+{% set loading_text = loading_text or 'Processing data...' %}
+
+<div class="chart-panel" data-chart-id="{{ chart_id }}">
+    <!-- Chart Header -->
+    <div class="chart-header">
+        <h3 class="chart-title">{{ chart_title }}</h3>
+        {% if chart_description %}
+        <p class="chart-description">{{ chart_description }}</p>
+        {% endif %}
+    </div>
+    
+    <!-- Loading State -->
+    <div class="chart-loading" id="{{ chart_id }}Loading" aria-live="polite">
+        <div class="chart-spinner" aria-hidden="true">⚙️</div>
+        <p>{{ loading_text }}</p>
+    </div>
+    
+    <!-- Chart Canvas -->
+    <canvas class="chart-canvas" 
+            id="{{ chart_id }}" 
+            aria-label="{{ chart_title }} chart"
+            role="img"
+            style="display: none;">
+        <!-- Fallback text for non-canvas browsers -->
+        <p>{{ chart_description }} - Canvas not supported by your browser.</p>
+    </canvas>
+    
+    <!-- Chart Controls (Optional) -->
+    <div class="chart-controls" id="{{ chart_id }}Controls" style="display: none;">
+        <button class="chart-control-btn" 
+                data-action="refresh"
+                type="button"
+                title="Refresh chart data">
+            <span aria-hidden="true">🔄</span>
+            <span class="sr-only">Refresh {{ chart_title }}</span>
+        </button>
+        
+        <button class="chart-control-btn" 
+                data-action="fullscreen"
+                type="button"
+                title="View chart in fullscreen">
+            <span aria-hidden="true">⛶</span>
+            <span class="sr-only">Fullscreen {{ chart_title }}</span>
+        </button>
+        
+        <button class="chart-control-btn" 
+                data-action="download"
+                type="button"
+                title="Download chart as image">
+            <span aria-hidden="true">💾</span>
+            <span class="sr-only">Download {{ chart_title }}</span>
+        </button>
+    </div>
+    
+    <!-- Chart Error State -->
+    <div class="chart-error" id="{{ chart_id }}Error" style="display: none;" role="alert">
+        <div class="error-content">
+            <span class="error-icon" aria-hidden="true">⚠️</span>
+            <h4>Chart Loading Error</h4>
+            <p>Unable to load chart data. Please try refreshing the page.</p>
+            <button class="retry-button" 
+                    data-chart="{{ chart_id }}"
+                    type="button">
+                <span aria-hidden="true">🔄</span>
+                Retry Loading
+            </button>
+        </div>
+    </div>
+    
+    <!-- Chart Data Summary (Screen Reader) -->
+    <div class="sr-only" id="{{ chart_id }}Summary" aria-live="polite">
+        <h4>{{ chart_title }} Data Summary</h4>
+        <div class="chart-data-summary">
+            <!-- Data summary will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Chart Styles (Component-specific) -->
+<style>
+.chart-panel {
+    position: relative;
+    background: rgba(245, 245, 220, 0.05);
+    border: 2px solid var(--parchment);
+    border-radius: 15px;
+    padding: 25px;
+    min-height: 400px;
+}
+
+.chart-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.chart-title {
+    font-family: 'Crimson Text', serif;
+    font-size: 1.3rem;
+    color: var(--amber);
+    margin-bottom: 8px;
+    text-shadow: 0 0 8px rgba(255, 191, 0, 0.4);
+}
+
+.chart-description {
+    color: var(--parchment);
+    font-size: 0.9rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--parchment);
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chart-spinner {
+    font-size: 2rem;
+    animation: gearSpin 2s linear infinite;
+    color: var(--brass-primary);
+    text-shadow: 0 0 15px rgba(205, 133, 63, 0.6);
+}
+
+.chart-canvas {
+    width: 100%;
+    height: 300px;
+    border-radius: 10px;
+}
+
+.chart-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(245, 245, 220, 0.2);
+}
+
+.chart-control-btn {
+    width: 35px;
+    height: 35px;
+    border: 2px solid var(--brass-primary);
+    background: rgba(205, 133, 63, 0.1);
+    color: var(--brass-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-control-btn:hover {
+    background: var(--brass-primary);
+    color: var(--coal);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(205, 133, 63, 0.5);
+}
+
+.chart-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+}
+
+.error-content {
+    color: var(--warm-white);
+    max-width: 300px;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    display: block;
+    color: #ff6b6b;
+}
+
+.error-content h4 {
+    color: #ff6b6b;
+    margin-bottom: 10px;
+    font-family: 'Crimson Text', serif;
+}
+
+.error-content p {
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.retry-button {
+    background: var(--brass-gradient);
+    border: 2px solid var(--bronze);
+    color: var(--coal);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.retry-button:hover {
+    background: var(--copper-gradient);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.4);
+}
+
+@keyframes gearSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-canvas {
+        height: 250px;
+    }
+    
+    .chart-loading {
+        height: 250px;
+    }
+    
+    .chart-error {
+        height: 250px;
+    }
+    
+    .chart-panel {
+        padding: 20px;
+        min-height: 320px;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .chart-panel {
+        border-width: 3px;
+    }
+    
+    .chart-control-btn {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .chart-spinner {
+        animation: none;
+    }
+    
+    .chart-control-btn:hover {
+        transform: none;
+    }
+}
+</style> 

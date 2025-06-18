@@ -1,0 +1,354 @@
+<!-- Obscura No.7 - Image Detail Page Template -->
+
+{% extends "base.html" %}
+
+{% block title %}Image Analysis - Obscura No.7{% endblock %}
+
+{% block og_title %}Environmental Prediction Analysis - Obscura No.7{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+    <div class="detail-container">
+        <!-- Page Header -->
+        <header class="detail-header">
+            <h1 class="detail-title" id="imageTitle">Temporal Vision Analysis</h1>
+            <p class="detail-subtitle" id="imageSubtitle">Environmental Prediction Report</p>
+            
+            <!-- Breadcrumb Navigation -->
+            <nav class="breadcrumb" aria-label="Breadcrumb navigation">
+                <a href="{{ url_for('frontend.home') }}" aria-label="Home">🏠 Observatory</a>
+                <span class="breadcrumb-separator" aria-hidden="true">⚙️</span>
+                <a href="{{ url_for('frontend.gallery') }}" aria-label="Gallery">📸 Gallery</a>
+                <span class="breadcrumb-separator" aria-hidden="true">⚙️</span>
+                <span aria-current="page">🔍 Analysis</span>
+            </nav>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="detail-content">
+            <!-- Image Panel -->
+            <section class="image-panel" aria-labelledby="image-section-title">
+                <h2 id="image-section-title" class="sr-only">Image Display</h2>
+                
+                <div class="image-display">
+                    <img class="main-image" 
+                         id="mainImage" 
+                         alt=""
+                         tabindex="0"
+                         role="img">
+                    
+                    <!-- Image Overlay Controls -->
+                    <div class="image-overlay">
+                        <button class="overlay-button" 
+                                id="fullscreenBtn" 
+                                type="button"
+                                title="Fullscreen View (Ctrl+F)"
+                                aria-label="View image in fullscreen">
+                            ⛶
+                        </button>
+                        <button class="overlay-button" 
+                                id="shareBtn" 
+                                type="button"
+                                title="Share Image (Ctrl+S)"
+                                aria-label="Share this image">
+                            📤
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Image Metadata -->
+                <div class="image-metadata">
+                    <div class="metadata-item">
+                        <div class="metadata-label">Resolution</div>
+                        <div class="metadata-value" id="imageResolution">Loading...</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">File Size</div>
+                        <div class="metadata-value" id="imageFileSize">Loading...</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">Generation Time</div>
+                        <div class="metadata-value" id="imageGenTime">Loading...</div>
+                    </div>
+                    <div class="metadata-item">
+                        <div class="metadata-label">Prediction ID</div>
+                        <div class="metadata-value" id="imagePredictionId">Loading...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analysis Panel -->
+            <section class="analysis-panel" aria-labelledby="analysis-section-title">
+                <h2 class="analysis-title" id="analysis-section-title">
+                    <span class="analysis-icon" aria-hidden="true">🔬</span>
+                    Prediction Analysis
+                </h2>
+                
+                <!-- Prediction Results Grid -->
+                <div class="prediction-results" id="predictionResults">
+                    <!-- Dynamic content will be populated here -->
+                    <div class="result-card">
+                        <div class="result-label">Environment Type</div>
+                        <div class="result-value" id="environmentType">Loading...</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="envConfidence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">Climate Prediction</div>
+                        <div class="result-value" id="climatePrediction">Loading...</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="climateConfidence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">Vegetation Index</div>
+                        <div class="result-value" id="vegetationIndex">Loading...</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="vegConfidence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-label">Urban Development</div>
+                        <div class="result-value" id="urbanDevelopment">Loading...</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="urbanConfidence" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Description -->
+                <div class="description-section">
+                    <h3>Analytical Report</h3>
+                    <div class="image-description" id="detailedDescription">
+                        Loading comprehensive analysis...
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Data Visualization Section -->
+        <section class="visualization-section" aria-labelledby="viz-section-title">
+            <div class="viz-header">
+                <h2 class="viz-title" id="viz-section-title">📊 Temporal Data Analysis</h2>
+                <p class="viz-description">
+                    Interactive visualization of environmental predictions and confidence metrics
+                </p>
+            </div>
+            
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <!-- Environment Trend Chart -->
+                <div class="chart-panel">
+                    <h3 class="chart-title">Environmental Trends</h3>
+                    <div class="chart-loading" id="trendChartLoading">
+                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
+                        <p>Analyzing temporal patterns...</p>
+                    </div>
+                    <canvas class="chart-canvas" 
+                            id="trendChart" 
+                            aria-label="Environmental trend data chart"
+                            style="display: none;">
+                    </canvas>
+                </div>
+                
+                <!-- Confidence Analysis Chart -->
+                <div class="chart-panel">
+                    <h3 class="chart-title">Confidence Analysis</h3>
+                    <div class="chart-loading" id="confidenceChartLoading">
+                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
+                        <p>Processing confidence metrics...</p>
+                    </div>
+                    <canvas class="chart-canvas" 
+                            id="confidenceChart" 
+                            aria-label="Prediction confidence chart"
+                            style="display: none;">
+                    </canvas>
+                </div>
+            </div>
+            
+            <!-- Process Flow Diagram -->
+            <div class="process-flow">
+                <h3 class="flow-title">🔄 Analysis Pipeline</h3>
+                <div class="flow-diagram">
+                    <svg class="flow-svg" 
+                         id="processFlow" 
+                         aria-labelledby="flow-desc"
+                         role="img">
+                        <desc id="flow-desc">Flowchart showing the AI prediction analysis process</desc>
+                        <!-- SVG content will be generated dynamically -->
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Details Section -->
+        <section class="technical-details" aria-labelledby="tech-section-title">
+            <h2 class="tech-title" id="tech-section-title">⚙️ Technical Specifications</h2>
+            
+            <div class="tech-grid">
+                <!-- Model Information -->
+                <div class="tech-section">
+                    <h3>
+                        <span aria-hidden="true">🤖</span>
+                        Model Details
+                    </h3>
+                    <ul class="tech-list" id="modelDetails">
+                        <li>
+                            <span class="tech-label">Architecture</span>
+                            <span class="tech-value" id="modelArch">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Version</span>
+                            <span class="tech-value" id="modelVersion">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Training Data</span>
+                            <span class="tech-value" id="trainingData">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Accuracy</span>
+                            <span class="tech-value" id="modelAccuracy">Loading...</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Processing Information -->
+                <div class="tech-section">
+                    <h3>
+                        <span aria-hidden="true">⚡</span>
+                        Processing Stats
+                    </h3>
+                    <ul class="tech-list" id="processingStats">
+                        <li>
+                            <span class="tech-label">Processing Time</span>
+                            <span class="tech-value" id="processTime">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Memory Usage</span>
+                            <span class="tech-value" id="memoryUsage">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">GPU Utilization</span>
+                            <span class="tech-value" id="gpuUsage">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Batch Size</span>
+                            <span class="tech-value" id="batchSize">Loading...</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Environmental Parameters -->
+                <div class="tech-section">
+                    <h3>
+                        <span aria-hidden="true">🌍</span>
+                        Environmental Data
+                    </h3>
+                    <ul class="tech-list" id="environmentalData">
+                        <li>
+                            <span class="tech-label">Location</span>
+                            <span class="tech-value" id="location">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Time Period</span>
+                            <span class="tech-value" id="timePeriod">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Climate Zone</span>
+                            <span class="tech-value" id="climateZone">Loading...</span>
+                        </li>
+                        <li>
+                            <span class="tech-label">Data Sources</span>
+                            <span class="tech-value" id="dataSources">Loading...</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Bar -->
+        <section class="action-bar" aria-labelledby="actions-title">
+            <h2 id="actions-title" class="sr-only">Available Actions</h2>
+            
+            <div class="action-buttons">
+                <button class="action-button" 
+                        id="downloadBtn" 
+                        type="button"
+                        title="Download Image (Ctrl+D)">
+                    <span aria-hidden="true">💾</span>
+                    <span>Download Image</span>
+                </button>
+                
+                <button class="action-button" 
+                        id="shareImageBtn" 
+                        type="button"
+                        title="Share Analysis (Ctrl+S)">
+                    <span aria-hidden="true">📤</span>
+                    <span>Share Analysis</span>
+                </button>
+                
+                <a href="{{ url_for('frontend.gallery') }}" 
+                   class="action-button secondary"
+                   title="Return to Gallery">
+                    <span aria-hidden="true">🖼️</span>
+                    <span>Back to Gallery</span>
+                </a>
+                
+                <a href="{{ url_for('frontend.home') }}" 
+                   class="action-button secondary"
+                   title="Return to Home">
+                    <span aria-hidden="true">🏠</span>
+                    <span>Observatory Home</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Fullscreen Overlay -->
+<div class="fullscreen-overlay" id="fullscreenOverlay" aria-hidden="true">
+    <img class="fullscreen-image" 
+         id="fullscreenImage" 
+         alt=""
+         role="img">
+    <button class="fullscreen-close" 
+            id="fullscreenClose" 
+            type="button"
+            aria-label="Exit fullscreen"
+            title="Exit Fullscreen (ESC)">
+        ✕
+    </button>
+</div>
+
+<!-- Loading Overlay for Initial Data -->
+<div class="page-loading" id="pageLoading" aria-hidden="false">
+    <div class="loading-content">
+        <div class="brass-spinner">
+            <div class="gear-spinner" aria-hidden="true">⚙️</div>
+        </div>
+        <p>Loading temporal analysis...</p>
+    </div>
+</div>
+
+<!-- Screen Reader Announcements -->
+<div class="sr-only" aria-live="polite" id="srAnnouncements"></div>
+
+<!-- Hidden Elements for Screen Readers -->
+<div class="sr-only">
+    <h2>Page Navigation Help</h2>
+    <p>This page displays detailed analysis of an AI-generated environmental prediction image. Use keyboard shortcuts: Ctrl+F for fullscreen, Ctrl+D to download, Ctrl+S to share, ESC to close overlays.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/image-detail.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data-visualization.js') }}"></script>
+{% endblock %}
