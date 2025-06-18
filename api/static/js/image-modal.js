@@ -555,6 +555,18 @@ class ImageModal {
     addTabStyles() {
         const modalStyles = `
             <style id="modal-tab-styles">
+                /* CSS变量定义 */
+                :root {
+                    --brass: #B8860B;
+                    --brass-gradient: linear-gradient(45deg, #B8860B, #DAA520);
+                    --brass-dark: #8B7D3A;
+                    --copper: #B87333;
+                    --copper-gradient: linear-gradient(45deg, #B87333, #CD7F32);
+                    --copper-light: #D2B48C;
+                    --amber: #FFB347;
+                    --coal: #2c2c2c;
+                }
+                
                 /* 模态框基础样式 */
                 .image-modal {
                     position: fixed;

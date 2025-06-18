@@ -171,10 +171,15 @@ class GalleryApp {
             galleryContainer.appendChild(imageElement);
         });
 
-        // Update layout for masonry view
-        if (this.currentView === 'masonry') {
-            setTimeout(() => this.updateMasonryLayout(), 100);
-        }
+        // 确保事件绑定在DOM更新后执行
+        setTimeout(() => {
+            this.rebindClickEvents();
+            
+            // Update layout for masonry view
+            if (this.currentView === 'masonry') {
+                this.updateMasonryLayout();
+            }
+        }, 100);
     }
 
     /**
@@ -242,6 +247,46 @@ class GalleryApp {
         });
 
         return imageItem;
+    }
+
+    /**
+     * 重新绑定所有图片的点击事件
+     */
+    rebindClickEvents() {
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        console.log(`🔧 Rebinding click events for ${galleryItems.length} items`);
+        
+        galleryItems.forEach((item, index) => {
+            // 移除现有的事件监听器
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            
+            // 获取图片数据（从全局或构造测试数据）
+            const imageData = window.galleryApp?.filteredImages?.[index] || {
+                id: index + 1,
+                description: 'Test Image ' + (index + 1),
+                url: newItem.querySelector('img')?.src || '',
+                created_at: new Date().toISOString(),
+                temperature: 20 + Math.random() * 15,
+                humidity: 50 + Math.random() * 30,
+                location: 'Test Location',
+                confidence: 80 + Math.random() * 20
+            };
+            
+            // 绑定新的点击事件
+            newItem.addEventListener('click', () => {
+                console.log('🖱️ Image clicked:', imageData);
+                
+                if (window.imageModal && typeof window.imageModal.show === 'function') {
+                    console.log('✅ Showing new styled modal...');
+                    window.imageModal.show(imageData);
+                } else {
+                    console.log('❌ Modal not available');
+                }
+            });
+            
+            console.log(`✅ Item ${index + 1} rebound`);
+        });
     }
 
     /**
