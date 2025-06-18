@@ -6,184 +6,6 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
-{% endblock %}
-
-{% block content %}
-<div class="steampunk-container">
-    <!-- Gallery Header -->
-    <section class="gallery-header" aria-labelledby="gallery-main-title">
-        <div class="brass-panel header-panel">
-            <h1 id="gallery-main-title" class="gallery-title">🖼️ VIRTUAL TELESCOPE GALLERY</h1>
-            <p class="gallery-subtitle">AI-Generated Environmental Visions Through Time</p>
-            <div class="header-quote">
-                <em>"Each image a glimpse through the gears of time, revealing what our world might become..."</em>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery Statistics -->
-    <section class="gallery-stats" aria-labelledby="stats-title">
-        <div class="stats-panel" role="region" aria-label="Gallery Statistics">
-            <h2 id="stats-title" class="sr-only">Gallery Statistics</h2>
-            
-            <div class="stat-item" role="group" aria-labelledby="images-stat">
-                <span class="stat-icon" aria-hidden="true">📸</span>
-                <span id="total-images" class="stat-number" aria-live="polite">Loading...</span>
-                <span id="images-stat" class="stat-label">Visions Captured</span>
-            </div>
-            
-            <div class="stat-item" role="group" aria-labelledby="predictions-stat">
-                <span class="stat-icon" aria-hidden="true">🔮</span>
-                <span id="total-predictions" class="stat-number" aria-live="polite">-</span>
-                <span id="predictions-stat" class="stat-label">Predictions Made</span>
-            </div>
-            
-            <div class="stat-item" role="group" aria-labelledby="locations-stat">
-                <span class="stat-icon" aria-hidden="true">🌍</span>
-                <span id="locations-explored" class="stat-number" aria-live="polite">-</span>
-                <span id="locations-stat" class="stat-label">Locations Explored</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery Controls -->
-    <section class="gallery-content" aria-labelledby="gallery-content-title">
-        <h2 id="gallery-content-title" class="sr-only">Gallery Images</h2>
-        
-        <div class="gallery-controls" role="toolbar" aria-label="Gallery Controls">
-            <!-- Filter Controls -->
-            <div class="controls-left" role="group" aria-labelledby="filter-group-title">
-                <span id="filter-group-title" class="sr-only">Filter Options</span>
-                <button class="filter-button active" 
-                        data-filter="all" 
-                        aria-pressed="true"
-                        aria-describedby="all-filter-desc">
-                    <span>All Visions</span>
-                </button>
-                <span id="all-filter-desc" class="sr-only">Show all generated images</span>
-                
-                <button class="filter-button" 
-                        data-filter="recent" 
-                        aria-pressed="false"
-                        aria-describedby="recent-filter-desc">
-                    <span>Recent</span>
-                </button>
-                <span id="recent-filter-desc" class="sr-only">Show recently generated images</span>
-            </div>
-            
-            <!-- View Toggle Controls -->
-            <div class="controls-right" role="group" aria-labelledby="view-group-title">
-                <span id="view-group-title" class="sr-only">Layout Options</span>
-                <button class="view-toggle" 
-                        id="grid-view" 
-                        title="Grid View"
-                        aria-pressed="false"
-                        aria-describedby="grid-view-desc">
-                    <span aria-hidden="true">⊞</span>
-                </button>
-                <span id="grid-view-desc" class="sr-only">Switch to grid layout</span>
-                
-                <button class="view-toggle active" 
-                        id="masonry-view" 
-                        title="Masonry View"
-                        aria-pressed="true"
-                        aria-describedby="masonry-view-desc">
-                    <span aria-hidden="true">⊟</span>
-                </button>
-                <span id="masonry-view-desc" class="sr-only">Switch to masonry layout</span>
-            </div>
-        </div>
-
-        <!-- Gallery Grid Container -->
-        <div class="gallery-grid masonry" 
-             id="gallery-container" 
-             role="grid" 
-             aria-label="Image Gallery"
-             aria-live="polite">
-            <!-- Images will be loaded here dynamically via JavaScript -->
-            <div class="loading-placeholder" role="status" aria-live="polite">
-                <div class="brass-spinner">
-                    <div class="gear-spinner" aria-hidden="true">⚙️</div>
-                </div>
-                <p class="loading-text">Loading visions from the temporal archive...</p>
-            </div>
-        </div>
-
-        <!-- No Images Message (Hidden by default) -->
-        <div class="no-images-message" 
-             id="no-images" 
-             style="display: none;" 
-             role="status" 
-             aria-live="polite">
-            <div class="brass-panel empty-panel">
-                <div class="empty-content">
-                    <span class="empty-icon" aria-hidden="true">🔭</span>
-                    <h3>No Visions Yet</h3>
-                    <p>The telescope awaits its first glimpse into future possibilities.</p>
-                    <p class="empty-help">
-                        Images will appear here once the ML prediction system generates environmental visions.
-                    </p>
-                    <div class="empty-actions">
-                        <a href="{{ url_for('frontend.home') }}" class="empty-button">
-                            Return to System Status
-                        </a>
-                        <button class="refresh-button" onclick="window.galleryApp?.refresh()">
-                            🔄 Refresh Gallery
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery Help Section -->
-    <section class="gallery-help" aria-labelledby="help-title">
-        <div class="brass-panel help-panel">
-            <div class="panel-content">
-                <h3 id="help-title" class="help-title">🔧 GALLERY OPERATIONS</h3>
-                <div class="help-grid">
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">🖱️</div>
-                        <div class="help-content">
-                            <h4>Image Interaction</h4>
-                            <p>Click on any image to view detailed information about the environmental prediction that generated it.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">⌨️</div>
-                        <div class="help-content">
-                            <h4>Keyboard Shortcuts</h4>
-                            <p><kbd>Alt + G</kbd> - Gallery • <kbd>Alt + H</kbd> - Home • <kbd>Alt + R</kbd> - Refresh</p>
-                        </div>
-                    </div>
-                    
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">📱</div>
-                        <div class="help-content">
-                            <h4>Mobile Friendly</h4>
-                            <p>The gallery is optimized for all devices. Swipe and tap to explore the temporal visions.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</div>
-
-<!-- Screen Reader Only Elements -->
-<div class="sr-only">
-    <h2 id="accessibility-info">Accessibility Information</h2>
-    <p>This gallery displays AI-generated environmental prediction images. Use tab navigation to browse controls, and arrow keys within the image grid. Each image includes detailed descriptions.</p>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
-{% endblock %}
-
-{% block extra_css %}
-{{ super() }}
 <style>
 /* Additional Gallery-specific styles */
 .sr-only {
@@ -366,3 +188,179 @@ kbd {
 }
 </style>
 {% endblock %}
+
+{% block content %}
+<div class="steampunk-container">
+    <!-- Gallery Header -->
+    <section class="gallery-header" aria-labelledby="gallery-main-title">
+        <div class="brass-panel header-panel">
+            <h1 id="gallery-main-title" class="gallery-title">🖼️ VIRTUAL TELESCOPE GALLERY</h1>
+            <p class="gallery-subtitle">AI-Generated Environmental Visions Through Time</p>
+            <div class="header-quote">
+                <em>"Each image a glimpse through the gears of time, revealing what our world might become..."</em>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Statistics -->
+    <section class="gallery-stats" aria-labelledby="stats-title">
+        <div class="stats-panel" role="region" aria-label="Gallery Statistics">
+            <h2 id="stats-title" class="sr-only">Gallery Statistics</h2>
+            
+            <div class="stat-item" role="group" aria-labelledby="images-stat">
+                <span class="stat-icon" aria-hidden="true">📸</span>
+                <span id="total-images" class="stat-number" aria-live="polite">Loading...</span>
+                <span id="images-stat" class="stat-label">Visions Captured</span>
+            </div>
+            
+            <div class="stat-item" role="group" aria-labelledby="predictions-stat">
+                <span class="stat-icon" aria-hidden="true">🔮</span>
+                <span id="total-predictions" class="stat-number" aria-live="polite">-</span>
+                <span id="predictions-stat" class="stat-label">Predictions Made</span>
+            </div>
+            
+            <div class="stat-item" role="group" aria-labelledby="locations-stat">
+                <span class="stat-icon" aria-hidden="true">🌍</span>
+                <span id="locations-explored" class="stat-number" aria-live="polite">-</span>
+                <span id="locations-stat" class="stat-label">Locations Explored</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Controls -->
+    <section class="gallery-content" aria-labelledby="gallery-content-title">
+        <h2 id="gallery-content-title" class="sr-only">Gallery Images</h2>
+        
+        <div class="gallery-controls" role="toolbar" aria-label="Gallery Controls">
+            <!-- Filter Controls -->
+            <div class="controls-left" role="group" aria-labelledby="filter-group-title">
+                <span id="filter-group-title" class="sr-only">Filter Options</span>
+                <button class="filter-button active" 
+                        data-filter="all" 
+                        aria-pressed="true"
+                        aria-describedby="all-filter-desc">
+                    <span>All Visions</span>
+                </button>
+                <span id="all-filter-desc" class="sr-only">Show all generated images</span>
+                
+                <button class="filter-button" 
+                        data-filter="recent" 
+                        aria-pressed="false"
+                        aria-describedby="recent-filter-desc">
+                    <span>Recent</span>
+                </button>
+                <span id="recent-filter-desc" class="sr-only">Show recently generated images</span>
+            </div>
+            
+            <!-- View Toggle Controls -->
+            <div class="controls-right" role="group" aria-labelledby="view-group-title">
+                <span id="view-group-title" class="sr-only">Layout Options</span>
+                <button class="view-toggle" 
+                        id="grid-view" 
+                        title="Grid View"
+                        aria-pressed="false"
+                        aria-describedby="grid-view-desc">
+                    <span aria-hidden="true">⊞</span>
+                </button>
+                <span id="grid-view-desc" class="sr-only">Switch to grid layout</span>
+                
+                <button class="view-toggle active" 
+                        id="masonry-view" 
+                        title="Masonry View"
+                        aria-pressed="true"
+                        aria-describedby="masonry-view-desc">
+                    <span aria-hidden="true">⊟</span>
+                </button>
+                <span id="masonry-view-desc" class="sr-only">Switch to masonry layout</span>
+            </div>
+        </div>
+
+        <!-- Gallery Grid Container -->
+        <div class="gallery-grid masonry" 
+             id="gallery-container" 
+             role="grid" 
+             aria-label="Image Gallery"
+             aria-live="polite">
+            <!-- Images will be loaded here dynamically via JavaScript -->
+            <div class="loading-placeholder" role="status" aria-live="polite">
+                <div class="brass-spinner">
+                    <div class="gear-spinner" aria-hidden="true">⚙️</div>
+                </div>
+                <p class="loading-text">Loading visions from the temporal archive...</p>
+            </div>
+        </div>
+
+        <!-- No Images Message (Hidden by default) -->
+        <div class="no-images-message" 
+             id="no-images" 
+             style="display: none;" 
+             role="status" 
+             aria-live="polite">
+            <div class="brass-panel empty-panel">
+                <div class="empty-content">
+                    <span class="empty-icon" aria-hidden="true">🔭</span>
+                    <h3>No Visions Yet</h3>
+                    <p>The telescope awaits its first glimpse into future possibilities.</p>
+                    <p class="empty-help">
+                        Images will appear here once the ML prediction system generates environmental visions.
+                    </p>
+                    <div class="empty-actions">
+                        <a href="{{ url_for('frontend.home') }}" class="empty-button">
+                            Return to System Status
+                        </a>
+                        <button class="refresh-button" onclick="window.galleryApp?.refresh()">
+                            🔄 Refresh Gallery
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Help Section -->
+    <section class="gallery-help" aria-labelledby="help-title">
+        <div class="brass-panel help-panel">
+            <div class="panel-content">
+                <h3 id="help-title" class="help-title">🔧 GALLERY OPERATIONS</h3>
+                <div class="help-grid">
+                    <div class="help-item">
+                        <div class="help-icon" aria-hidden="true">🖱️</div>
+                        <div class="help-content">
+                            <h4>Image Interaction</h4>
+                            <p>Click on any image to view detailed information about the environmental prediction that generated it.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon" aria-hidden="true">⌨️</div>
+                        <div class="help-content">
+                            <h4>Keyboard Shortcuts</h4>
+                            <p><kbd>Alt + G</kbd> - Gallery • <kbd>Alt + H</kbd> - Home • <kbd>Alt + R</kbd> - Refresh</p>
+                        </div>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon" aria-hidden="true">📱</div>
+                        <div class="help-content">
+                            <h4>Mobile Friendly</h4>
+                            <p>The gallery is optimized for all devices. Swipe and tap to explore the temporal visions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Screen Reader Only Elements -->
+<div class="sr-only">
+    <h2 id="accessibility-info">Accessibility Information</h2>
+    <p>This gallery displays AI-generated environmental prediction images. Use tab navigation to browse controls, and arrow keys within the image grid. Each image includes detailed descriptions.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}
+
+
