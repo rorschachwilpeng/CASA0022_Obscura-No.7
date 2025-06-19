@@ -223,12 +223,27 @@ class ImageModal {
      * @param {number} currentIndex - 当前图片索引
      */
     async show(imageData, galleryImages = [], currentIndex = 0) {
-        if (!this.modal || !imageData) return;
+        console.log('🔍 ImageModal.show() called with:', {
+            imageData,
+            galleryImages: galleryImages.length,
+            currentIndex,
+            modalExists: !!this.modal
+        });
+        
+        if (!this.modal || !imageData) {
+            console.error('❌ Modal or imageData missing:', {
+                modal: !!this.modal,
+                imageData: !!imageData
+            });
+            return;
+        }
 
         this.currentImageData = imageData;
         this.galleryImages = galleryImages;
         this.currentIndex = currentIndex;
 
+        console.log('🔧 Setting modal display properties...');
+        
         // 显示加载状态
         this.showLoading();
         
@@ -236,37 +251,64 @@ class ImageModal {
         this.modal.style.display = 'flex';
         this.modal.setAttribute('aria-hidden', 'false');
         this.isVisible = true;
+        
+        console.log('✅ Modal display set to:', this.modal.style.display);
+        console.log('✅ Modal visibility flag:', this.isVisible);
+        console.log('✅ Modal aria-hidden:', this.modal.getAttribute('aria-hidden'));
 
         // 添加键盘监听
         document.addEventListener('keydown', this.keydownHandler);
         
         // 禁用页面滚动
         document.body.style.overflow = 'hidden';
+        
+        console.log('🔧 Fetching image data...');
 
         // 获取完整图片数据
         try {
             const fullData = await this.fetchImageData(imageData.id);
+            console.log('✅ Image data fetched successfully:', fullData);
             await this.populateModal(fullData);
             this.hideLoading();
             
+            console.log('🎨 Adding modal-visible animation class...');
             // 动画效果
             requestAnimationFrame(() => {
                 this.modal.classList.add('modal-visible');
+                console.log('✅ modal-visible class added');
+                console.log('🔍 Modal final state:', {
+                    display: this.modal.style.display,
+                    visibility: window.getComputedStyle(this.modal).visibility,
+                    opacity: window.getComputedStyle(this.modal).opacity,
+                    zIndex: window.getComputedStyle(this.modal).zIndex,
+                    classes: this.modal.className
+                });
             });
             
         } catch (error) {
-            console.error('Error loading image data:', error);
-            console.warn('Using basic image data as fallback');
+            console.error('❌ Error loading image data:', error);
+            console.warn('🔄 Using basic image data as fallback');
             
             // Fallback: 使用基础图片数据填充模态框
             await this.populateModal({ image: imageData });
             this.hideLoading();
             
+            console.log('🎨 Adding modal-visible animation class (fallback)...');
             // 动画效果
             requestAnimationFrame(() => {
                 this.modal.classList.add('modal-visible');
+                console.log('✅ modal-visible class added (fallback)');
+                console.log('🔍 Modal final state (fallback):', {
+                    display: this.modal.style.display,
+                    visibility: window.getComputedStyle(this.modal).visibility,
+                    opacity: window.getComputedStyle(this.modal).opacity,
+                    zIndex: window.getComputedStyle(this.modal).zIndex,
+                    classes: this.modal.className
+                });
             });
         }
+        
+        console.log('🏁 ImageModal.show() method completed');
     }
 
     /**

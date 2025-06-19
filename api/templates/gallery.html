@@ -599,6 +599,47 @@ window.forceRebindAllEvents = forceRebindAllEvents;
 window.initializeGallerySystem = initializeGallerySystem;
 window.testModalFunctionality = testModalFunctionality;
 
+
+// 添加直接测试模态框显示的函数
+window.testModalDisplay = function() {
+    console.log('🧪 Testing modal display directly...');
+    
+    if (!window.imageModal) {
+        console.error('❌ ImageModal not available');
+        return;
+    }
+    
+    console.log('🔍 Modal element:', window.imageModal.modal);
+    console.log('🔍 Modal current style:', window.imageModal.modal.style.cssText);
+    console.log('🔍 Modal computed style:', {
+        display: window.getComputedStyle(window.imageModal.modal).display,
+        opacity: window.getComputedStyle(window.imageModal.modal).opacity,
+        visibility: window.getComputedStyle(window.imageModal.modal).visibility,
+        zIndex: window.getComputedStyle(window.imageModal.modal).zIndex
+    });
+    
+    // 强制显示模态框
+    console.log('🔧 Force showing modal...');
+    window.imageModal.modal.style.display = 'flex';
+    window.imageModal.modal.style.opacity = '1';
+    window.imageModal.modal.style.visibility = 'visible';
+    window.imageModal.modal.classList.add('modal-visible');
+    
+    console.log('✅ Modal should now be visible');
+    console.log('🔍 Updated computed style:', {
+        display: window.getComputedStyle(window.imageModal.modal).display,
+        opacity: window.getComputedStyle(window.imageModal.modal).opacity,
+        visibility: window.getComputedStyle(window.imageModal.modal).visibility,
+        zIndex: window.getComputedStyle(window.imageModal.modal).zIndex
+    });
+    
+    // 5秒后隐藏
+    setTimeout(() => {
+        console.log('🔧 Hiding modal after test...');
+        window.imageModal.hide();
+    }, 5000);
+};
+
 // 添加性能监控
 window.addEventListener('load', () => {
     console.log('📊 Gallery System Status Report:');
@@ -606,6 +647,27 @@ window.addEventListener('load', () => {
     console.log('  - ImageModal available:', !!window.imageModal);
     console.log('  - GalleryApp available:', !!window.galleryApp);
     console.log('  - Gallery items count:', document.querySelectorAll('.gallery-item').length);
+    
+    // 自动添加测试按钮
+    setTimeout(() => {
+        const testButton = document.createElement('button');
+        testButton.textContent = '🧪 Test Modal';
+        testButton.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: #CD853F;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        `;
+        testButton.onclick = window.testModalDisplay;
+        document.body.appendChild(testButton);
+        console.log('🧪 Test button added to page');
+    }, 2000);
 });
 </script>
 {% endblock %}
