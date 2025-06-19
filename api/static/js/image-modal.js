@@ -19,11 +19,12 @@ class ImageModal {
     init() {
         this.createModalHTML();
         this.bindEvents();
-        console.log('🔭 Image Modal initialized with new layout');
+        this.applyUIOptimizations();
+        console.log('🔭 Image Modal initialized with optimized layout');
     }
 
     /**
-     * 创建模态框HTML结构 - 新的上下分离布局
+     * 创建模态框HTML结构 - 新的上下分离布局 + UI优化
      */
     createModalHTML() {
         const modalHTML = `
@@ -33,7 +34,7 @@ class ImageModal {
                 
                 <!-- 新的模态框容器 - 垂直布局 -->
                 <div class="new-modal-container" role="document">
-                    <!-- 关闭按钮 -->
+                    <!-- 优化的外部关闭按钮 -->
                     <button class="modal-close" aria-label="Close modal" title="Close (ESC)">
                         <span aria-hidden="true">✕</span>
                     </button>
@@ -79,11 +80,12 @@ class ImageModal {
                     <div class="data-section">
                         <!-- 信息面板 -->
                         <div class="info-panel">
-                            <h2 id="modal-title" class="image-title">Vision Details</h2>
+                            <h2 id="modal-title" class="image-title">Environmental Vision</h2>
                             
-                            <!-- 预测概要信息 -->
-                            <div class="prediction-summary">
-                                <div class="summary-grid">
+                            <!-- 主要内容区：左右分栏布局 -->
+                            <div class="main-content-grid">
+                                <!-- 左侧：数据列表 -->
+                                <div class="data-list-section">
                                     <div class="summary-item">
                                         <span class="summary-icon" aria-hidden="true">🌡️</span>
                                         <div class="data-content">
@@ -112,31 +114,30 @@ class ImageModal {
                                             <div id="summary-confidence" class="summary-value">--%</div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- 生成时间 -->
+                                    <div class="time-info">
+                                        <p><strong>Generated:</strong> <span id="summary-time">--</span></p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 右侧：操作按钮 -->
+                                <div class="actions-section">
+                                    <button id="view-details-btn" class="detail-button">
+                                        <span class="button-icon" aria-hidden="true">🔍</span>
+                                        <span class="button-text">Detailed<br/>Analysis</span>
+                                    </button>
+                                    <button id="download-btn" class="download-button">
+                                        <span class="button-icon" aria-hidden="true">💾</span>
+                                        <span class="button-text">Download<br/>Image</span>
+                                    </button>
                                 </div>
                             </div>
                             
-                            <!-- 时间信息 -->
-                            <div class="time-info">
-                                <p><strong>Generated:</strong> <span id="summary-time">--</span></p>
-                                <p><strong>AI Model:</strong> <span id="summary-model">DALL-E 3</span></p>
-                            </div>
-                            
-                            <!-- 图片描述 -->
+                            <!-- 底部：描述区域 -->
                             <div class="description-section">
                                 <h3>Vision Description</h3>
-                                <p id="image-description" class="image-description">Loading description...</p>
-                            </div>
-                            
-                            <!-- 操作按钮 -->
-                            <div class="modal-actions">
-                                <button id="view-details-btn" class="detail-button">
-                                    <span class="button-icon" aria-hidden="true">🔍</span>
-                                    <span>Detailed Analysis</span>
-                                </button>
-                                <button id="download-btn" class="download-button">
-                                    <span class="button-icon" aria-hidden="true">⬇️</span>
-                                    <span>Download</span>
-                                </button>
+                                <div id="image-description" class="image-description">Loading description...</div>
                             </div>
                         </div>
                     </div>
@@ -157,6 +158,90 @@ class ImageModal {
         // 插入到页面
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         this.modal = document.getElementById('image-modal');
+    }
+
+    /**
+     * 应用UI优化设置
+     */
+    applyUIOptimizations() {
+        if (!this.modal) return;
+
+        // 应用优化的CSS样式
+        const telescopeFrame = this.modal.querySelector('.telescope-frame');
+        const telescopeLens = this.modal.querySelector('.telescope-lens');
+        const modalContainer = this.modal.querySelector('.new-modal-container');
+        const connectionLine = this.modal.querySelector('.connection-line');
+
+        // 望远镜尺寸优化
+        if (telescopeFrame && telescopeLens) {
+            telescopeFrame.style.width = '400px';
+            telescopeFrame.style.height = '400px';
+            telescopeLens.style.width = '340px';
+            telescopeLens.style.height = '340px';
+        }
+
+        // 容器布局优化
+        if (modalContainer) {
+            modalContainer.style.gap = '15px';
+            modalContainer.style.maxHeight = '90vh';
+            modalContainer.style.justifyContent = 'flex-start';
+            modalContainer.style.paddingTop = '20px';
+            modalContainer.style.position = 'relative';
+        }
+
+        if (connectionLine) {
+            connectionLine.style.height = '20px';
+        }
+
+        // 齿轮装饰优化
+        const gears = this.modal.querySelectorAll('.gear-decoration');
+        gears.forEach(gear => {
+            gear.style.fontSize = '2.5rem';
+            if (gear.classList.contains('gear-top-left')) {
+                gear.style.top = '-40px';
+                gear.style.left = '-40px';
+            }
+            if (gear.classList.contains('gear-top-right')) {
+                gear.style.top = '-40px';
+                gear.style.right = '-40px';
+            }
+            if (gear.classList.contains('gear-bottom-left')) {
+                gear.style.bottom = '-40px';
+                gear.style.left = '-40px';
+            }
+            if (gear.classList.contains('gear-bottom-right')) {
+                gear.style.bottom = '-40px';
+                gear.style.right = '-40px';
+            }
+        });
+
+        // 关闭按钮优化
+        const closeBtn = this.modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '10px';
+            closeBtn.style.width = '45px';
+            closeBtn.style.height = '45px';
+            closeBtn.style.border = '3px solid var(--amber)';
+            closeBtn.style.background = 'rgba(28, 28, 28, 0.95)';
+            closeBtn.style.fontSize = '1.4rem';
+            closeBtn.style.zIndex = '10003';
+            closeBtn.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 191, 0, 0.3)';
+        }
+
+        // 数据区域优化
+        const dataSection = this.modal.querySelector('.data-section');
+        if (dataSection) {
+            dataSection.style.width = '650px';
+            dataSection.style.maxWidth = '85vw';
+            dataSection.style.padding = '25px';
+            dataSection.style.position = 'relative';
+            dataSection.style.overflowY = 'auto';
+            dataSection.style.maxHeight = 'none';
+        }
+
+        console.log('✅ UI optimizations applied to modal');
     }
 
     /**
@@ -215,7 +300,7 @@ class ImageModal {
         this.currentImageData = imageData;
         this.galleryImages = galleryImages;
         this.currentIndex = currentIndex;
-
+        
         // 显示模态框
         this.modal.style.display = 'flex';
         this.modal.setAttribute('aria-hidden', 'false');
@@ -273,14 +358,14 @@ class ImageModal {
             this.modal.setAttribute('aria-hidden', 'true');
             this.isVisible = false;
         }, 300);
-
+            
         // 移除键盘事件监听
-        document.removeEventListener('keydown', this.keydownHandler);
-        
-        // 清理数据
-        this.currentImageData = null;
-        this.galleryImages = [];
-        this.currentIndex = 0;
+            document.removeEventListener('keydown', this.keydownHandler);
+            
+            // 清理数据
+            this.currentImageData = null;
+            this.galleryImages = [];
+            this.currentIndex = 0;
     }
 
     /**
@@ -304,7 +389,7 @@ class ImageModal {
      */
     async populateModal(data) {
         console.log('🔭 Modal: Populating modal with data:', data);
-        
+
         if (!this.modal) return;
 
         // 更新图片
@@ -317,9 +402,9 @@ class ImageModal {
         // 更新标题
         const titleElement = this.modal.querySelector('#modal-title');
         if (titleElement) {
-            titleElement.textContent = data.title || 'Environmental Vision';
+            titleElement.textContent = 'Environmental Vision';
         }
-
+        
         // 安全的元素更新函数
         const updateElement = (selector, content) => {
             const element = this.modal.querySelector(selector);
@@ -419,7 +504,7 @@ class ImageModal {
      */
     async downloadImage() {
         if (!this.currentImageData?.id) return;
-        
+
         try {
             console.log('🔭 Modal: Downloading image:', this.currentImageData.id);
             const response = await fetch(`/api/v1/images/${this.currentImageData.id}/download`);

@@ -42,7 +42,7 @@
 }
 
 /* ===========================================
-   新的模态框容器 - 垂直布局
+   新的模态框容器 - 垂直布局 + UI优化
    =========================================== */
 
 .new-modal-container {
@@ -51,10 +51,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30px;
+    gap: 15px; /* 缩小间距 */
     max-width: 90vw;
     max-height: 90vh;
     margin: 0 auto;
+    padding-top: 20px;
+    justify-content: flex-start;
     transform: scale(0.8);
     transition: transform 0.3s ease-out;
 }
@@ -64,7 +66,7 @@
 }
 
 /* ===========================================
-   上部分：望远镜圆形区域
+   上部分：望远镜圆形区域 - 优化尺寸
    =========================================== */
 
 .telescope-section {
@@ -74,10 +76,10 @@
     justify-content: center;
 }
 
-/* 装饰性齿轮 */
+/* 装饰性齿轮 - 缩小尺寸 */
 .gear-decoration {
     position: absolute;
-    font-size: 3rem;
+    font-size: 2.5rem; /* 从3rem缩小到2.5rem */
     color: var(--brass-primary);
     z-index: 10002;
     animation: gearSpin 8s linear infinite;
@@ -86,28 +88,28 @@
 }
 
 .gear-top-left {
-    top: -50px;
-    left: -50px;
+    top: -40px; /* 从-50px调整到-40px */
+    left: -40px;
     animation-direction: normal;
 }
 
 .gear-top-right {
-    top: -50px;
-    right: -50px;
+    top: -40px;
+    right: -40px;
     animation-direction: reverse;
     animation-duration: 6s;
 }
 
 .gear-bottom-left {
-    bottom: -50px;
-    left: -50px;
+    bottom: -40px;
+    left: -40px;
     animation-direction: reverse;
     animation-duration: 10s;
 }
 
 .gear-bottom-right {
-    bottom: -50px;
-    right: -50px;
+    bottom: -40px;
+    right: -40px;
     animation-direction: normal;
     animation-duration: 12s;
 }
@@ -117,14 +119,14 @@
     to { transform: rotate(360deg); }
 }
 
-/* 望远镜框架 */
+/* 望远镜框架 - 缩小尺寸 */
 .telescope-frame {
     position: relative;
     background: var(--brass-gradient);
     border: 4px solid var(--bronze);
     border-radius: 50%;
-    width: 500px;
-    height: 500px;
+    width: 400px; /* 从500px缩小到400px */
+    height: 400px;
     box-shadow: 
         0 0 30px rgba(205, 133, 63, 0.6),
         inset 0 0 20px rgba(0, 0, 0, 0.3),
@@ -160,10 +162,10 @@
     to { transform: rotate(360deg); }
 }
 
-/* 望远镜镜头（只包含图片） */
+/* 望远镜镜头（只包含图片） - 缩小尺寸 */
 .telescope-lens {
-    width: 420px;
-    height: 420px;
+    width: 340px; /* 从420px缩小到340px */
+    height: 340px;
     border-radius: 50%;
     background: linear-gradient(145deg, var(--coal) 0%, var(--iron) 30%, var(--coal) 100%);
     border: 3px solid var(--amber);
@@ -229,14 +231,14 @@
 }
 
 /* ===========================================
-   连接线装饰
+   连接线 - 缩短高度
    =========================================== */
 
 .connection-line {
-    width: 3px;
-    height: 40px;
-    background: var(--brass-gradient);
-    border-radius: 3px;
+    width: 4px;
+    height: 20px; /* 从30px缩短到20px */
+    background: linear-gradient(to bottom, var(--brass-primary), var(--brass-dark));
+    border-radius: 2px;
     position: relative;
     box-shadow: 0 0 10px rgba(205, 133, 63, 0.5);
 }
@@ -245,234 +247,289 @@
 .connection-line::after {
     content: '';
     position: absolute;
-    width: 10px;
-    height: 10px;
-    background: var(--amber);
+    width: 8px;
+    height: 8px;
+    background: var(--brass-primary);
     border-radius: 50%;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .connection-line::before {
-    top: -5px;
+    top: -4px;
 }
 
 .connection-line::after {
-    bottom: -5px;
+    bottom: -4px;
 }
 
 /* ===========================================
-   下部分：数据矩形区域
+   下部分：数据矩形区域 - 优化布局
    =========================================== */
 
 .data-section {
-    background: linear-gradient(
-        135deg,
-        rgba(28, 28, 28, 0.95) 0%,
-        rgba(79, 79, 79, 0.85) 50%,
-        rgba(28, 28, 28, 0.95) 100%
-    );
-    border: 3px solid var(--brass-primary);
+    background: linear-gradient(145deg, rgba(28, 28, 28, 0.95) 0%, rgba(79, 79, 79, 0.9) 100%);
+    border: 2px solid var(--brass-primary);
     border-radius: 15px;
-    padding: 30px;
-    width: 600px;
-    max-width: 90vw;
     box-shadow: 
-        0 0 30px rgba(205, 133, 63, 0.4),
-        inset 0 0 20px rgba(0, 0, 0, 0.3);
+        0 10px 30px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(205, 133, 63, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    width: 650px; /* 优化宽度 */
+    max-width: 85vw;
+    padding: 25px;
     position: relative;
+    overflow-y: auto;
+    max-height: none; /* 移除高度限制 */
 }
 
 .data-section::before {
     content: '';
     position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: var(--brass-gradient);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(205, 133, 63, 0.05) 2px,
+        rgba(205, 133, 63, 0.05) 4px
+    );
     border-radius: 15px;
-    z-index: -1;
+    pointer-events: none;
 }
-
-/* ===========================================
-   Info Panel (移动到数据区域内)
-   =========================================== */
 
 .info-panel {
-    color: var(--warm-white);
-}
-
-.image-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--amber);
-    margin-bottom: 25px;
-    text-align: center;
-    text-shadow: 0 0 10px rgba(255, 191, 0, 0.5);
-    font-family: 'Crimson Text', serif;
+    position: relative;
+    z-index: 1;
 }
 
 /* ===========================================
-   Prediction Summary
+   标题样式 - 移除padding-right
    =========================================== */
 
-.prediction-summary {
-    margin-bottom: 25px;
+.image-title {
+    color: var(--amber);
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0 0 25px 0;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 191, 0, 0.5);
+    /* 移除padding-right，因为关闭按钮不在内部了 */
 }
 
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+/* ===========================================
+   新的左右分栏布局
+   =========================================== */
+
+.main-content-grid {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+    align-items: stretch;
+    min-height: 240px;
 }
+
+.data-list-section {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.actions-section {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* ===========================================
+   数据项样式 - 更新为卡片式设计
+   =========================================== */
 
 .summary-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 15px;
+    padding: 12px;
     background: rgba(205, 133, 63, 0.1);
-    border: 2px solid var(--brass-dark);
-    border-radius: 10px;
+    border: 1px solid var(--brass-dark);
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .summary-item:hover {
-    background: rgba(205, 133, 63, 0.2);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(205, 133, 63, 0.3);
+    background: rgba(205, 133, 63, 0.15);
+    border-color: var(--brass-primary);
+    transform: translateX(3px);
 }
 
 .summary-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
+    font-size: 1.3rem;
+    margin-right: 8px;
+}
+
+.data-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
 }
 
 .summary-label {
-    font-size: 0.9rem;
     color: var(--parchment);
-    margin-bottom: 5px;
+    font-weight: 500;
+    min-width: 90px;
 }
 
 .summary-value {
-    font-weight: bold;
     color: var(--amber);
-    font-size: 1.1rem;
-    text-shadow: 0 0 5px rgba(255, 191, 0, 0.3);
+    font-weight: bold;
     margin-left: auto;
+    text-align: right;
+    font-size: 1rem;
 }
 
 /* ===========================================
-   Time Info & Description
+   时间信息样式 - 优化为卡片样式
    =========================================== */
 
 .time-info {
-    margin-bottom: 20px;
+    margin-top: 8px;
+    padding: 10px;
     font-size: 0.9rem;
     color: var(--parchment);
-    line-height: 1.6;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
 }
 
 .time-info strong {
     color: var(--brass-light);
 }
 
+/* ===========================================
+   操作按钮样式 - 统一尺寸和样式
+   =========================================== */
+
+.detail-button,
+.download-button {
+    width: 180px; /* 统一宽度 */
+    height: 60px; /* 统一高度 */
+    padding: 0; /* 移除padding，使用固定尺寸 */
+    border: 2px solid var(--brass-primary);
+    background: var(--brass-gradient);
+    color: var(--coal);
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
+}
+
+.detail-button:hover,
+.download-button:hover {
+    background: linear-gradient(135deg, var(--amber), var(--brass-light));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(205, 133, 63, 0.5);
+}
+
+.detail-button:active,
+.download-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
+}
+
+.button-icon {
+    font-size: 1.2rem;
+}
+
+.button-text {
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* ===========================================
+   描述区域样式 - 移动到底部
+   =========================================== */
+
+.description-section {
+    width: 100%;
+    border-top: 2px solid var(--brass-dark);
+    padding-top: 20px;
+    margin-top: 0; /* 移除顶部margin */
+}
+
 .description-section h3 {
     color: var(--brass-light);
     font-size: 1.2rem;
     margin-bottom: 15px;
-    font-family: 'Crimson Text', serif;
+    text-align: center;
+    text-shadow: 0 0 5px rgba(205, 133, 63, 0.5);
 }
 
 .image-description {
     font-size: 1rem;
     line-height: 1.6;
     color: var(--warm-white);
-    margin-bottom: 25px;
     padding: 20px;
     background: rgba(0, 0, 0, 0.3);
     border-left: 4px solid var(--brass-primary);
     border-radius: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-style: italic;
+    text-align: justify;
 }
 
 /* ===========================================
-   Modal Actions
-   =========================================== */
-
-.modal-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.detail-button,
-.download-button {
-    flex: 1;
-    padding: 15px 25px;
-    border: 2px solid var(--brass-primary);
-    background: var(--brass-gradient);
-    color: var(--coal);
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 1rem;
-    font-family: 'Crimson Text', serif;
-    text-decoration: none;
-}
-
-.detail-button:hover,
-.download-button:hover {
-    background: linear-gradient(135deg, var(--amber), var(--brass-light));
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(205, 133, 63, 0.4);
-    border-color: var(--amber);
-}
-
-.detail-button:active,
-.download-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(205, 133, 63, 0.3);
-}
-
-.button-icon {
-    font-size: 1.1rem;
-}
-
-/* ===========================================
-   Modal Controls
+   优化的外部关闭按钮
    =========================================== */
 
 .modal-close {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border: 2px solid var(--amber);
-    background: rgba(28, 28, 28, 0.9);
+    top: 10px;
+    right: 10px;
+    width: 45px; /* 增大尺寸 */
+    height: 45px;
+    border: 3px solid var(--amber); /* 加粗边框 */
+    background: rgba(28, 28, 28, 0.95);
     color: var(--amber);
     border-radius: 50%;
-    cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* 增大字体 */
     font-weight: bold;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    z-index: 10003;
+    z-index: 10003; /* 确保在最上层 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 191, 0, 0.3); /* 增强阴影 */
 }
 
 .modal-close:hover {
     background: var(--amber);
     color: var(--coal);
     transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 191, 0, 0.6);
 }
+
+/* ===========================================
+   Modal Controls
+   =========================================== */
 
 .modal-nav {
     position: absolute;
@@ -561,44 +618,62 @@
 
 @media (max-width: 768px) {
     .telescope-frame {
-        width: 400px;
-        height: 400px;
+        width: 320px; /* 响应式缩小 */
+        height: 320px;
     }
-
+    
     .telescope-lens {
-        width: 340px;
-        height: 340px;
+        width: 270px; /* 响应式缩小 */
+        height: 270px;
     }
 
     .data-section {
-        width: 90vw;
+        width: 100%;
+        max-width: 95vw;
         padding: 20px;
     }
-
-    .summary-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-actions {
+    
+    .main-content-grid {
         flex-direction: column;
+        gap: 20px;
+        min-height: auto;
     }
-
+    
+    .actions-section {
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 15px 0;
+    }
+    
+    .detail-button,
+    .download-button {
+        width: 140px;
+        height: 50px;
+        font-size: 0.9rem;
+    }
+    
     .gear-decoration {
         font-size: 2rem;
     }
-
+    
     .modal-nav {
         width: 40px;
         height: 40px;
         font-size: 1.5rem;
     }
-
+    
     .modal-prev {
         left: -50px;
     }
-
+    
     .modal-next {
         right: -50px;
+    }
+    
+    .modal-close {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
     }
 }
 
@@ -607,30 +682,30 @@
         width: 320px;
         height: 320px;
     }
-
+    
     .telescope-lens {
         width: 280px;
         height: 280px;
     }
-
+    
     .image-title {
         font-size: 1.4rem;
     }
-
+    
     .gear-decoration {
         font-size: 1.5rem;
     }
-
+    
     .gear-top-left,
     .gear-bottom-left {
         left: -30px;
     }
-
+    
     .gear-top-right,
     .gear-bottom-right {
         right: -30px;
     }
-
+    
     .modal-nav {
         display: none; /* Hide navigation on very small screens */
     }
@@ -644,12 +719,12 @@
     .telescope-frame {
         border-color: var(--amber);
     }
-
+    
     .modal-close,
     .modal-nav {
         border-width: 3px;
     }
-
+    
     .summary-item {
         border-width: 3px;
     }
@@ -661,12 +736,12 @@
     .gear-spinner {
         animation: none;
     }
-
+    
     .modal-visible .new-modal-container {
         transform: scale(1);
         transition: none;
     }
-
+    
     .image-modal {
         transition: opacity 0.1s ease;
     }
