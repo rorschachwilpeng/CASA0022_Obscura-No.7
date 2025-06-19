@@ -1,6 +1,8 @@
-<!-- Obscura No.7 - Reusable Image Modal Component -->
+<!-- Obscura No.7 - Reusable Image Modal Component - 新上下分离布局 -->
 <!-- Usage: {% include 'components/image_modal.html' %} -->
+<!-- Note: 此组件现在通过JavaScript动态创建，无需手动包含 -->
 
+<!-- 此文件保留用于文档目的，实际模态框由ImageModal类动态生成 -->
 <div class="image-modal" 
      id="imageModal" 
      aria-hidden="true" 
@@ -11,8 +13,8 @@
     <!-- Modal Backdrop -->
     <div class="modal-backdrop" aria-hidden="true"></div>
     
-    <!-- Telescope Container -->
-    <div class="telescope-container">
+    <!-- 新的模态框容器 - 垂直布局 -->
+    <div class="new-modal-container">
         <!-- Decorative Gears -->
         <div class="gear-decoration gear-top-left" aria-hidden="true">⚙️</div>
         <div class="gear-decoration gear-top-right" aria-hidden="true">⚙️</div>

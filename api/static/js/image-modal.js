@@ -1,6 +1,6 @@
 /**
  * Obscura No.7 - Image Modal JavaScript
- * 蒸汽朋克风格的图片模态框交互逻辑
+ * 蒸汽朋克风格的图片模态框交互逻辑 - 重新设计为上下分离布局
  */
 
 class ImageModal {
@@ -19,11 +19,11 @@ class ImageModal {
     init() {
         this.createModalHTML();
         this.bindEvents();
-        console.log('🔭 Image Modal initialized');
+        console.log('🔭 Image Modal initialized with new layout');
     }
 
     /**
-     * 创建模态框HTML结构
+     * 创建模态框HTML结构 - 新的上下分离布局
      */
     createModalHTML() {
         const modalHTML = `
@@ -31,20 +31,20 @@ class ImageModal {
                 <!-- 模态框背景遮罩 -->
                 <div class="modal-backdrop" aria-hidden="true"></div>
                 
-                <!-- 蒸汽朋克望远镜镜头容器 -->
-                <div class="telescope-container" role="document">
-                    <!-- 装饰性齿轮 -->
-                    <div class="gear-decoration gear-top-left" aria-hidden="true">⚙️</div>
-                    <div class="gear-decoration gear-top-right" aria-hidden="true">⚙️</div>
-                    <div class="gear-decoration gear-bottom-left" aria-hidden="true">⚙️</div>
-                    <div class="gear-decoration gear-bottom-right" aria-hidden="true">⚙️</div>
+                <!-- 新的模态框容器 - 垂直布局 -->
+                <div class="new-modal-container" role="document">
+                    <!-- 关闭按钮 -->
+                    <button class="modal-close" aria-label="Close modal" title="Close (ESC)">
+                        <span aria-hidden="true">✕</span>
+                    </button>
                     
-                    <!-- 镜头边框 -->
-                    <div class="telescope-frame">
-                        <!-- 关闭按钮 -->
-                        <button class="modal-close" aria-label="Close modal" title="Close (ESC)">
-                            <span aria-hidden="true">✕</span>
-                        </button>
+                    <!-- 上部分：望远镜圆形区域 -->
+                    <div class="telescope-section">
+                        <!-- 装饰性齿轮 -->
+                        <div class="gear-decoration gear-top-left" aria-hidden="true">⚙️</div>
+                        <div class="gear-decoration gear-top-right" aria-hidden="true">⚙️</div>
+                        <div class="gear-decoration gear-bottom-left" aria-hidden="true">⚙️</div>
+                        <div class="gear-decoration gear-bottom-right" aria-hidden="true">⚙️</div>
                         
                         <!-- 导航按钮 -->
                         <button class="modal-nav modal-prev" aria-label="Previous image" title="Previous image (←)">
@@ -54,72 +54,89 @@ class ImageModal {
                             <span aria-hidden="true">›</span>
                         </button>
                         
-                        <!-- 镜头内容区域 -->
-                        <div class="telescope-lens">
-                            <!-- 图片展示区域 -->
-                            <div class="image-container">
-                                <img id="modal-image" src="" alt="" class="modal-image" />
-                                <div class="image-loading" style="display: none;">
-                                    <div class="brass-spinner">
-                                        <div class="gear-spinner" aria-hidden="true">⚙️</div>
+                        <!-- 望远镜框架 -->
+                        <div class="telescope-frame">
+                            <!-- 望远镜镜头（只包含图片） -->
+                            <div class="telescope-lens">
+                                <!-- 图片展示区域 -->
+                                <div class="image-container">
+                                    <img id="modal-image" src="" alt="" class="modal-image" />
+                                    <div class="image-loading" style="display: none;">
+                                        <div class="brass-spinner">
+                                            <div class="gear-spinner" aria-hidden="true">⚙️</div>
+                                        </div>
+                                        <p>Loading vision...</p>
                                     </div>
-                                    <p>Loading vision...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 连接线装饰 -->
+                    <div class="connection-line"></div>
+                    
+                    <!-- 下部分：数据矩形区域 -->
+                    <div class="data-section">
+                        <!-- 信息面板 -->
+                        <div class="info-panel">
+                            <h2 id="modal-title" class="image-title">Vision Details</h2>
+                            
+                            <!-- 预测概要信息 -->
+                            <div class="prediction-summary">
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span class="summary-icon" aria-hidden="true">🌡️</span>
+                                        <div class="data-content">
+                                            <div class="summary-label">Temperature</div>
+                                            <div id="summary-temperature" class="summary-value">--°C</div>
+                                        </div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-icon" aria-hidden="true">💧</span>
+                                        <div class="data-content">
+                                            <div class="summary-label">Humidity</div>
+                                            <div id="summary-humidity" class="summary-value">--%</div>
+                                        </div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-icon" aria-hidden="true">📍</span>
+                                        <div class="data-content">
+                                            <div class="summary-label">Location</div>
+                                            <div id="summary-location" class="summary-value">--</div>
+                                        </div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-icon" aria-hidden="true">🔮</span>
+                                        <div class="data-content">
+                                            <div class="summary-label">Confidence</div>
+                                            <div id="summary-confidence" class="summary-value">--%</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- 信息面板 -->
-                            <div class="info-panel">
-                                <h2 id="modal-title" class="image-title">Vision Details</h2>
-                                
-                                <!-- 预测概要信息 -->
-                                <div class="prediction-summary">
-                                    <div class="summary-grid">
-                                        <div class="summary-item">
-                                            <span class="summary-icon" aria-hidden="true">🌡️</span>
-                                            <span class="summary-label">Temperature:</span>
-                                            <span id="summary-temperature" class="summary-value">--°C</span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-icon" aria-hidden="true">💧</span>
-                                            <span class="summary-label">Humidity:</span>
-                                            <span id="summary-humidity" class="summary-value">--%</span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-icon" aria-hidden="true">📍</span>
-                                            <span class="summary-label">Location:</span>
-                                            <span id="summary-location" class="summary-value">--</span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-icon" aria-hidden="true">🔮</span>
-                                            <span class="summary-label">Confidence:</span>
-                                            <span id="summary-confidence" class="summary-value">--%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- 时间信息 -->
-                                <div class="time-info">
-                                    <p><strong>Generated:</strong> <span id="summary-time">--</span></p>
-                                    <p><strong>AI Model:</strong> <span id="summary-model">DALL-E 3</span></p>
-                                </div>
-                                
-                                <!-- 图片描述 -->
-                                <div class="description-section">
-                                    <h3>Vision Description</h3>
-                                    <p id="image-description" class="image-description">Loading description...</p>
-                                </div>
-                                
-                                <!-- 操作按钮 -->
-                                <div class="modal-actions">
-                                    <button id="view-details-btn" class="detail-button">
-                                        <span class="button-icon" aria-hidden="true">🔍</span>
-                                        <span>Detailed Analysis</span>
-                                    </button>
-                                    <button id="download-btn" class="download-button">
-                                        <span class="button-icon" aria-hidden="true">⬇️</span>
-                                        <span>Download</span>
-                                    </button>
-                                </div>
+                            <!-- 时间信息 -->
+                            <div class="time-info">
+                                <p><strong>Generated:</strong> <span id="summary-time">--</span></p>
+                                <p><strong>AI Model:</strong> <span id="summary-model">DALL-E 3</span></p>
+                            </div>
+                            
+                            <!-- 图片描述 -->
+                            <div class="description-section">
+                                <h3>Vision Description</h3>
+                                <p id="image-description" class="image-description">Loading description...</p>
+                            </div>
+                            
+                            <!-- 操作按钮 -->
+                            <div class="modal-actions">
+                                <button id="view-details-btn" class="detail-button">
+                                    <span class="button-icon" aria-hidden="true">🔍</span>
+                                    <span>Detailed Analysis</span>
+                                </button>
+                                <button id="download-btn" class="download-button">
+                                    <span class="button-icon" aria-hidden="true">⬇️</span>
+                                    <span>Download</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -181,39 +198,59 @@ class ImageModal {
      * @param {number} currentIndex - 当前图片索引
      */
     async show(imageData, galleryImages = [], currentIndex = 0) {
-        if (!this.modal || !imageData) return;
+        console.log('🔭 Modal: show() called with new layout:', {
+            imageData: imageData,
+            galleryImagesCount: galleryImages.length,
+            currentIndex: currentIndex
+        });
+        
+        if (!this.modal || !imageData) {
+            console.error('❌ Modal: Missing modal or imageData', {
+                hasModal: !!this.modal,
+                hasImageData: !!imageData
+            });
+            return;
+        }
 
         this.currentImageData = imageData;
         this.galleryImages = galleryImages;
         this.currentIndex = currentIndex;
 
-        // 显示加载状态
-        this.showLoading();
-        
         // 显示模态框
         this.modal.style.display = 'flex';
         this.modal.setAttribute('aria-hidden', 'false');
-        this.isVisible = true;
-
-        // 添加键盘监听
-        document.addEventListener('keydown', this.keydownHandler);
         
-        // 禁用页面滚动
-        document.body.style.overflow = 'hidden';
-
-        // 获取完整图片数据
+        // 显示加载状态
+        this.showLoading();
+        
         try {
-            const fullData = await this.fetchImageData(imageData.id);
-            await this.populateModal(fullData);
+            // 获取详细图片数据
+            const detailData = await this.fetchImageData(imageData.id);
+            
+            // 填充模态框内容
+            await this.populateModal(detailData);
+            
+            // 更新导航按钮状态
+            this.updateNavigationButtons();
+            
+            // 隐藏加载状态
             this.hideLoading();
             
-            // 动画效果
-            requestAnimationFrame(() => {
+            // 添加可见类以触发动画
+            setTimeout(() => {
                 this.modal.classList.add('modal-visible');
-            });
+                this.isVisible = true;
+            }, 50);
+            
+            // 绑定键盘事件
+            document.addEventListener('keydown', this.keydownHandler);
+            
+            // 焦点管理
+            const closeButton = this.modal.querySelector('.modal-close');
+            closeButton?.focus();
             
         } catch (error) {
-            console.error('Error loading image data:', error);
+            console.error('❌ Modal: Error loading image data:', error);
             this.hideLoading();
             this.showError('Failed to load image details');
         }
@@ -225,109 +262,122 @@ class ImageModal {
     hide() {
         if (!this.modal || !this.isVisible) return;
 
-        // 移除动画类
+        console.log('🔭 Modal: Hiding modal');
+        
+        // 移除可见类
         this.modal.classList.remove('modal-visible');
         
-        // 延迟隐藏以完成动画
+        // 延迟隐藏以允许动画完成
         setTimeout(() => {
             this.modal.style.display = 'none';
             this.modal.setAttribute('aria-hidden', 'true');
             this.isVisible = false;
-            
-            // 移除键盘监听
-            document.removeEventListener('keydown', this.keydownHandler);
-            
-            // 恢复页面滚动
-            document.body.style.overflow = '';
-            
-            // 清理数据
-            this.currentImageData = null;
-            this.galleryImages = [];
-            this.currentIndex = 0;
         }, 300);
+
+        // 移除键盘事件监听
+        document.removeEventListener('keydown', this.keydownHandler);
+        
+        // 清理数据
+        this.currentImageData = null;
+        this.galleryImages = [];
+        this.currentIndex = 0;
     }
 
     /**
-     * 获取图片详细数据
-     * @param {number} imageId - 图片ID
+     * 从API获取图片详细数据
      */
     async fetchImageData(imageId) {
+        console.log('🔭 Modal: Fetching image data for ID:', imageId);
+        
         const response = await fetch(`/api/v1/images/${imageId}`);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to fetch image data');
         }
-        return await response.json();
+        
+        return data.image;
     }
 
     /**
      * 填充模态框内容
-     * @param {Object} data - 图片完整数据
      */
     async populateModal(data) {
-        if (!data.image) return;
+        console.log('🔭 Modal: Populating modal with data:', data);
+        
+        if (!this.modal) return;
 
-        const image = data.image;
-        const prediction = data.prediction || {};
+        // 更新图片
+        const imageElement = this.modal.querySelector('#modal-image');
+        if (imageElement && data.url) {
+            imageElement.src = data.url;
+            imageElement.alt = data.description || 'AI Generated Environmental Vision';
+        }
 
-        // 设置图片
-        const modalImage = this.modal.querySelector('#modal-image');
-        const imageContainer = this.modal.querySelector('.image-container');
-        
-        modalImage.src = image.url;
-        modalImage.alt = image.description || 'AI Generated Environmental Vision';
-        
-        // 图片加载处理
-        await new Promise((resolve, reject) => {
-            modalImage.onload = resolve;
-            modalImage.onerror = reject;
-        });
+        // 更新标题
+        const titleElement = this.modal.querySelector('#modal-title');
+        if (titleElement) {
+            titleElement.textContent = data.title || 'Environmental Vision';
+        }
 
-        // 填充信息
-        this.modal.querySelector('#modal-title').textContent = 
-            image.description || 'Environmental Vision';
-        
-        this.modal.querySelector('#summary-temperature').textContent = 
-            prediction.temperature ? `${prediction.temperature}°C` : '--°C';
-        
-        this.modal.querySelector('#summary-humidity').textContent = 
-            prediction.humidity ? `${prediction.humidity}%` : '--%';
-        
-        this.modal.querySelector('#summary-location').textContent = 
-            prediction.location || '--';
-        
-        this.modal.querySelector('#summary-confidence').textContent = 
-            prediction.confidence ? `${Math.round(prediction.confidence * 100)}%` : '--%';
-        
-        this.modal.querySelector('#summary-time').textContent = 
-            image.created_at ? new Date(image.created_at).toLocaleString() : '--';
-        
-        this.modal.querySelector('#image-description').textContent = 
-            image.description || 'A glimpse into a possible environmental future, generated by AI based on predictive environmental data.';
+        // 安全的元素更新函数
+        const updateElement = (selector, content) => {
+            const element = this.modal.querySelector(selector);
+            if (element) {
+                element.textContent = content;
+            }
+        };
 
-        // 更新导航按钮状态
-        this.updateNavigationButtons();
-        
-        // 设置详细分析按钮
-        const detailBtn = this.modal.querySelector('#view-details-btn');
-        detailBtn.dataset.imageId = image.id;
+        // 更新预测数据
+        if (data.prediction_data) {
+            updateElement('#summary-temperature', data.prediction_data.temperature || '--°C');
+            updateElement('#summary-humidity', data.prediction_data.humidity || '--%');
+            updateElement('#summary-location', data.prediction_data.location || '--');
+            updateElement('#summary-confidence', data.prediction_data.confidence || '--%');
+        }
+
+        // 更新时间信息
+        if (data.created_at) {
+            const date = new Date(data.created_at);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            updateElement('#summary-time', formattedDate);
+        }
+
+        // 更新描述
+        const descriptionElement = this.modal.querySelector('#image-description');
+        if (descriptionElement) {
+            descriptionElement.textContent = data.description || 
+                'This vision represents a potential future environmental state based on AI predictions and environmental data analysis.';
+        }
+
+        // 更新详细分析按钮链接
+        const detailButton = this.modal.querySelector('#view-details-btn');
+        if (detailButton && data.id) {
+            detailButton.onclick = () => this.openDetailPage();
+        }
     }
 
     /**
      * 更新导航按钮状态
      */
     updateNavigationButtons() {
-        const prevBtn = this.modal.querySelector('.modal-prev');
-        const nextBtn = this.modal.querySelector('.modal-next');
+        const prevBtn = this.modal?.querySelector('.modal-prev');
+        const nextBtn = this.modal?.querySelector('.modal-next');
         
-        if (this.galleryImages.length <= 1) {
-            prevBtn.style.display = 'none';
-            nextBtn.style.display = 'none';
-        } else {
-            prevBtn.style.display = 'block';
-            nextBtn.style.display = 'block';
-            
-            prevBtn.disabled = this.currentIndex === 0;
-            nextBtn.disabled = this.currentIndex === this.galleryImages.length - 1;
+        if (prevBtn) {
+            prevBtn.disabled = this.currentIndex <= 0;
+            prevBtn.style.opacity = this.currentIndex <= 0 ? '0.5' : '1';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = this.currentIndex >= (this.galleryImages.length - 1);
+            nextBtn.style.opacity = this.currentIndex >= (this.galleryImages.length - 1) ? '0.5' : '1';
         }
     }
 
@@ -335,10 +385,10 @@ class ImageModal {
      * 导航到上一张图片
      */
     async navigatePrevious() {
-        if (this.currentIndex > 0) {
+        if (this.currentIndex > 0 && this.galleryImages.length > 0) {
             this.currentIndex--;
-            const imageData = this.galleryImages[this.currentIndex];
-            await this.show(imageData, this.galleryImages, this.currentIndex);
+            const prevImageData = this.galleryImages[this.currentIndex];
+            await this.show(prevImageData, this.galleryImages, this.currentIndex);
         }
     }
 
@@ -348,8 +398,8 @@ class ImageModal {
     async navigateNext() {
         if (this.currentIndex < this.galleryImages.length - 1) {
             this.currentIndex++;
-            const imageData = this.galleryImages[this.currentIndex];
-            await this.show(imageData, this.galleryImages, this.currentIndex);
+            const nextImageData = this.galleryImages[this.currentIndex];
+            await this.show(nextImageData, this.galleryImages, this.currentIndex);
         }
     }
 
@@ -357,9 +407,10 @@ class ImageModal {
      * 打开详细分析页面
      */
     openDetailPage() {
-        if (this.currentImageData) {
-            const imageId = this.currentImageData.id;
-            window.location.href = `/image/${imageId}`;
+        if (this.currentImageData?.id) {
+            const detailUrl = `/image/${this.currentImageData.id}`;
+            console.log('🔭 Modal: Opening detail page:', detailUrl);
+            window.open(detailUrl, '_blank');
         }
     }
 
@@ -367,23 +418,33 @@ class ImageModal {
      * 下载图片
      */
     async downloadImage() {
-        if (!this.currentImageData) return;
-
+        if (!this.currentImageData?.id) return;
+        
         try {
-            const image = this.modal.querySelector('#modal-image');
-            const link = document.createElement('a');
-            link.href = image.src;
-            link.download = `obscura-vision-${this.currentImageData.id}.jpg`;
-            link.target = '_blank';
-            link.click();
+            console.log('🔭 Modal: Downloading image:', this.currentImageData.id);
+            const response = await fetch(`/api/v1/images/${this.currentImageData.id}/download`);
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `obscura-vision-${this.currentImageData.id}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } else {
+                throw new Error('Download failed');
+            }
         } catch (error) {
-            console.error('Download failed:', error);
+            console.error('❌ Modal: Download error:', error);
+            alert('Download failed. Please try again.');
         }
     }
 
     /**
      * 处理键盘事件
-     * @param {KeyboardEvent} e - 键盘事件
      */
     handleKeydown(e) {
         if (!this.isVisible) return;
@@ -402,9 +463,10 @@ class ImageModal {
                 this.navigateNext();
                 break;
             case 'Enter':
-                if (e.target.classList.contains('detail-button')) {
+            case ' ':
+                if (e.target.classList.contains('modal-close')) {
                     e.preventDefault();
-                    this.openDetailPage();
+                    this.hide();
                 }
                 break;
         }
@@ -414,9 +476,14 @@ class ImageModal {
      * 显示加载状态
      */
     showLoading() {
-        const loading = this.modal.querySelector('.modal-loading');
-        if (loading) {
-            loading.style.display = 'flex';
+        const loadingElement = this.modal?.querySelector('.modal-loading');
+        const imageLoading = this.modal?.querySelector('.image-loading');
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'flex';
+        }
+        if (imageLoading) {
+            imageLoading.style.display = 'block';
         }
     }
 
@@ -424,34 +491,31 @@ class ImageModal {
      * 隐藏加载状态
      */
     hideLoading() {
-        const loading = this.modal.querySelector('.modal-loading');
-        if (loading) {
-            loading.style.display = 'none';
+        const loadingElement = this.modal?.querySelector('.modal-loading');
+        const imageLoading = this.modal?.querySelector('.image-loading');
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+        if (imageLoading) {
+            imageLoading.style.display = 'none';
         }
     }
 
     /**
      * 显示错误信息
-     * @param {string} message - 错误信息
      */
     showError(message) {
-        const description = this.modal.querySelector('#image-description');
-        if (description) {
-            description.textContent = `Error: ${message}`;
-            description.style.color = 'var(--amber)';
+        console.error('🔭 Modal: Error:', message);
+        const descriptionElement = this.modal?.querySelector('#image-description');
+        if (descriptionElement) {
+            descriptionElement.textContent = `Error: ${message}`;
+            descriptionElement.style.color = '#ff6b6b';
         }
     }
 }
 
-// 全局实例
-window.imageModal = null;
-
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', () => {
-    window.imageModal = new ImageModal();
-});
-
-// 导出类（如果使用模块系统）
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ImageModal;
+// 确保在窗口加载时可用
+if (typeof window !== 'undefined') {
+    window.ImageModal = ImageModal;
 }

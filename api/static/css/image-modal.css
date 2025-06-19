@@ -1,4 +1,4 @@
-/* Obscura No.7 - Image Modal Styles */
+/* Obscura No.7 - Image Modal Styles - 重新设计为上下分离布局 */
 /* 蒸汽朋克风格的图片模态框样式 */
 
 /* ===========================================
@@ -6,15 +6,15 @@
    =========================================== */
 
 .image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease-in-out;
@@ -42,69 +42,39 @@
 }
 
 /* ===========================================
-   Telescope Container & Frame
+   新的模态框容器 - 垂直布局
    =========================================== */
 
-.telescope-container {
+.new-modal-container {
     position: relative;
     z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
     max-width: 90vw;
     max-height: 90vh;
+    margin: 0 auto;
     transform: scale(0.8);
     transition: transform 0.3s ease-out;
 }
 
-.modal-visible .telescope-container {
+.modal-visible .new-modal-container {
     transform: scale(1);
 }
 
-.telescope-frame {
+/* ===========================================
+   上部分：望远镜圆形区域
+   =========================================== */
+
+.telescope-section {
     position: relative;
-    background: var(--brass-gradient);
-    border: 4px solid var(--bronze);
-    border-radius: 50%;
-    width: 600px;
-    height: 600px;
-    box-shadow: 
-        0 0 30px rgba(205, 133, 63, 0.6),
-        inset 0 0 20px rgba(0, 0, 0, 0.3),
-        0 10px 40px rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
 }
 
-.telescope-frame::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background: conic-gradient(
-        from 0deg,
-        var(--brass-dark) 0deg,
-        var(--brass-light) 90deg,
-        var(--brass-dark) 180deg,
-        var(--brass-light) 270deg,
-        var(--brass-dark) 360deg
-    );
-    border-radius: 50%;
-    z-index: -1;
-    animation: frameRotate 20s linear infinite;
-}
-
-@keyframes frameRotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* ===========================================
-   Decorative Gears
-   =========================================== */
-
+/* 装饰性齿轮 */
 .gear-decoration {
     position: absolute;
     font-size: 3rem;
@@ -147,27 +117,64 @@
     to { transform: rotate(360deg); }
 }
 
-/* ===========================================
-   Telescope Lens (Content Area)
-   =========================================== */
-
-.telescope-lens {
-    width: 520px;
-    height: 520px;
+/* 望远镜框架 */
+.telescope-frame {
+    position: relative;
+    background: var(--brass-gradient);
+    border: 4px solid var(--bronze);
     border-radius: 50%;
-    background: linear-gradient(
-        145deg,
-        var(--coal) 0%,
-        var(--iron) 30%,
-        var(--coal) 100%
+    width: 500px;
+    height: 500px;
+    box-shadow: 
+        0 0 30px rgba(205, 133, 63, 0.6),
+        inset 0 0 20px rgba(0, 0, 0, 0.3),
+        0 10px 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.telescope-frame::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: conic-gradient(
+        from 0deg,
+        var(--brass-dark) 0deg,
+        var(--brass-light) 90deg,
+        var(--brass-dark) 180deg,
+        var(--brass-light) 270deg,
+        var(--brass-dark) 360deg
     );
+    border-radius: 50%;
+    z-index: -1;
+    animation: frameRotate 20s linear infinite;
+}
+
+@keyframes frameRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 望远镜镜头（只包含图片） */
+.telescope-lens {
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--coal) 0%, var(--iron) 30%, var(--coal) 100%);
     border: 3px solid var(--amber);
     box-shadow: 
         inset 0 0 30px rgba(255, 191, 0, 0.3),
         inset 0 0 60px rgba(0, 0, 0, 0.8);
     display: flex;
-    overflow: hidden;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    overflow: hidden;
 }
 
 .telescope-lens::after {
@@ -177,35 +184,34 @@
     left: 10%;
     width: 30%;
     height: 30%;
-    background: radial-gradient(
-        circle,
-        rgba(255, 255, 255, 0.1) 0%,
-        transparent 70%
-    );
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
 }
 
 /* ===========================================
-   Image Container
+   图片容器 - 确保图片填满圆框
    =========================================== */
 
 .image-container {
-    flex: 1.2;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 20px;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
 .modal-image {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-    object-fit: contain;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
     transition: transform 0.3s ease;
+    border: 2px solid var(--amber);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
 }
 
 .modal-image:hover {
@@ -219,32 +225,90 @@
     transform: translate(-50%, -50%);
     text-align: center;
     color: var(--warm-white);
+    z-index: 10;
 }
 
 /* ===========================================
-   Info Panel
+   连接线装饰
+   =========================================== */
+
+.connection-line {
+    width: 3px;
+    height: 40px;
+    background: var(--brass-gradient);
+    border-radius: 3px;
+    position: relative;
+    box-shadow: 0 0 10px rgba(205, 133, 63, 0.5);
+}
+
+.connection-line::before,
+.connection-line::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--amber);
+    border-radius: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.connection-line::before {
+    top: -5px;
+}
+
+.connection-line::after {
+    bottom: -5px;
+}
+
+/* ===========================================
+   下部分：数据矩形区域
+   =========================================== */
+
+.data-section {
+    background: linear-gradient(
+        135deg,
+        rgba(28, 28, 28, 0.95) 0%,
+        rgba(79, 79, 79, 0.85) 50%,
+        rgba(28, 28, 28, 0.95) 100%
+    );
+    border: 3px solid var(--brass-primary);
+    border-radius: 15px;
+    padding: 30px;
+    width: 600px;
+    max-width: 90vw;
+    box-shadow: 
+        0 0 30px rgba(205, 133, 63, 0.4),
+        inset 0 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.data-section::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--brass-gradient);
+    border-radius: 15px;
+    z-index: -1;
+}
+
+/* ===========================================
+   Info Panel (移动到数据区域内)
    =========================================== */
 
 .info-panel {
-    flex: 0.8;
-    padding: 30px 20px;
     color: var(--warm-white);
-    overflow-y: auto;
-    background: linear-gradient(
-        180deg,
-        rgba(28, 28, 28, 0.9) 0%,
-        rgba(79, 79, 79, 0.7) 50%,
-        rgba(28, 28, 28, 0.9) 100%
-    );
-    border-radius: 0 260px 260px 0;
-    border-left: 2px solid var(--amber);
 }
 
 .image-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     color: var(--amber);
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    text-align: center;
     text-shadow: 0 0 10px rgba(255, 191, 0, 0.5);
     font-family: 'Crimson Text', serif;
 }
@@ -259,43 +323,44 @@
 
 .summary-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
 }
 
 .summary-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px;
+    gap: 12px;
+    padding: 15px;
     background: rgba(205, 133, 63, 0.1);
-    border: 1px solid var(--brass-dark);
-    border-radius: 8px;
+    border: 2px solid var(--brass-dark);
+    border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .summary-item:hover {
     background: rgba(205, 133, 63, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(205, 133, 63, 0.3);
 }
 
 .summary-icon {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     flex-shrink: 0;
 }
 
 .summary-label {
     font-size: 0.9rem;
     color: var(--parchment);
-    flex-shrink: 0;
+    margin-bottom: 5px;
 }
 
 .summary-value {
     font-weight: bold;
     color: var(--amber);
-    margin-left: auto;
+    font-size: 1.1rem;
     text-shadow: 0 0 5px rgba(255, 191, 0, 0.3);
+    margin-left: auto;
 }
 
 /* ===========================================
@@ -315,20 +380,20 @@
 
 .description-section h3 {
     color: var(--brass-light);
-    font-size: 1.1rem;
-    margin-bottom: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
     font-family: 'Crimson Text', serif;
 }
 
 .image-description {
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 1.6;
     color: var(--warm-white);
     margin-bottom: 25px;
-    padding: 15px;
+    padding: 20px;
     background: rgba(0, 0, 0, 0.3);
     border-left: 4px solid var(--brass-primary);
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 /* ===========================================
@@ -337,35 +402,35 @@
 
 .modal-actions {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
 }
 
 .detail-button,
 .download-button {
     flex: 1;
-    min-width: 120px;
-    padding: 12px 16px;
+    padding: 15px 25px;
     border: 2px solid var(--brass-primary);
     background: var(--brass-gradient);
     color: var(--coal);
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    font-size: 1rem;
     font-family: 'Crimson Text', serif;
     text-decoration: none;
 }
 
 .detail-button:hover,
 .download-button:hover {
-    background: var(--copper-gradient);
+    background: linear-gradient(135deg, var(--amber), var(--brass-light));
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(205, 133, 63, 0.4);
+    box-shadow: 0 8px 25px rgba(205, 133, 63, 0.4);
     border-color: var(--amber);
 }
 
@@ -385,75 +450,73 @@
 
 .modal-close {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 40px;
-    height: 40px;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
     border: 2px solid var(--amber);
     background: rgba(28, 28, 28, 0.9);
     color: var(--amber);
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    z-index: 10003;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10003;
 }
 
 .modal-close:hover {
     background: var(--amber);
     color: var(--coal);
     transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(255, 191, 0, 0.6);
 }
 
 .modal-nav {
     position: absolute;
     top: 50%;
+    transform: translateY(-50%);
     width: 50px;
     height: 50px;
     border: 2px solid var(--brass-primary);
-    background: rgba(205, 133, 63, 0.9);
-    color: var(--coal);
+    background: rgba(28, 28, 28, 0.8);
+    color: var(--brass-light);
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: bold;
-    z-index: 10003;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateY(-50%);
+    transition: all 0.3s ease;
+    z-index: 10003;
 }
 
 .modal-prev {
-    left: -75px;
+    left: -70px;
 }
 
 .modal-next {
-    right: -75px;
+    right: -70px;
 }
 
 .modal-nav:hover {
     background: var(--brass-primary);
+    color: var(--coal);
     transform: translateY(-50%) scale(1.1);
-    box-shadow: 0 0 20px rgba(205, 133, 63, 0.6);
 }
 
 .modal-nav:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: rgba(79, 79, 79, 0.5);
-    border-color: var(--steel);
+    background: rgba(28, 28, 28, 0.5);
 }
 
 .modal-nav:disabled:hover {
     transform: translateY(-50%);
-    box-shadow: none;
+    background: rgba(28, 28, 28, 0.5);
 }
 
 /* ===========================================
@@ -471,7 +534,6 @@
     align-items: center;
     justify-content: center;
     z-index: 10004;
-    border-radius: 50%;
 }
 
 .loading-content {
@@ -480,23 +542,17 @@
 }
 
 .loading-content p {
-    margin-top: 20px;
-    font-style: italic;
-    color: var(--brass-light);
+    margin-top: 1rem;
+    font-size: 1.1rem;
 }
 
 .brass-spinner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
+    display: inline-block;
 }
 
 .gear-spinner {
     font-size: 3rem;
     animation: gearSpin 2s linear infinite;
-    color: var(--brass-primary);
-    text-shadow: 0 0 20px rgba(205, 133, 63, 0.8);
 }
 
 /* ===========================================
@@ -508,58 +564,39 @@
         width: 400px;
         height: 400px;
     }
-    
+
     .telescope-lens {
         width: 340px;
         height: 340px;
-        flex-direction: column;
     }
-    
-    .image-container {
-        flex: 1;
-        padding: 15px;
+
+    .data-section {
+        width: 90vw;
+        padding: 20px;
     }
-    
-    .info-panel {
-        flex: 1;
-        padding: 20px 15px;
-        border-radius: 0 0 170px 170px;
-        border-left: none;
-        border-top: 2px solid var(--amber);
-    }
-    
+
     .summary-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
     }
-    
-    .summary-item {
-        padding: 10px;
-    }
-    
+
     .modal-actions {
         flex-direction: column;
     }
-    
-    .detail-button,
-    .download-button {
-        min-width: auto;
-    }
-    
+
     .gear-decoration {
         font-size: 2rem;
     }
-    
+
     .modal-nav {
         width: 40px;
         height: 40px;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
     }
-    
+
     .modal-prev {
         left: -50px;
     }
-    
+
     .modal-next {
         right: -50px;
     }
@@ -567,77 +604,75 @@
 
 @media (max-width: 480px) {
     .telescope-frame {
-        width: 300px;
-        height: 300px;
+        width: 320px;
+        height: 320px;
     }
-    
+
     .telescope-lens {
-        width: 260px;
-        height: 260px;
+        width: 280px;
+        height: 280px;
     }
-    
+
     .image-title {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
-    
+
     .gear-decoration {
         font-size: 1.5rem;
     }
-    
+
     .gear-top-left,
     .gear-bottom-left {
         left: -30px;
     }
-    
+
     .gear-top-right,
     .gear-bottom-right {
         right: -30px;
     }
-    
+
     .modal-nav {
-        display: none; /* 隐藏导航按钮在小屏幕上 */
+        display: none; /* Hide navigation on very small screens */
     }
 }
 
 /* ===========================================
-   Accessibility & High Contrast
+   Accessibility
    =========================================== */
 
 @media (prefers-contrast: high) {
     .telescope-frame {
-        border-width: 6px;
+        border-color: var(--amber);
     }
-    
+
     .modal-close,
     .modal-nav {
         border-width: 3px;
     }
-    
+
     .summary-item {
-        border-width: 2px;
+        border-width: 3px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .gear-decoration,
-    .gear-spinner,
-    .telescope-frame::before {
+    .telescope-frame::before,
+    .gear-spinner {
         animation: none;
     }
-    
-    .modal-visible .telescope-container {
-        transform: none;
-    }
-    
-    .image-modal {
+
+    .modal-visible .new-modal-container {
+        transform: scale(1);
         transition: none;
+    }
+
+    .image-modal {
+        transition: opacity 0.1s ease;
     }
 }
 
-/* ===========================================
-   Focus Styles
-   =========================================== */
-
+/* Focus styles for better accessibility */
 .modal-close:focus,
 .modal-nav:focus,
 .detail-button:focus,
@@ -649,15 +684,12 @@
 .modal-image:focus {
     outline: 3px solid var(--amber);
     outline-offset: 4px;
-    border-radius: 12px;
 }
 
-/* ===========================================
-   Print Styles
-   =========================================== */
-
+/* Print styles */
 @media print {
     .image-modal {
-        display: none !important;
+        position: static;
+        background: white;
     }
 }
