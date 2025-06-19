@@ -369,19 +369,85 @@ kbd {
 <script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
 
 <script>
-// 强制事件绑定函数 - 关键修复！
+// 增强的初始化和调试脚本
+function initializeGallerySystem() {
+    console.log('🚀 Starting Gallery System Initialization...');
+    
+    // 1. 检查依赖是否加载
+    console.log('📋 Checking dependencies:');
+    console.log('  - ImageModal class:', typeof ImageModal);
+    console.log('  - GalleryApp class:', typeof GalleryApp);
+    
+    // 2. 强制初始化 ImageModal
+    let imageModalInstance = null;
+    try {
+        if (typeof ImageModal !== 'undefined') {
+            imageModalInstance = new ImageModal();
+            window.imageModal = imageModalInstance;
+            console.log('✅ ImageModal initialized successfully:', imageModalInstance);
+        } else {
+            console.error('❌ ImageModal class not found - script may not be loaded');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error initializing ImageModal:', error);
+        return false;
+    }
+    
+    // 3. 强制初始化 GalleryApp
+    let galleryAppInstance = null;
+    try {
+        if (typeof GalleryApp !== 'undefined') {
+            galleryAppInstance = new GalleryApp();
+            window.galleryApp = galleryAppInstance;
+            console.log('✅ GalleryApp initialized successfully:', galleryAppInstance);
+        } else {
+            console.error('❌ GalleryApp class not found - script may not be loaded');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error initializing GalleryApp:', error);
+        return false;
+    }
+    
+    // 4. 验证初始化结果
+    console.log('🔍 Verification:');
+    console.log('  - window.imageModal:', window.imageModal);
+    console.log('  - window.galleryApp:', window.galleryApp);
+    console.log('  - imageModal.show function:', typeof window.imageModal?.show);
+    
+    // 5. 强制重新绑定事件（延迟执行）
+    setTimeout(() => {
+        console.log('🔧 Force rebinding events after initialization...');
+        forceRebindAllEvents();
+        
+        // 6. 验证事件绑定
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        console.log(`📊 Event binding summary: ${galleryItems.length} items processed`);
+        
+        // 7. 测试模态框功能
+        testModalFunctionality();
+    }, 1000);
+    
+    return true;
+}
+
+// 强化的事件绑定函数
 function forceRebindAllEvents() {
     console.log('🔧 Force rebinding all gallery events...');
     
     const galleryItems = document.querySelectorAll('.gallery-item');
     console.log(`Found ${galleryItems.length} gallery items to rebind`);
     
+    if (galleryItems.length === 0) {
+        console.warn('⚠️ No gallery items found - may need to wait for image loading');
+        return;
+    }
+    
     galleryItems.forEach((item, index) => {
-        // 检查是否已经绑定过事件，避免重复绑定
-        if (item.hasAttribute('data-event-bound')) {
-            console.log(`⚠️ Item ${index + 1} already bound, skipping...`);
-            return;
-        }
+        // 清除之前的事件绑定标记
+        item.removeAttribute('data-event-bound');
+        item.removeAttribute('data-gallery-bound');
         
         // 获取图片数据
         let imageData = null;
@@ -389,6 +455,7 @@ function forceRebindAllEvents() {
         // 尝试从Gallery App获取数据
         if (window.galleryApp && window.galleryApp.filteredImages && window.galleryApp.filteredImages[index]) {
             imageData = window.galleryApp.filteredImages[index];
+            console.log(`📊 Using real data for item ${index + 1}:`, imageData);
         } else {
             // 从DOM提取数据作为备选
             const img = item.querySelector('img, .gallery-image');
@@ -398,39 +465,61 @@ function forceRebindAllEvents() {
             imageData = {
                 id: index + 1,
                 description: description,
-                url: img ? img.src : 'https://via.placeholder.com/400x400/B8860B/000000?text=Vision+' + (index + 1),
+                url: img ? img.src : '',
                 temperature: 20 + Math.random() * 15,
                 humidity: 50 + Math.random() * 30,
                 location: 'Environmental Station',
                 confidence: 80 + Math.random() * 20,
                 created_at: new Date().toISOString()
             };
+            console.log(`📊 Using mock data for item ${index + 1}:`, imageData);
         }
         
+        // 移除之前的事件监听器（如果有的话）
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        
         // 绑定新的点击事件
-        item.addEventListener('click', function() {
+        newItem.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             console.log('🖱️ Gallery item clicked:', imageData);
+            console.log('🔍 Available objects:', {
+                'window.imageModal': window.imageModal,
+                'typeof show': typeof window.imageModal?.show,
+                'galleryImages': window.galleryApp?.images
+            });
             
             if (window.imageModal && typeof window.imageModal.show === 'function') {
                 console.log('✅ Showing modal via ImageModal...');
-                window.imageModal.show(imageData);
+                // 使用完整的参数调用
+                const galleryImages = window.galleryApp?.images || [imageData];
+                const currentIndex = window.galleryApp?.images?.findIndex(img => img.id === imageData.id) || index;
+                window.imageModal.show(imageData, galleryImages, currentIndex);
             } else {
-                console.log('❌ ImageModal not available, using fallback');
+                console.error('❌ ImageModal not available:', {
+                    'window.imageModal': window.imageModal,
+                    'show method': window.imageModal?.show
+                });
                 // 备选方案：显示通知
-                alert(`Viewing: ${imageData.description}`);
+                alert(`Viewing: ${imageData.description || 'Unknown Image'}`);
             }
         });
         
         // 重新绑定图片加载事件
-        const img = item.querySelector('img, .gallery-image');
+        const img = newItem.querySelector('img, .gallery-image');
         if (img) {
             img.addEventListener('load', () => {
-                item.classList.add('loaded');
+                newItem.classList.add('loaded');
+            });
+            img.addEventListener('error', () => {
+                console.warn(`⚠️ Image failed to load for item ${index + 1}`);
             });
         }
         
-        // 标记为已绑定，避免重复
-        item.setAttribute('data-event-bound', 'true');
+        // 标记为已绑定
+        newItem.setAttribute('data-event-bound', 'true');
         
         console.log(`✅ Item ${index + 1} bound successfully`);
     });
@@ -438,34 +527,86 @@ function forceRebindAllEvents() {
     console.log('🎉 All gallery events bound!');
 }
 
-// Initialize modal and gallery when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing Gallery System...');
+// 测试模态框功能
+function testModalFunctionality() {
+    console.log('🧪 Testing modal functionality...');
     
-    // Initialize ImageModal globally
-    if (typeof ImageModal !== 'undefined') {
-        window.imageModal = new ImageModal();
-        console.log('✅ ImageModal initialized:', window.imageModal);
+    if (window.imageModal) {
+        console.log('✅ ImageModal instance exists');
+        console.log('  - Modal element:', window.imageModal.modal);
+        console.log('  - Show method:', typeof window.imageModal.show);
+        console.log('  - Hide method:', typeof window.imageModal.hide);
     } else {
-        console.error('❌ ImageModal class not found');
+        console.error('❌ ImageModal instance not found');
     }
     
-    // Initialize Gallery App
-    if (typeof GalleryApp !== 'undefined') {
-        window.galleryApp = new GalleryApp();
-        console.log('✅ GalleryApp initialized:', window.galleryApp);
+    if (window.galleryApp) {
+        console.log('✅ GalleryApp instance exists');
+        console.log('  - Images loaded:', window.galleryApp.images?.length || 0);
+        console.log('  - Filtered images:', window.galleryApp.filteredImages?.length || 0);
     } else {
-        console.error('❌ GalleryApp class not found');
+        console.error('❌ GalleryApp instance not found');
+    }
+}
+
+// 多重初始化尝试
+function attemptInitialization() {
+    console.log('🔄 Attempting Gallery System initialization...');
+    
+    // 尝试1：立即初始化
+    if (initializeGallerySystem()) {
+        console.log('✅ Initialization successful on first attempt');
+        return;
     }
     
-    // 只在初始化时绑定一次事件
+    // 尝试2：延迟500ms
     setTimeout(() => {
-        forceRebindAllEvents();
-    }, 2000); // 2秒后绑定事件，确保图片已加载
-});
+        console.log('🔄 Retry attempt 1 (500ms delay)...');
+        if (initializeGallerySystem()) {
+            console.log('✅ Initialization successful on retry 1');
+            return;
+        }
+        
+        // 尝试3：延迟1000ms
+        setTimeout(() => {
+            console.log('🔄 Retry attempt 2 (1000ms delay)...');
+            if (initializeGallerySystem()) {
+                console.log('✅ Initialization successful on retry 2');
+                return;
+            }
+            
+            // 最终尝试：延迟2000ms
+            setTimeout(() => {
+                console.log('🔄 Final retry attempt (2000ms delay)...');
+                if (!initializeGallerySystem()) {
+                    console.error('❌ All initialization attempts failed');
+                }
+            }, 2000);
+        }, 1000);
+    }, 500);
+}
+
+// DOM加载完成后开始初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attemptInitialization);
+} else {
+    // DOM已经加载完成，立即执行
+    attemptInitialization();
+}
 
 // 全局函数供调试使用
 window.forceRebindAllEvents = forceRebindAllEvents;
+window.initializeGallerySystem = initializeGallerySystem;
+window.testModalFunctionality = testModalFunctionality;
+
+// 添加性能监控
+window.addEventListener('load', () => {
+    console.log('📊 Gallery System Status Report:');
+    console.log('  - Page fully loaded');
+    console.log('  - ImageModal available:', !!window.imageModal);
+    console.log('  - GalleryApp available:', !!window.galleryApp);
+    console.log('  - Gallery items count:', document.querySelectorAll('.gallery-item').length);
+});
 </script>
 {% endblock %}
 
