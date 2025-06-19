@@ -257,21 +257,26 @@ class GalleryApp {
         console.log(`🔧 Rebinding click events for ${galleryItems.length} items`);
         
         galleryItems.forEach((item, index) => {
-            // Remove existing event listeners
-            const newItem = item.cloneNode(true);
-            item.parentNode.replaceChild(newItem, item);
+            // 检查是否已经绑定过事件，避免重复绑定
+            if (item.hasAttribute('data-gallery-bound')) {
+                console.log(`⚠️ Item ${index + 1} already bound by gallery, skipping...`);
+                return;
+            }
             
             // Get corresponding image data
             const imageData = this.filteredImages[index];
             
             if (imageData) {
-                // Bind new click event
-                newItem.addEventListener('click', () => {
+                // Bind new click event without removing existing ones
+                item.addEventListener('click', () => {
                     console.log('🖱️ Image clicked:', imageData);
                     this.showImageDetail(imageData);
                 });
                 
-                console.log(`✅ Item ${index + 1} rebound with real data`);
+                // 标记为已绑定
+                item.setAttribute('data-gallery-bound', 'true');
+                
+                console.log(`✅ Item ${index + 1} bound with real data`);
             } else {
                 console.warn(`❌ No data for item ${index + 1}`);
             }
