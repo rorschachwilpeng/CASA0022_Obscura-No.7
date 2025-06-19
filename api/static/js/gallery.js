@@ -250,83 +250,32 @@ class GalleryApp {
     }
 
     /**
-     * Rebind click events for all gallery items
-     */
-    rebindClickEvents() {
-        const galleryItems = document.querySelectorAll('.gallery-item');
-        console.log(`🔧 Rebinding click events for ${galleryItems.length} items`);
-        
-        galleryItems.forEach((item, index) => {
-            // 检查是否已经绑定过事件，避免重复绑定
-            if (item.hasAttribute('data-gallery-bound')) {
-                console.log(`⚠️ Item ${index + 1} already bound by gallery, skipping...`);
-                return;
-            }
-            
-            // Get corresponding image data
-            const imageData = this.filteredImages[index];
-            
-            if (imageData) {
-                // Bind new click event without removing existing ones
-                item.addEventListener('click', () => {
-                    console.log('🖱️ Image clicked:', imageData);
-                    this.showImageDetail(imageData);
-                });
-                
-                // 标记为已绑定
-                item.setAttribute('data-gallery-bound', 'true');
-                
-                console.log(`✅ Item ${index + 1} bound with real data`);
-            } else {
-                console.warn(`❌ No data for item ${index + 1}`);
-            }
-        });
-    }
-
-    /**
      * Show image detail modal
      */
-    async showImageDetail(image) {
-        console.log('Show image detail:', image);
+    showImageDetail(image) {
+        console.log('🖼️ Gallery: Showing image detail for:', image);
         
-        // Use the global image modal instance
-        this.imageModal = window.imageModal;
+        // 找到当前图片在filteredImages中的索引
+        const currentIndex = this.filteredImages.findIndex(img => img.id === image.id);
         
-        // Check if modal system is available
-        console.log('🔍 ImageModal check:', this.imageModal);
+        console.log('🖼️ Gallery: Current index:', currentIndex);
+        console.log('🖼️ Gallery: Total images:', this.filteredImages.length);
+        console.log('🖼️ Gallery: Passing gallery images to modal:', this.filteredImages);
         
-        if (this.imageModal && typeof this.imageModal.show === 'function') {
-            try {
-                // Fetch complete image data with prediction details
-                const response = await fetch(`/api/v1/images/${image.id}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Use the complete data from the detail endpoint
-                    this.imageModal.show(data.image, this.images, this.images.findIndex(img => img.id === image.id));
-                } else {
-                    console.warn('Failed to fetch image details, using basic data:', data.error);
-                    // Fallback to basic image data
-                    this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
-                }
-            } catch (error) {
-                console.error('Error fetching image details:', error);
-                // Fallback to basic image data
-                this.imageModal.show(image, this.images, this.images.findIndex(img => img.id === image.id));
-            }
-        } else {
-            // Fallback: show notification and try to navigate to detail page
-            console.warn('❌ ImageModal not available. Available:', {
-                'window.imageModal': window.imageModal,
-                'typeof ImageModal': typeof ImageModal
-            });
-            this.showNotification(`Viewing: ${image.description || 'Image'}`, 'info');
-            
-            // Try to navigate to detail page
-            if (image.id) {
-                window.location.href = `/image/${image.id}`;
-            }
+        // 确保ImageModal实例存在
+        if (!window.imageModal) {
+            console.error('❌ Gallery: ImageModal instance not found');
+            return;
         }
+        
+        // 调用模态框显示方法，传递正确的参数
+        window.imageModal.show(image, this.filteredImages, currentIndex)
+            .then(() => {
+                console.log('✅ Gallery: Modal shown successfully');
+            })
+            .catch(error => {
+                console.error('❌ Gallery: Error showing modal:', error);
+            });
     }
 
     /**

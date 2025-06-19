@@ -1,16 +1,5 @@
-/* Obscura No.7 - Image Modal Styles */
-/* 蒸汽朋克风格的图片模态框样式 - 上下分布式布局 */
-
-/* ===========================================
-   强制覆盖旧样式 - 确保新布局生效
-   =========================================== */
-
-/* 隐藏任何可能残留的旧结构 */
-.telescope-container,
-.telescope-frame,
-.telescope-lens {
-    display: none !important;
-}
+/* Obscura No.7 - Image Modal Styles - 重新设计为上下分离布局 */
+/* 蒸汽朋克风格的图片模态框样式 */
 
 /* ===========================================
    Modal Container & Backdrop
@@ -23,7 +12,7 @@
     width: 100% !important;
     height: 100% !important;
     z-index: 10000 !important;
-    display: none !important; /* 初始隐藏 */
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     opacity: 0;
@@ -60,26 +49,98 @@
 }
 
 /* ===========================================
-   Modal Container - 上下分布式布局
+   新的模态框容器 - 垂直布局 + UI优化
    =========================================== */
 
-.modal-container {
+.new-modal-container {
     position: relative;
     z-index: 10001;
-    background: var(--coal);
-    border: 3px solid var(--brass-primary);
-    border-radius: 20px;
-    max-width: 90vw;
-    max-height: 95vh;
-    width: 900px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 15px; /* 缩小间距 */
+    max-width: 90vw;
+    max-height: 90vh;
+    margin: 0 auto;
+    padding-top: 20px;
+    justify-content: flex-start;
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+}
+
+.modal-visible .new-modal-container {
+    transform: scale(1);
+}
+
+/* ===========================================
+   上部分：望远镜圆形区域 - 优化尺寸
+   =========================================== */
+
+.telescope-section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 装饰性齿轮 - 缩小尺寸 */
+.gear-decoration {
+    position: absolute;
+    font-size: 2.5rem; /* 从3rem缩小到2.5rem */
+    color: var(--brass-primary);
+    z-index: 10002;
+    animation: gearSpin 8s linear infinite;
+    text-shadow: 0 0 10px rgba(205, 133, 63, 0.8);
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.gear-top-left {
+    top: -40px; /* 从-50px调整到-40px */
+    left: -40px;
+    animation-direction: normal;
+}
+
+.gear-top-right {
+    top: -40px;
+    right: -40px;
+    animation-direction: reverse;
+    animation-duration: 6s;
+}
+
+.gear-bottom-left {
+    bottom: -40px;
+    left: -40px;
+    animation-direction: reverse;
+    animation-duration: 10s;
+}
+
+.gear-bottom-right {
+    bottom: -40px;
+    right: -40px;
+    animation-direction: normal;
+    animation-duration: 12s;
+}
+
+@keyframes gearSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 望远镜框架 - 缩小尺寸 */
+.telescope-frame {
+    position: relative;
+    background: var(--brass-gradient);
+    border: 4px solid var(--bronze);
+    border-radius: 50%;
+    width: 400px; /* 从500px缩小到400px */
+    height: 400px;
     box-shadow: 
         0 0 30px rgba(205, 133, 63, 0.6),
         inset 0 0 20px rgba(0, 0, 0, 0.3),
         0 10px 40px rgba(0, 0, 0, 0.8);
-    transform: scale(0.8);
-    transition: transform 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
 }
 
@@ -179,265 +240,392 @@
     margin: 0;
 }
 
-/* ===========================================
-   Decorative Gears
-   =========================================== */
-
-.gear-decoration {
-    position: absolute;
-    font-size: 2.5rem;
-    color: var(--brass-primary);
-    z-index: 10002;
-    animation: gearSpin 8s linear infinite;
-    text-shadow: 0 0 10px rgba(205, 133, 63, 0.8);
-    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
-}
-
-.gear-top-left {
-    top: -20px;
-    left: -20px;
-    animation-direction: normal;
-}
-
-.gear-top-right {
-    top: -20px;
-    right: -20px;
-    animation-direction: reverse;
-    animation-duration: 6s;
-}
-
-.gear-bottom-left {
-    bottom: -20px;
-    left: -20px;
-    animation-direction: reverse;
-    animation-duration: 10s;
-}
-
-.gear-bottom-right {
-    bottom: -20px;
-    right: -20px;
-    animation-duration: 12s;
-}
-
-@keyframes gearSpin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* ===========================================
-   Info Section - 下半部分
-   =========================================== */
-
-.info-section {
-    flex: 1;
-    padding: 30px;
-    background: linear-gradient(
-        135deg,
-        rgba(205, 133, 63, 0.1) 0%,
-        rgba(184, 115, 51, 0.1) 100%
-    );
-    border-top: 2px solid var(--brass-dark);
-}
-
-.info-panel-container {
-    height: 100%;
-    overflow-y: auto;
-}
-
-.section-title {
-    color: var(--amber);
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-align: center;
-    margin: 0 0 20px 0;
-    text-shadow: 0 0 8px rgba(255, 191, 0, 0.4);
-}
-
-/* ===========================================
-   Prediction Data Grid
-   =========================================== */
-
-.prediction-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.data-group {
-    background: rgba(28, 28, 28, 0.6);
-    border: 2px solid var(--brass-dark);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
-}
-
-.group-title {
-    color: var(--brass-light);
-    font-size: 1rem;
-    font-weight: bold;
-    margin: 0 0 12px 0;
-    text-align: center;
-}
-
-.data-items {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.data-item {
+/* 望远镜镜头（只包含图片） - 缩小尺寸 */
+.telescope-lens {
+    width: 340px; /* 从420px缩小到340px */
+    height: 340px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--coal) 0%, var(--iron) 30%, var(--coal) 100%);
+    border: 3px solid var(--amber);
+    box-shadow: 
+        inset 0 0 30px rgba(255, 191, 0, 0.3),
+        inset 0 0 60px rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 0;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.data-icon {
-    font-size: 1.1rem;
-    width: 24px;
+.telescope-lens::after {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 30%;
+    height: 30%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* ===========================================
+   图片容器 - 确保图片填满圆框
+   =========================================== */
+
+.image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.modal-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    border: 2px solid var(--amber);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.modal-image:hover {
+    transform: scale(1.02);
+}
+
+.image-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
+    color: var(--warm-white);
+    z-index: 10;
 }
 
-.data-label {
-    color: var(--brass-light);
+/* ===========================================
+   连接线 - 缩短高度
+   =========================================== */
+
+.connection-line {
+    width: 4px;
+    height: 20px; /* 从30px缩短到20px */
+    background: linear-gradient(to bottom, var(--brass-primary), var(--brass-dark));
+    border-radius: 2px;
+    position: relative;
+    box-shadow: 0 0 10px rgba(205, 133, 63, 0.5);
+}
+
+.connection-line::before,
+.connection-line::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--brass-primary);
+    border-radius: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.connection-line::before {
+    top: -4px;
+}
+
+.connection-line::after {
+    bottom: -4px;
+}
+
+/* ===========================================
+   下部分：数据矩形区域 - 优化布局
+   =========================================== */
+
+.data-section {
+    background: linear-gradient(145deg, rgba(28, 28, 28, 0.95) 0%, rgba(79, 79, 79, 0.9) 100%);
+    border: 2px solid var(--brass-primary);
+    border-radius: 15px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.8),
+        inset 0 1px 0 rgba(205, 133, 63, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    width: 650px; /* 优化宽度 */
+    max-width: 85vw;
+    padding: 25px;
+    position: relative;
+    overflow-y: auto;
+    max-height: none; /* 移除高度限制 */
+}
+
+.data-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(205, 133, 63, 0.05) 2px,
+        rgba(205, 133, 63, 0.05) 4px
+    );
+    border-radius: 15px;
+    pointer-events: none;
+}
+
+.info-panel {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===========================================
+   标题样式 - 移除padding-right
+   =========================================== */
+
+.image-title {
+    color: var(--amber);
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0 0 25px 0;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 191, 0, 0.5);
+    /* 移除padding-right，因为关闭按钮不在内部了 */
+}
+
+/* ===========================================
+   新的左右分栏布局
+   =========================================== */
+
+.main-content-grid {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+    align-items: stretch;
+    min-height: 240px;
+}
+
+.data-list-section {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.actions-section {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* ===========================================
+   数据项样式 - 更新为卡片式设计
+   =========================================== */
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(205, 133, 63, 0.1);
+    border: 1px solid var(--brass-dark);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+    background: rgba(205, 133, 63, 0.15);
+    border-color: var(--brass-primary);
+    transform: translateX(3px);
+}
+
+.summary-icon {
+    font-size: 1.3rem;
+    margin-right: 8px;
+}
+
+.data-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+
+.summary-label {
+    color: var(--parchment);
     font-weight: 500;
-    flex: 1;
+    min-width: 90px;
 }
 
-.data-value {
+.summary-value {
     color: var(--amber);
     font-weight: bold;
-    text-shadow: 0 0 4px rgba(255, 191, 0, 0.3);
+    margin-left: auto;
+    text-align: right;
+    font-size: 1rem;
 }
 
 /* ===========================================
-   Description Group
+   时间信息样式 - 优化为卡片样式
    =========================================== */
 
-.description-group {
-    margin-top: 10px;
+.time-info {
+    margin-top: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: var(--parchment);
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
 }
 
-.vision-description {
+.time-info strong {
     color: var(--brass-light);
-    line-height: 1.5;
-    font-size: 0.95rem;
-    margin: 8px 0 0 0;
-    padding: 12px;
-    background: rgba(28, 28, 28, 0.5);
-    border-radius: 8px;
-    border-left: 3px solid var(--brass-primary);
 }
 
 /* ===========================================
-   Action Buttons
+   操作按钮样式 - 统一尺寸和样式
    =========================================== */
 
-.action-group {
-    margin-top: 15px;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.action-button {
+.detail-button,
+.download-button {
+    width: 180px; /* 统一宽度 */
+    height: 60px; /* 统一高度 */
+    padding: 0; /* 移除padding，使用固定尺寸 */
+    border: 2px solid var(--brass-primary);
     background: var(--brass-gradient);
-    border: 2px solid var(--brass-dark);
-    border-radius: 10px;
-    padding: 12px 20px;
     color: var(--coal);
+    border-radius: 12px;
     font-weight: bold;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1rem;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
 }
 
-.action-button:hover {
-    background: var(--copper-gradient);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.4);
+.detail-button:hover,
+.download-button:hover {
+    background: linear-gradient(135deg, var(--amber), var(--brass-light));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(205, 133, 63, 0.5);
 }
 
-.action-button.primary {
-    background: var(--amber);
-    color: var(--coal);
+.detail-button:active,
+.download-button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
 }
 
-.action-button.secondary {
-    background: var(--brass-gradient);
+.button-icon {
+    font-size: 1.2rem;
 }
 
-.button-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.button-label {
-    font-weight: bold;
-}
-
-.button-subtitle {
-    font-size: 0.75rem;
-    opacity: 0.8;
+.button-text {
+    line-height: 1.2;
+    text-align: center;
 }
 
 /* ===========================================
-   Control Buttons
+   描述区域样式 - 移动到底部
+   =========================================== */
+
+.description-section {
+    width: 100%;
+    border-top: 2px solid var(--brass-dark);
+    padding-top: 20px;
+    margin-top: 0; /* 移除顶部margin */
+}
+
+.description-section h3 {
+    color: var(--brass-light);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    text-align: center;
+    text-shadow: 0 0 5px rgba(205, 133, 63, 0.5);
+}
+
+.image-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--warm-white);
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 4px solid var(--brass-primary);
+    border-radius: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-style: italic;
+    text-align: justify;
+}
+
+/* ===========================================
+   优化的外部关闭按钮
    =========================================== */
 
 .modal-close-btn {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    background: var(--coal);
-    border: 2px solid var(--brass-dark);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    top: 10px;
+    right: 10px;
+    width: 45px; /* 增大尺寸 */
+    height: 45px;
+    border: 3px solid var(--amber); /* 加粗边框 */
+    background: rgba(28, 28, 28, 0.95);
     color: var(--amber);
-    font-size: 1.5rem;
+    border-radius: 50%;
+    font-size: 1.4rem; /* 增大字体 */
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10003;
+    transition: all 0.3s ease;
+    z-index: 10003; /* 确保在最上层 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 191, 0, 0.3); /* 增强阴影 */
 }
 
 .modal-close-btn:hover {
     background: var(--amber);
     color: var(--coal);
-    transform: rotate(90deg) scale(1.1);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 191, 0, 0.6);
 }
+
+/* ===========================================
+   Modal Controls
+   =========================================== */
 
 .modal-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: var(--coal);
-    border: 2px solid var(--brass-dark);
-    border-radius: 50%;
     width: 50px;
     height: 50px;
-    color: var(--amber);
+    border: 2px solid var(--brass-primary);
+    background: rgba(28, 28, 28, 0.8);
+    color: var(--brass-light);
+    border-radius: 50%;
+    cursor: pointer;
     font-size: 2rem;
     font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
     z-index: 10003;
 }
 
@@ -450,7 +638,7 @@
 }
 
 .modal-nav:hover {
-    background: var(--amber);
+    background: var(--brass-primary);
     color: var(--coal);
     transform: translateY(-50%) scale(1.1);
 }
@@ -458,12 +646,12 @@
 .modal-nav:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: rgba(28, 28, 28, 0.5);
 }
 
 .modal-nav:disabled:hover {
-    background: var(--coal);
-    color: var(--amber);
-    transform: translateY(-50%) scale(1);
+    transform: translateY(-50%);
+    background: rgba(28, 28, 28, 0.5);
 }
 
 /* ===========================================
@@ -485,23 +673,26 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
-    border-radius: 50%;
+    z-index: 10004;
+}
+
+.loading-content {
+    text-align: center;
+    color: var(--warm-white);
+}
+
+.loading-content p {
+    margin-top: 1rem;
+    font-size: 1.1rem;
 }
 
 .brass-spinner {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
 }
 
 .gear-spinner {
     font-size: 3rem;
     animation: gearSpin 2s linear infinite;
-    color: var(--amber);
-    text-shadow: 0 0 10px rgba(255, 191, 0, 0.8);
 }
 
 /* ===========================================
@@ -509,54 +700,39 @@
    =========================================== */
 
 @media (max-width: 768px) {
-    .modal-container {
-        width: 95vw;
-        max-height: 90vh;
+    .telescope-frame {
+        width: 320px; /* 响应式缩小 */
+        height: 320px;
     }
     
-    .image-frame {
-        width: 300px;
-        height: 300px;
+    .telescope-lens {
+        width: 270px; /* 响应式缩小 */
+        height: 270px;
     }
-    
-    .prediction-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .modal-nav {
-        width: 45px;
-        height: 45px;
-        font-size: 1.5rem;
-    }
-    
-    .modal-prev {
-        left: -55px;
-    }
-    
-    .modal-next {
-        right: -55px;
-    }
-}
 
-@media (max-width: 480px) {
-    .image-frame {
-        width: 250px;
-        height: 250px;
+    .data-section {
+        width: 100%;
+        max-width: 95vw;
+        padding: 20px;
     }
     
-    .image-section {
-        padding: 20px;
-        min-height: 300px;
+    .main-content-grid {
+        flex-direction: column;
+        gap: 20px;
+        min-height: auto;
     }
     
-    .info-section {
-        padding: 20px;
+    .actions-section {
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 15px 0;
+    }
+    
+    .detail-button,
+    .download-button {
+        width: 140px;
+        height: 50px;
+        font-size: 0.9rem;
     }
     
     .gear-decoration {
@@ -564,22 +740,114 @@
     }
     
     .modal-nav {
-        display: none; /* 在小屏幕上隐藏导航按钮 */
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+    
+    .modal-prev {
+        left: -50px;
+    }
+    
+    .modal-next {
+        right: -50px;
+    }
+    
+    .modal-close {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .telescope-frame {
+        width: 320px;
+        height: 320px;
+    }
+    
+    .telescope-lens {
+        width: 280px;
+        height: 280px;
+    }
+    
+    .image-title {
+        font-size: 1.4rem;
+    }
+    
+    .gear-decoration {
+        font-size: 1.5rem;
+    }
+    
+    .gear-top-left,
+    .gear-bottom-left {
+        left: -30px;
+    }
+    
+    .gear-top-right,
+    .gear-bottom-right {
+        right: -30px;
+    }
+    
+    .modal-nav {
+        display: none; /* Hide navigation on very small screens */
+    }
+}
+
+/* ===========================================
+   Accessibility
+   =========================================== */
+
+@media (prefers-contrast: high) {
+    .telescope-frame {
+        border-color: var(--amber);
+    }
+    
+    .modal-close,
+    .modal-nav {
+        border-width: 3px;
+    }
+    
+    .summary-item {
+        border-width: 3px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .gear-decoration,
+    .telescope-frame::before,
     .gear-spinner {
         animation: none;
     }
     
-    .modal-visible .modal-container {
+    .modal-visible .new-modal-container {
         transform: scale(1);
         transition: none;
     }
     
     .image-modal {
-        transition: none;
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* Focus styles for better accessibility */
+.modal-close:focus,
+.modal-nav:focus,
+.detail-button:focus,
+.download-button:focus {
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+}
+
+.modal-image:focus {
+    outline: 3px solid var(--amber);
+    outline-offset: 4px;
+}
+
+/* Print styles */
+@media print {
+    .image-modal {
+        position: static;
+        background: white;
     }
 }
