@@ -10,73 +10,7 @@ class ImageModal {
         this.isVisible = false;
         this.keydownHandler = null;
         
-        // 强制清理旧样式和结构
-        this.forceCleanOldStyles();
-        
         this.init();
-    }
-
-    /**
-     * 强制清理旧的模态框结构和样式
-     */
-    forceCleanOldStyles() {
-        // 移除任何旧的模态框结构
-        const oldStructures = document.querySelectorAll('.telescope-container, .telescope-frame, .telescope-lens');
-        oldStructures.forEach(el => {
-            el.style.display = 'none';
-            el.style.visibility = 'hidden';
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none';
-            el.style.position = 'absolute';
-            el.style.top = '-9999px';
-            el.style.left = '-9999px';
-            el.style.zIndex = '-9999';
-        });
-
-        // 注入强制样式
-        const forceStyle = document.createElement('style');
-        forceStyle.id = 'force-modal-fix';
-        forceStyle.innerHTML = `
-            /* 强制隐藏旧结构 */
-            .telescope-container,
-            .telescope-frame,
-            .telescope-lens,
-            div[class*="telescope"] {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                pointer-events: none !important;
-                position: absolute !important;
-                top: -9999px !important;
-                left: -9999px !important;
-                z-index: -9999 !important;
-            }
-            
-            /* 强制新模态框布局 */
-            .modal-container {
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            
-            .image-section {
-                flex: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            
-            .info-section {
-                flex: 1 !important;
-                border-top: 2px solid #8B7D3A !important;
-            }
-        `;
-        
-        // 如果样式还没有添加，就添加它
-        if (!document.getElementById('force-modal-fix')) {
-            document.head.appendChild(forceStyle);
-            console.log('🔧 强制修复样式已应用');
-        }
     }
 
     /**
