@@ -138,7 +138,17 @@
     transition: transform 0.3s ease;
 }
 
-.vision-image:hover {
+/* 兼容JavaScript创建的modal-image元素 */
+#modal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.vision-image:hover,
+#modal-image:hover {
     transform: scale(1.05);
 }
 

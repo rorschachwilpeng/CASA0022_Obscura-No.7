@@ -212,8 +212,6 @@ class ImageModal {
         const downloadBtn = this.modal.querySelector('#download-btn');
         downloadBtn?.addEventListener('click', () => this.downloadImage());
 
-
-
         // 键盘导航
         this.keydownHandler = (e) => this.handleKeydown(e);
     }
@@ -316,7 +314,14 @@ class ImageModal {
      * @param {Object} data - 图片完整数据
      */
     async populateModal(data) {
-        console.log('Populating modal with data:', data);
+        console.log('🔍 Populating modal with data:', data);
+        
+        // 调试：检查模态框结构
+        console.log('🔍 Modal element:', this.modal);
+        console.log('🔍 Modal container:', this.modal.querySelector('.modal-container'));
+        console.log('🔍 Image section:', this.modal.querySelector('.image-section'));
+        console.log('🔍 Info section:', this.modal.querySelector('.info-section'));
+        console.log('🔍 Modal image element:', this.modal.querySelector('#modal-image'));
         
         // 处理不同的数据结构
         const image = data.image || data;
@@ -325,26 +330,48 @@ class ImageModal {
         // 设置图片
         const modalImage = this.modal.querySelector('#modal-image');
         if (modalImage && image.url) {
+            console.log('✅ Setting image src:', image.url);
             modalImage.src = image.url;
             modalImage.alt = image.description || 'AI Generated Environmental Vision';
             
             // 图片加载处理
             try {
                 await new Promise((resolve, reject) => {
-                    modalImage.onload = resolve;
-                    modalImage.onerror = reject;
+                    modalImage.onload = () => {
+                        console.log('✅ Image loaded successfully');
+                        resolve();
+                    };
+                    modalImage.onerror = (error) => {
+                        console.error('❌ Image loading failed:', error);
+                        reject(error);
+                    };
                     // 设置超时
-                    setTimeout(reject, 10000);
+                    setTimeout(() => {
+                        console.warn('⏰ Image loading timeout');
+                        reject(new Error('Loading timeout'));
+                    }, 10000);
                 });
             } catch (error) {
                 console.warn('Image loading timeout or error:', error);
             }
+        } else {
+            console.warn('❌ Modal image element not found or no image URL');
         }
 
         // 填充基本信息
         const titleElement = this.modal.querySelector('#modal-title');
         if (titleElement) {
             titleElement.textContent = image.description || 'Environmental Vision';
+            console.log('✅ Title set:', titleElement.textContent);
+        } else {
+            console.warn('❌ Title element not found');
+        }
+        
+        // 调试：检查vision-title元素
+        const visionTitle = this.modal.querySelector('.vision-title');
+        if (visionTitle) {
+            visionTitle.textContent = image.description || 'Environmental Vision';
+            console.log('✅ Vision title set:', visionTitle.textContent);
         }
         
         // 填充预测数据（从prediction或input_data中提取）
@@ -356,6 +383,7 @@ class ImageModal {
         if (tempElement) {
             const temp = resultData.temperature || inputData.temperature || prediction.temperature;
             tempElement.textContent = temp ? `${Math.round(temp)}°C` : '--°C';
+            console.log('✅ Temperature set:', tempElement.textContent);
         }
         
         // 湿度信息
@@ -363,6 +391,7 @@ class ImageModal {
         if (humidityElement) {
             const humidity = resultData.humidity || inputData.humidity || prediction.humidity;
             humidityElement.textContent = humidity ? `${Math.round(humidity)}%` : '--%';
+            console.log('✅ Humidity set:', humidityElement.textContent);
         }
         
         // 位置信息
@@ -370,6 +399,7 @@ class ImageModal {
         if (locationElement) {
             const location = prediction.location || inputData.location || 'Global';
             locationElement.textContent = location;
+            console.log('✅ Location set:', locationElement.textContent);
         }
         
         // 置信度信息
@@ -377,6 +407,7 @@ class ImageModal {
         if (confidenceElement) {
             const confidence = resultData.confidence || prediction.confidence || 0.85;
             confidenceElement.textContent = `${Math.round(confidence * 100)}%`;
+            console.log('✅ Confidence set:', confidenceElement.textContent);
         }
         
         // 时间信息
@@ -384,6 +415,7 @@ class ImageModal {
         if (timeElement) {
             const date = new Date(image.created_at);
             timeElement.textContent = date.toLocaleString();
+            console.log('✅ Time set:', timeElement.textContent);
         }
         
         // 描述信息
@@ -391,6 +423,7 @@ class ImageModal {
         if (descElement) {
             descElement.textContent = image.description || 
                 'A glimpse into a possible environmental future, generated by AI based on predictive environmental data.';
+            console.log('✅ Description set:', descElement.textContent);
         }
 
         // 更新导航按钮状态
@@ -400,6 +433,7 @@ class ImageModal {
         const detailBtn = this.modal.querySelector('#view-details-btn');
         if (detailBtn) {
             detailBtn.dataset.imageId = image.id;
+            console.log('✅ Detail button configured for image:', image.id);
         }
         
         // 填充技术信息
@@ -413,6 +447,8 @@ class ImageModal {
             // 简单的处理时间估算
             processingTimeElement.textContent = '~2-3 minutes';
         }
+        
+        console.log('🎉 Modal population completed');
     }
 
     /**
