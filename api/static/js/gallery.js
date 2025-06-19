@@ -244,12 +244,32 @@ class GalleryApp {
     }
 
     /**
-     * Show image detail (placeholder for future implementation)
+     * Show image detail modal
      */
     showImageDetail(image) {
-        console.log('Show image detail:', image);
-        // Placeholder for detailed view functionality
-        window.obscuraApp?.showNotification(`Viewing: ${image.description}`, 'info');
+        console.log('🖼️ Gallery: Showing image detail for:', image);
+        
+        // 找到当前图片在filteredImages中的索引
+        const currentIndex = this.filteredImages.findIndex(img => img.id === image.id);
+        
+        console.log('🖼️ Gallery: Current index:', currentIndex);
+        console.log('🖼️ Gallery: Total images:', this.filteredImages.length);
+        console.log('🖼️ Gallery: Passing gallery images to modal:', this.filteredImages);
+        
+        // 确保ImageModal实例存在
+        if (!window.imageModal) {
+            console.error('❌ Gallery: ImageModal instance not found');
+            return;
+        }
+        
+        // 调用模态框显示方法，传递正确的参数
+        window.imageModal.show(image, this.filteredImages, currentIndex)
+            .then(() => {
+                console.log('✅ Gallery: Modal shown successfully');
+            })
+            .catch(error => {
+                console.error('❌ Gallery: Error showing modal:', error);
+            });
     }
 
     /**

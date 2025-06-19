@@ -205,15 +205,59 @@ def get_images():
         cur.close()
         conn.close()
         
+        logger.info(f"Retrieved {len(images)} images from database")
+        
         return jsonify({
             "success": True,
             "images": images,
             "count": len(images),
             "timestamp": datetime.now().isoformat()
-        }), 200
+        })
         
     except Exception as e:
         logger.error(f"Error fetching images: {e}")
+        
+        # 本地开发模式：当数据库不可用时，返回模拟数据用于测试
+        if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
+            logger.info("Database unavailable - returning mock data for local development")
+            
+            # 模拟图片数据
+            mock_images = [
+                {
+                    "id": 1,
+                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                    "description": "AI Generated Environmental Vision",
+                    "prediction_id": 2,
+                    "created_at": datetime.now().isoformat()
+                },
+                {
+                    "id": 2,
+                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                    "description": "Environmental Prediction Analysis",
+                    "prediction_id": 3,
+                    "created_at": datetime.now().isoformat()
+                },
+                {
+                    "id": 3,
+                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png", 
+                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                    "description": "Climate Change Visualization",
+                    "prediction_id": 4,
+                    "created_at": datetime.now().isoformat()
+                }
+            ]
+            
+            return jsonify({
+                "success": True,
+                "images": mock_images,
+                "count": len(mock_images),
+                "timestamp": datetime.now().isoformat(),
+                "mode": "mock_data_for_local_development"
+            })
+        
+        # 其他数据库错误
         return jsonify({
             "success": False,
             "error": "Failed to fetch images",
@@ -275,6 +319,50 @@ def get_image_detail(image_id):
         
     except Exception as e:
         logger.error(f"Error fetching image detail: {e}")
+        
+        # 本地开发模式：当数据库不可用时，返回模拟数据
+        if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
+            logger.info(f"Database unavailable - returning mock data for image {image_id}")
+            
+            # 模拟图片详情数据
+            mock_image_detail = {
+                "id": image_id,
+                "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                "description": "AI Generated Environmental Vision",
+                "created_at": datetime.now().isoformat(),
+                "prediction": {
+                    "id": image_id + 1,
+                    "input_data": {
+                        "temperature": 22.5,
+                        "humidity": 65.0,
+                        "location": "Global Environmental Station",
+                        "timestamp": datetime.now().isoformat()
+                    },
+                    "result_data": {
+                        "temperature": 23.8,
+                        "humidity": 68.2,
+                        "confidence": 0.87,
+                        "climate_type": "temperate",
+                        "vegetation_index": 0.73,
+                        "predictions": {
+                            "short_term": "Moderate warming expected",
+                            "long_term": "Stable climate conditions"
+                        }
+                    },
+                    "prompt": "Generate environmental vision based on current climate data",
+                    "location": "Global Environmental Station"
+                }
+            }
+            
+            return jsonify({
+                "success": True,
+                "image": mock_image_detail,
+                "timestamp": datetime.now().isoformat(),
+                "mode": "mock_data_for_local_development"
+            }), 200
+        
+        # 其他数据库错误
         return jsonify({
             "success": False,
             "error": "Failed to fetch image detail",

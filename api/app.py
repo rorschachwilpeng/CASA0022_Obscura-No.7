@@ -154,17 +154,99 @@ def setup_error_handlers(app):
     @app.errorhandler(404)
     def not_found(error):
         logger.warning(f"404错误: {error}")
-        return frontend_bp.not_found_error(error)
+        from flask import render_template, jsonify, request
+        
+        # 如果是API请求，返回JSON
+        if request.path.startswith('/api/'):
+            return jsonify({
+                "success": False,
+                "error": "API endpoint not found",
+                "path": request.path,
+                "timestamp": datetime.now().isoformat()
+            }), 404
+        
+        # 否则返回HTML错误页面
+        try:
+            return render_template('error.html', 
+                                 error_code=404, 
+                                 error_message="Page Not Found"), 404
+        except:
+            # 如果模板不存在，返回简单HTML
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head><title>404 - Not Found</title></head>
+            <body>
+                <h1>404 - Page Not Found</h1>
+                <p>The requested page could not be found.</p>
+                <a href="/">Return to Home</a>
+            </body>
+            </html>
+            ''', 404
     
     @app.errorhandler(500)
     def internal_error(error):
         logger.error(f"500错误: {error}")
-        return frontend_bp.internal_error(error)
+        from flask import render_template, jsonify, request
+        
+        # 如果是API请求，返回JSON
+        if request.path.startswith('/api/'):
+            return jsonify({
+                "success": False,
+                "error": "Internal server error",
+                "timestamp": datetime.now().isoformat()
+            }), 500
+        
+        # 否则返回HTML错误页面
+        try:
+            return render_template('error.html', 
+                                 error_code=500, 
+                                 error_message="Internal Server Error"), 500
+        except:
+            # 如果模板不存在，返回简单HTML
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head><title>500 - Server Error</title></head>
+            <body>
+                <h1>500 - Internal Server Error</h1>
+                <p>Something went wrong on our end.</p>
+                <a href="/">Return to Home</a>
+            </body>
+            </html>
+            ''', 500
     
     @app.errorhandler(503)
     def service_unavailable(error):
         logger.error(f"503错误: {error}")
-        return frontend_bp.service_unavailable_error(error)
+        from flask import render_template, jsonify, request
+        
+        # 如果是API请求，返回JSON
+        if request.path.startswith('/api/'):
+            return jsonify({
+                "success": False,
+                "error": "Service temporarily unavailable",
+                "timestamp": datetime.now().isoformat()
+            }), 503
+        
+        # 否则返回HTML错误页面
+        try:
+            return render_template('error.html', 
+                                 error_code=503, 
+                                 error_message="Service Unavailable"), 503
+        except:
+            # 如果模板不存在，返回简单HTML
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head><title>503 - Service Unavailable</title></head>
+            <body>
+                <h1>503 - Service Unavailable</h1>
+                <p>The service is temporarily unavailable.</p>
+                <a href="/">Return to Home</a>
+            </body>
+            </html>
+            ''', 503
     
     logger.info("✅ 错误处理器设置完成")
 
