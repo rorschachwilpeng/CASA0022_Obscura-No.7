@@ -54,12 +54,12 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     """应用工厂函数"""
-app = Flask(__name__)
+    app = Flask(__name__)
     
     # 配置应用
     configure_app(app)
-
-# 注册蓝图
+    
+    # 注册蓝图
     register_blueprints(app)
     
     # 配置服务
@@ -95,8 +95,8 @@ def configure_app(app):
 def register_blueprints(app):
     """注册所有蓝图"""
     # API蓝图
-app.register_blueprint(ml_bp)
-app.register_blueprint(health_bp)
+    app.register_blueprint(ml_bp)
+    app.register_blueprint(health_bp)
     app.register_blueprint(images_bp)
     
     # 前端蓝图（注册到根路径）
