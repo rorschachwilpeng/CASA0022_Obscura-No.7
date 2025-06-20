@@ -5,8 +5,8 @@
 {% block og_title %}Virtual Telescope Gallery - Obscura No.7{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}?v=2.0">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/image-modal.css') }}?v=2.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image-modal.css') }}">
 <style>
 /* Additional Gallery-specific styles */
 .sr-only {
@@ -363,6 +363,7 @@ kbd {
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
 <!-- Load ImageModal first -->
 <script src="{{ url_for('static', filename='js/image-modal.js') }}"></script>
 <script>

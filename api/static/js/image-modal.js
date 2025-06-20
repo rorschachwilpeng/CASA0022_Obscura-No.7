@@ -262,7 +262,7 @@ class ImageModal {
         if (!this.modal) return;
 
         // 关闭按钮
-        const closeBtn = this.modal.querySelector('.modal-close-btn');
+        const closeBtn = this.modal.querySelector('.modal-close');
         closeBtn?.addEventListener('click', () => this.hide());
 
         // 背景点击关闭
