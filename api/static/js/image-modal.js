@@ -521,7 +521,7 @@ class ImageModal {
         if (this.currentImageData?.id) {
             const detailUrl = `/image/${this.currentImageData.id}`;
             console.log('🔭 Modal: Opening detail page:', detailUrl);
-            window.open(detailUrl, '_blank');
+            window.location.href = detailUrl;
         }
     }
 
