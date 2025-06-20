@@ -363,9 +363,9 @@ kbd {
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gallery.js') }}?v=3.1"></script>
 <!-- Load ImageModal first -->
-<script src="{{ url_for('static', filename='js/image-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/image-modal.js') }}?v=3.1"></script>
 <script>
 // 初始化画廊和模态框应用
 document.addEventListener('DOMContentLoaded', function() {
