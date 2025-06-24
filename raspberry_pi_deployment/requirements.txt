@@ -1,0 +1,33 @@
+# Obscura No.7 Virtual Telescope - Raspberry Pi Requirements
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+
+# Optional dependencies (install if available)
+# RPi.GPIO>=0.7.1          # 树莓派GPIO控制
+# gpiozero>=1.6.2          # 简化的GPIO库
+# spidev>=3.5              # SPI通信
+# smbus>=1.1               # I2C通信
+
+# Weather and API clients
+urllib3>=2.0.0
+
+# Image processing
+numpy>=1.21.0
+
+# JSON handling (usually built-in)
+# json (built-in)
+
+# Date/time handling (built-in)
+# datetime (built-in)
+
+# Math libraries (built-in)
+# math (built-in)
+# random (built-in)
+
+# Optional: Performance monitoring
+psutil>=5.9.0
+
+# Optional: Logging enhancements
+colorama>=0.4.6 

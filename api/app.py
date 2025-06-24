@@ -44,6 +44,7 @@ except ImportError:
 from api.routes import ml_bp, health_bp
 from api.routes.images import images_bp
 from api.routes.frontend import frontend_bp
+from api.routes.environmental import environmental_bp
 
 # 配置日志
 logging.basicConfig(
@@ -98,6 +99,7 @@ def register_blueprints(app):
     app.register_blueprint(ml_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(images_bp)
+    app.register_blueprint(environmental_bp)
     
     # 前端蓝图（注册到根路径）
     app.register_blueprint(frontend_bp)
