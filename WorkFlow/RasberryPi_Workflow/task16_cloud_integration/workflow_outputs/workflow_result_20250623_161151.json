@@ -1,0 +1,60 @@
+{
+  "workflow_id": "workflow_20250623_161138",
+  "timestamp": "2025-06-23T16:11:51.918726",
+  "execution_time": 13.41615,
+  "success": true,
+  "data": {
+    "hardware_input": {
+      "distance_km": 29.8721424827959,
+      "direction_degrees": 207.99754706249846,
+      "time_offset_years": 9.396756442542515,
+      "timestamp": "2025-06-23T16:11:49.592966"
+    },
+    "coordinates": {
+      "latitude": 51.27002026849667,
+      "longitude": -0.32936862462111094,
+      "info": {
+        "latitude": 51.27002026849667,
+        "longitude": -0.32936862462111094,
+        "distance_from_base": 29872.142482794985,
+        "bearing_from_base": 207.9975470624991,
+        "distance_km": 29.872142482794985,
+        "formatted_coords": "51.270020, -0.329369"
+      }
+    },
+    "weather_data": {
+      "coordinates": {
+        "lat": 51.27002026849667,
+        "lon": -0.32936862462111094
+      },
+      "timestamp": "2025-06-23T16:11:49.593409",
+      "current_weather": {
+        "temperature": 22.216277721203355,
+        "humidity": 60,
+        "pressure": 1005,
+        "wind_speed": 4.374634350235559,
+        "weather_main": "Clear",
+        "weather_description": "晴朗",
+        "visibility": 10
+      },
+      "air_quality": {
+        "aqi": 2,
+        "aqi_description": "优秀"
+      },
+      "data_quality": {
+        "score": 60,
+        "level": "simulated",
+        "issues": [
+          "使用模拟数据"
+        ]
+      }
+    },
+    "style_prediction": {
+      "prediction_type": "Temperate Landscape",
+      "confidence": 0.75,
+      "style_recommendation": "balanced colors, natural lighting",
+      "weather_influence": "Based on Clear at 22.216277721203355°C"
+    },
+    "generated_image": "./generated_images/telescope_fallback_20250623_161151.png"
+  }
+}
