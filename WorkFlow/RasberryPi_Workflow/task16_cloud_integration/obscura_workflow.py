@@ -40,7 +40,7 @@ class ObscuraWorkflow:
         else:
             self.weather_client = WeatherClient(openweather_key)
         
-        self.cloud_client = CloudAPIClient(self.config)
+        self.cloud_client = CloudAPIClient(self.config_manager)
         self.progress = ProgressDisplay()
         
         # 工作流状态
@@ -101,6 +101,227 @@ class ObscuraWorkflow:
         
         return hardware_data
     
+    def execute_full_pipeline(self, distance, direction, target_year) -> dict:
+        """执行完整工作流，使用真实硬件输入"""
+        print(f"🎯 使用真实硬件参数执行工作流:")
+        print(f"   📏 距离: {distance}km")
+        print(f"   🧭 方向: {direction}°")
+        print(f"   📅 预测年份: {target_year}")
+        
+        # 构建硬件数据格式
+        hardware_data = {
+            'distance_km': distance,
+            'direction_degrees': direction,
+            'time_offset_years': target_year - 2025,  # 计算时间偏移
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # 使用内部工作流方法，但跳过模拟硬件输入
+        return self._run_workflow_with_hardware_data(hardware_data)
+    
+    def _run_workflow_with_hardware_data(self, hardware_data) -> dict:
+        """使用指定硬件数据运行工作流"""
+        workflow_steps = [
+            "坐标计算", 
+            "环境数据获取",
+            "AI艺术预测",
+            "图像生成",
+            "结果保存"
+        ]
+        
+        self.progress.setup_workflow(workflow_steps)
+        workflow_result = {'hardware_input': hardware_data}
+        
+        try:
+            # 步骤1: 坐标计算
+            with self.progress.start_step("坐标计算", "基于距离和方向计算目标坐标") as step:
+                step.update("应用球面几何算法...")
+                target_lat, target_lon = self.coordinate_calc.calculate_target_coordinates(
+                    hardware_data['distance_km'] * 1000,  # 转换为米
+                    hardware_data['direction_degrees']
+                )
+                
+                coordinate_info = self.coordinate_calc.get_coordinate_info(target_lat, target_lon)
+                
+                self.progress.show_coordinates(
+                    target_lat, target_lon, 
+                    hardware_data['distance_km'] * 1000, 
+                    hardware_data['direction_degrees']
+                )
+                step.success("坐标计算完成")
+                workflow_result['coordinates'] = {
+                    'latitude': target_lat,
+                    'longitude': target_lon,
+                    'info': coordinate_info
+                }
+            
+            # 后续步骤与原方法相同...
+            return self._continue_workflow_steps(workflow_result, target_lat, target_lon)
+            
+        except Exception as e:
+            self.progress.show_error("工作流执行失败", str(e))
+            self.progress.complete_workflow(success=False)
+            
+            error_result = {
+                'workflow_id': self.session_data['workflow_id'],
+                'timestamp': datetime.now().isoformat(),
+                'success': False,
+                'error': str(e),
+                'partial_data': workflow_result
+            }
+            return error_result
+    
+    def _continue_workflow_steps(self, workflow_result, target_lat, target_lon):
+        """继续执行工作流的剩余步骤"""
+        try:
+            # 步骤2: 环境数据获取
+            with self.progress.start_step("环境数据获取", "调用OpenWeather API获取真实环境数据") as step:
+                if self.weather_client:
+                    step.update("连接OpenWeather API...")
+                    weather_data = self.weather_client.get_comprehensive_data(target_lat, target_lon)
+                    
+                    if weather_data:
+                        self.progress.show_weather_summary(weather_data)
+                        step.success("真实环境数据获取完成")
+                    else:
+                        step.warning("API获取失败，使用备用天气数据")
+                        weather_data = self._create_fallback_weather_data(target_lat, target_lon)
+                else:
+                    step.update("使用模拟天气数据...")
+                    weather_data = self._create_fallback_weather_data(target_lat, target_lon)
+                    step.warning("使用模拟环境数据（未配置API密钥）")
+                
+                workflow_result['weather_data'] = weather_data
+            
+            # 步骤3: AI艺术预测
+            with self.progress.start_step("AI艺术预测", "使用机器学习模型预测艺术风格") as step:
+                step.update("准备环境特征数据...")
+                
+                # 格式化ML输入特征
+                if weather_data and self.weather_client:
+                    ml_features = self.weather_client.format_for_ml_model(weather_data)
+                else:
+                    ml_features = self._create_mock_ml_features(workflow_result)
+                
+                step.update("调用AI预测API...")
+                coordinate_info = workflow_result['coordinates']['info']
+                style_prediction = self.cloud_client.predict_art_style(
+                    ml_features, 
+                    coordinate_info
+                )
+                
+                self.progress.show_ml_prediction(style_prediction)
+                step.success("AI艺术预测完成")
+                workflow_result['style_prediction'] = style_prediction
+            
+            # 步骤4: 图像生成  
+            with self.progress.start_step("图像生成", "使用AI生成艺术作品") as step:
+                step.update("构建艺术提示词...")
+                step.update("调用图像生成API...")
+                
+                # 显示进度条模拟
+                for i in range(11):
+                    self.progress.show_progress_bar(i, 10, "生成进度")
+                    time.sleep(0.2)
+                
+                coordinate_info = workflow_result['coordinates']['info']
+                image_path = self.cloud_client.generate_artwork(
+                    style_prediction,
+                    weather_data,
+                    coordinate_info
+                )
+                
+                if image_path:
+                    step.success(f"图像生成完成: {image_path}")
+                    workflow_result['generated_image'] = image_path
+                else:
+                    step.error("图像生成失败")
+                    workflow_result['generated_image'] = None
+            
+            # 步骤5: 结果保存
+            with self.progress.start_step("结果保存", "保存工作流结果和元数据") as step:
+                step.update("准备元数据...")
+                
+                # 保存完整结果
+                final_result = {
+                    'workflow_id': self.session_data['workflow_id'],
+                    'timestamp': datetime.now().isoformat(),
+                    'execution_time': (datetime.now() - self.session_data['start_time']).total_seconds(),
+                    'success': True,
+                    'data': workflow_result
+                }
+                
+                # 保存到文件
+                result_file = f"./workflow_outputs/workflow_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                import os
+                os.makedirs('./workflow_outputs', exist_ok=True)
+                
+                with open(result_file, 'w', encoding='utf-8') as f:
+                    json.dump(final_result, f, indent=2, ensure_ascii=False, default=str)
+                
+                step.update(f"结果已保存到: {result_file}")
+                
+                # 尝试上传到网站（如果配置了）
+                if workflow_result.get('generated_image'):
+                    step.update("尝试上传到展示网站...")
+                    
+                    # 构建适合API的上传元数据
+                    upload_metadata = {
+                        'coordinates': workflow_result.get('coordinates', {}),
+                        'weather': workflow_result.get('weather_data', {}),
+                        'style': workflow_result.get('style_prediction', {}),
+                        'timestamp': workflow_result.get('timestamp'),
+                        'workflow_id': final_result.get('workflow_id'),
+                        'source': 'obscura_telescope_workflow'
+                    }
+                    
+                    upload_result = self.cloud_client.upload_to_website(
+                        workflow_result['generated_image'],
+                        upload_metadata
+                    )
+                    if upload_result and upload_result.get('success'):
+                        final_result['upload_result'] = upload_result
+                        step.update("网站上传成功")
+                        
+                        # 从upload_result中提取图像信息
+                        image_data = upload_result.get('image_data', {})
+                        if image_data:
+                            # 尝试从不同的可能字段提取URL和ID
+                            image_info = image_data.get('image', {})
+                            final_result['website_url'] = image_info.get('url', 
+                                                         image_info.get('secure_url', 
+                                                         image_data.get('url', 'N/A')))
+                            final_result['image_id'] = image_info.get('id', 
+                                                       image_info.get('asset_id', 
+                                                       image_data.get('id', 'N/A')))
+                        else:
+                            final_result['website_url'] = 'N/A'
+                            final_result['image_id'] = 'N/A'
+                    else:
+                        step.warning("网站上传失败（这是正常的，如果本地没有运行网站）")
+                        final_result['website_url'] = 'N/A'
+                        final_result['image_id'] = 'N/A'
+                
+                step.success("工作流结果保存完成")
+                self.last_result = final_result
+            
+            # 完成工作流
+            self.progress.complete_workflow(success=True)
+            return final_result
+            
+        except Exception as e:
+            self.progress.show_error("工作流执行失败", str(e))
+            self.progress.complete_workflow(success=False)
+            
+            error_result = {
+                'workflow_id': self.session_data['workflow_id'],
+                'timestamp': datetime.now().isoformat(),
+                'success': False,
+                'error': str(e),
+                'partial_data': workflow_result
+            }
+            return error_result
+
     def run_complete_workflow(self) -> dict:
         """运行完整工作流"""
         workflow_steps = [

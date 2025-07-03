@@ -133,11 +133,20 @@ class CloudAPIClient:
         try:
             env_upload_url = self.endpoints.get('environmental_upload_url', 'http://localhost:5000/api/v1/environmental/upload')
             
-            # 构建环境数据payload
+            # 确保时间戳是字符串格式
+            timestamp = metadata.get('timestamp')
+            if timestamp:
+                # 如果是datetime对象，转换为ISO格式字符串
+                if hasattr(timestamp, 'isoformat'):
+                    timestamp = timestamp.isoformat()
+            else:
+                timestamp = datetime.now().isoformat()
+            
+            # 构建环境数据payload，确保所有数据都可以JSON序列化
             env_payload = {
                 "coordinates": metadata.get('coordinates', {}),
                 "weather_data": metadata.get('weather', {}),
-                "timestamp": metadata.get('timestamp', datetime.now().isoformat()),
+                "timestamp": timestamp,
                 "source": "obscura_telescope_workflow"
             }
             

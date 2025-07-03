@@ -8,10 +8,9 @@ Obscura No.7 - 主启动脚本
 import sys
 import signal
 import json
- import sys
-+ import os
-+ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-+ from enhanced_telescope import EnhancedTelescope
+
+# enhanced_telescope.py 现在在同一目录下
+from enhanced_telescope import EnhancedTelescope
 from obscura_workflow import ObscuraWorkflow
 from progress_display import ProgressDisplay
 from config_manager import ConfigManager
@@ -19,18 +18,23 @@ from config_manager import ConfigManager
 class MainTelescope:
     def __init__(self):
         """初始化主控制器"""
-        self.config = ConfigManager().load_config()
+        self.config_manager = ConfigManager()
+        self.config = self.config_manager.get_config()
+        
+        # 检查配置是否加载成功
+        if not self.config:
+            raise RuntimeError("❌ 配置加载失败，无法启动系统")
         
         # 初始化各模块
         self.hardware = EnhancedTelescope(
-            api_key=self.config['google_maps_api_key'],
+            api_key=self.config_manager.get('api_keys.google_maps_api_key', ''),
             distance_bus=3,
             compass_bus=4, 
             time_bus=5,
             encoder_addr=0x36
         )
         
-        self.workflow = ObscuraWorkflow(self.config)
+        self.workflow = ObscuraWorkflow('config.json')
         self.progress = ProgressDisplay()
         
     def run_complete_session(self):

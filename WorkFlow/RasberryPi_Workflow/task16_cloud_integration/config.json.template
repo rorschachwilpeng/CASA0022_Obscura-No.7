@@ -1,8 +1,8 @@
 {
-    "google_maps_api_key": "AIzaSyClOdMUhS3lWQqycXGkU2cT9FNdnRuyjro",
-    "openweather_api_key": "your_openweather_api_key_here",
-    "cloud_api_url": "https://your-deployed-api.com",
-    "cloud_api_key": "your_cloud_api_key_here",
+    "google_maps_api_key": "YOUR_GOOGLE_MAPS_API_KEY_HERE",
+    "openweather_api_key": "YOUR_OPENWEATHER_API_KEY_HERE",
+    "cloud_api_url": "https://casa0022-obscura-no-7.onrender.com/",
+    "cloud_api_key": "YOUR_CLOUDINARY_URL_HERE",
     "base_location": [51.5074, -0.1278],
     "network_timeout": 30,
     "retry_attempts": 3,
@@ -21,6 +21,8 @@
     "api_keys": {
         "openweather_api_key": "YOUR_OPENWEATHER_API_KEY_HERE",
         "openai_api_key": "YOUR_OPENAI_API_KEY_HERE",
+        "google_maps_api_key": "YOUR_GOOGLE_MAPS_API_KEY_HERE",
+        "cloudinary_url": "YOUR_CLOUDINARY_URL_HERE",
         "stability_ai_api_key": "YOUR_STABILITY_AI_API_KEY_HERE",
         "huggingface_api_key": "YOUR_HUGGINGFACE_API_KEY_HERE"
     },
@@ -74,4 +76,4 @@
         "save_api_responses": true,
         "log_file": "./logs/telescope_workflow.log"
     }
-}
+} 

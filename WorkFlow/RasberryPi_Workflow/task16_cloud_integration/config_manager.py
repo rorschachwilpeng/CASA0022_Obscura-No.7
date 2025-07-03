@@ -136,13 +136,18 @@ class ConfigManager:
             'DATABASE_URL': 'api_keys.database_url'
         }
         
+        env_loaded_count = 0
         for env_var, config_path in env_mapping.items():
             env_value = os.getenv(env_var)
             if env_value:
                 self.set(config_path, env_value)
-                print(f"✅ 从环境变量加载: {env_var}")
-            else:
-                print(f"⚠️ 环境变量未设置: {env_var}")
+                env_loaded_count += 1
+        
+        # 只显示一行简洁的环境变量状态
+        if env_loaded_count > 0:
+            print(f"🔑 环境变量: {env_loaded_count}/{len(env_mapping)} 个已设置，其余使用配置文件")
+        else:
+            print(f"🔑 使用配置文件中的API密钥 ({len(env_mapping)} 个)")
     
     def _save_default_config(self, config: Dict[str, Any]):
         """保存默认配置到文件"""
