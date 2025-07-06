@@ -309,6 +309,17 @@ def about():
         logger.error(f"关于页面渲染失败: {e}")
         return render_template('about.html', project={}), 500
 
+@frontend_bp.route('/prediction')
+def prediction():
+    """环境预测页面"""
+    try:
+        logger.info("渲染环境预测页面")
+        return render_template('prediction.html')
+    
+    except Exception as e:
+        logger.error(f"环境预测页面渲染失败: {e}")
+        return render_template('prediction.html'), 500
+
 @frontend_bp.route('/health')
 def health_check():
     """健康检查端点"""

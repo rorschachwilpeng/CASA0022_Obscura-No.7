@@ -63,10 +63,15 @@ class CloudAPIClient:
         self.stability_key = self.config_manager.get('api_keys.stability_ai_api_key')
         self.huggingface_key = self.config_manager.get('api_keys.huggingface_api_key')
         
+        # 获取网站API URL
+        self.website_api_url = self.config_manager.get('api_endpoints.website_api_url', 'https://casa0022-obscura-no-7.onrender.com')
+        
         # 调试：显示API密钥状态
         print(f"🔑 OpenAI API密钥状态: {'已配置' if self.openai_key and self.openai_key != 'YOUR_OPENAI_API_KEY_HERE' else '未配置'}")
         if self.openai_key and self.openai_key != 'YOUR_OPENAI_API_KEY_HERE':
             print(f"   OpenAI密钥前缀: {self.openai_key[:10]}...")
+        
+        print(f"🌐 网站API URL: {self.website_api_url}")
         
         # API端点
         self.endpoints = self.config_manager.get('api_endpoints', {})
@@ -76,9 +81,83 @@ class CloudAPIClient:
         self.retry_delay = self.config_manager.get('retry_settings.retry_delay_seconds', 2)
         self.timeout = 120  # 增加到120秒，处理大文件上传
     
+    def predict_environmental_data(self, latitude, longitude, month=None, future_years=0):
+        """
+        调用网站的ML预测API获取环境数据
+        
+        Args:
+            latitude (float): 纬度
+            longitude (float): 经度
+            month (int): 月份 (1-12)，如果为None则使用当前月份
+            future_years (int): 未来年份偏移量（0表示当年）
+        
+        Returns:
+            dict: 环境预测数据
+        """
+        print(f"🔮 调用环境预测API: lat={latitude}, lon={longitude}")
+        
+        # 如果没有指定月份，使用当前月份
+        if month is None:
+            month = datetime.now().month
+        
+        # 构建请求数据
+        prediction_data = {
+            'latitude': latitude,
+            'longitude': longitude,
+            'month': month,
+            'future_years': future_years
+        }
+        
+        # 尝试调用网站API
+        try:
+            url = f"{self.website_api_url}/api/v1/ml/predict"
+            print(f"📡 调用URL: {url}")
+            
+            headers = {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Obscura-No.7-Telescope/1.0'
+            }
+            
+            response = self.session.post(
+                url,
+                json=prediction_data,
+                headers=headers,
+                timeout=self.timeout
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                print(f"✅ 环境预测成功: {result.get('prediction', {}).get('temperature', 'N/A')}°C")
+                return result
+            else:
+                print(f"❌ 环境预测API错误: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ 环境预测API调用异常: {e}")
+            return None
+    
     def predict_art_style(self, weather_features, location_info):
         """使用真实ML模型预测艺术风格"""
         print("🤖 调用真实ML预测API...")
+        
+        # 首先调用环境预测API
+        if 'latitude' in location_info and 'longitude' in location_info:
+            env_prediction = self.predict_environmental_data(
+                location_info['latitude'],
+                location_info['longitude']
+            )
+            
+            if env_prediction:
+                # 将环境预测结果整合到weather_features中
+                prediction_data = env_prediction.get('prediction', {})
+                weather_features.update({
+                    'predicted_temperature': prediction_data.get('temperature'),
+                    'predicted_humidity': prediction_data.get('humidity'),
+                    'predicted_pressure': prediction_data.get('pressure'),
+                    'model_confidence': env_prediction.get('model_info', {}).get('confidence', 0)
+                })
+                print(f"🌡️ 环境预测已整合: {prediction_data.get('temperature', 'N/A')}°C")
         
         # 构建提示词，基于天气和位置数据
         prompt = self._build_style_prompt(weather_features, location_info)

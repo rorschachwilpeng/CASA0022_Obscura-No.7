@@ -157,16 +157,27 @@
                 </div>
             </a>
             
-            <a href="/api/v1/ml/predict" 
+            <a href="{{ url_for('frontend.prediction') }}" 
                class="control-button secondary" 
+               role="listitem"
+               aria-describedby="prediction-desc">
+                <div class="button-content">
+                    <span class="button-icon" aria-hidden="true">🔮</span>
+                    <span class="button-text">ENVIRONMENTAL PREDICTION</span>
+                    <span id="prediction-desc" class="button-desc">Predict Future Conditions</span>
+                </div>
+            </a>
+            
+            <a href="/api/v1/ml/predict" 
+               class="control-button tertiary" 
                role="listitem"
                aria-describedby="ml-api-desc"
                target="_blank" 
                rel="noopener">
                 <div class="button-content">
-                    <span class="button-icon" aria-hidden="true">🔮</span>
+                    <span class="button-icon" aria-hidden="true">🤖</span>
                     <span class="button-text">ML API</span>
-                    <span id="ml-api-desc" class="button-desc">Prediction Interface</span>
+                    <span id="ml-api-desc" class="button-desc">Raw Prediction API</span>
                 </div>
             </a>
             
