@@ -1,0 +1,181 @@
+{
+  "city": "London",
+  "prediction_date": "2025-07-06T20:53:17.398553",
+  "outcome": {
+    "final_score": 0.4486875284112095,
+    "climate_score": 0.9938301304878405,
+    "geographic_score": 0.694173531464889,
+    "economic_score": -0.14428392543652332,
+    "confidence_score": 0.6036647384584165,
+    "risk_level": "low",
+    "trend_direction": "improving",
+    "component_contributions": {
+      "climate": 0.29814903914635216,
+      "geographic": 0.2082520594394667,
+      "economic": -0.05771357017460933
+    }
+  },
+  "climate_details": {
+    "climate_score": 0.9938301304878405,
+    "predictions": "[14.46663105 12.43693697 14.08470665 13.93296201 14.55079522 15.07806632\n 14.33917607 13.07131681 13.74976926 12.22584206 13.00173539 13.33314208\n 13.36507376 13.92268423 12.26969613 14.08492997 13.3623222  13.14243842\n 13.61167246 13.37979745]",
+    "prediction_mean": 13.570484725229289,
+    "prediction_std": 0.7471699679176129,
+    "prediction_range": 2.8522242612879705,
+    "confidence_score": 0.8136385999001107,
+    "target_variable": "meteorological_wind_speed",
+    "feature_count": 9,
+    "sample_count": 20,
+    "factor_analysis": {
+      "climate_factor_importance": {
+        "meteorological_solar_radiation": 0.10412879122336478,
+        "meteorological_atmospheric_pressure": 0.057262655133983785
+      },
+      "relative_contributions": {
+        "meteorological_solar_radiation": 0.6451939899764306,
+        "meteorological_atmospheric_pressure": 0.35480601002356943
+      },
+      "top_climate_factors": [
+        "meteorological_solar_radiation",
+        "meteorological_atmospheric_pressure"
+      ],
+      "climate_complexity_score": 1,
+      "primary_driver": "meteorological_solar_radiation",
+      "driver_dominance": 0.6451939899764306
+    }
+  },
+  "geographic_details": {
+    "geographic_score": 0.694173531464889,
+    "predictions": "[15.04684116 18.8477958  16.16857338 14.7175435  17.652267   14.70247236\n 16.96008412 13.81697996 14.87492958 17.27209798 18.19123709 17.44673519\n 17.11810977 16.94504332 15.27980763 16.51684179 17.00116183 19.37716236\n 18.39726358 15.33201992]",
+    "prediction_mean": 16.583248365774157,
+    "prediction_std": 1.5049447228130912,
+    "prediction_range": 5.560182405174642,
+    "confidence_score": 0.7446334047192005,
+    "target_variable": "geospatial_soil_temperature_0_7cm",
+    "feature_count": 12,
+    "sample_count": 20,
+    "factor_analysis": {
+      "geographic_variable_importance": {
+        "geospatial_soil_temperature_0_7cm": 0.9998298801344868,
+        "geospatial_reference_evapotranspiration": 7.223699906451156e-05,
+        "geospatial_urban_flood_risk": 1.6346627496708314e-05
+      },
+      "geographic_category_importance": {
+        "soil_health": 0.9998298801344868,
+        "water_cycle": 7.223699906451156e-05,
+        "flood_risk": 1.6346627496708314e-05
+      },
+      "relative_variable_contributions": {
+        "geospatial_soil_temperature_0_7cm": 0.9999114091500741,
+        "geospatial_reference_evapotranspiration": 7.224288947801062e-05,
+        "geospatial_urban_flood_risk": 1.6347960447917772e-05
+      },
+      "relative_category_contributions": {
+        "soil_health": 0.9999114091500741,
+        "water_cycle": 7.224288947801062e-05,
+        "flood_risk": 1.6347960447917772e-05
+      },
+      "top_geographic_variables": [
+        "geospatial_soil_temperature_0_7cm",
+        "geospatial_reference_evapotranspiration"
+      ],
+      "top_geographic_categories": [
+        "soil_health",
+        "water_cycle"
+      ],
+      "geographic_complexity_score": 1,
+      "primary_driver_variable": "geospatial_soil_temperature_0_7cm",
+      "primary_driver_category": "soil_health",
+      "category_dominance": 0.9999114091500741
+    }
+  },
+  "economic_details": {
+    "economic_score": -0.14428392543652332,
+    "component_scores": {
+      "socioeconomic_life_expectancy": {
+        "raw_value": 80.24835707650561,
+        "baseline_mean": 80.13437600394207,
+        "standardized_score": 0.08280256556607693,
+        "economic_impact": 0.08280256556607693,
+        "weight": 0.5
+      },
+      "socioeconomic_population_distribution": {
+        "raw_value": 985846.2925794958,
+        "baseline_mean": 1005210.6013582873,
+        "standardized_score": -0.5424737236499931,
+        "economic_impact": -0.5424737236499931,
+        "weight": 0.3
+      },
+      "socioeconomic_rail_infrastructure": {
+        "raw_value": 100.71557472069657,
+        "baseline_mean": 101.47439313657755,
+        "standardized_score": -0.11471545562281918,
+        "economic_impact": -0.11471545562281918,
+        "weight": 0.2
+      }
+    },
+    "confidence_score": 1.0,
+    "trend_direction": "stable",
+    "data_availability": 1.0,
+    "score_interpretation": "Stable economic conditions",
+    "contributing_factors": 3
+  },
+  "data_quality_metrics": {
+    "completeness": 1.0,
+    "sample_size": 20,
+    "feature_count": 23,
+    "temporal_coverage": {
+      "total_samples": 20,
+      "coverage_score": 0.02
+    },
+    "data_freshness": {
+      "freshness_score": 0.9,
+      "last_update": "recent"
+    }
+  },
+  "prediction_metadata": {
+    "prediction_horizon": 12,
+    "input_data_shape": [
+      20,
+      23
+    ],
+    "model_performance": {
+      "climate": {
+        "mse": 1.8324434270765286,
+        "rmse": 1.3536777412207561,
+        "mae": 1.0395890335637161,
+        "r2": 0.8858826575288568,
+        "mape": 26.565385009034472
+      },
+      "geographic": {
+        "mse": 7.539261873650075e-07,
+        "rmse": 0.0008682892302481976,
+        "mae": 0.0006902207671852025,
+        "r2": 0.999999978269793,
+        "mape": 0.009035160139484938
+      }
+    },
+    "outcome_analysis": {
+      "primary_driver": "climate",
+      "primary_contribution": 0.29814903914635216,
+      "dominance_score": 0.528525582425009,
+      "component_ranking": [
+        [
+          "climate",
+          0.29814903914635216
+        ],
+        [
+          "geographic",
+          0.2082520594394667
+        ],
+        [
+          "economic",
+          -0.05771357017460933
+        ]
+      ],
+      "balance_score": 0.15109135566462037,
+      "balance_interpretation": "balanced",
+      "risk_factors": [],
+      "improvement_opportunities": []
+    }
+  }
+}

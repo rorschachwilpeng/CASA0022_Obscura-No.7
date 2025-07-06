@@ -1,0 +1,161 @@
+{
+  "validation_type": "raw_data",
+  "timestamp": "2025-07-06T20:31:29.988995",
+  "overall_result": {
+    "passed": false,
+    "score": 0.0,
+    "grade": "F"
+  },
+  "summary": {
+    "total_errors": 1,
+    "total_warnings": 3,
+    "error_messages": [
+      "Validation failed with error: 'TimeSeriesValidationResult' object has no attribute 'errors'"
+    ],
+    "warning_messages": [
+      "Environmental constraint violations in London: 3 features",
+      "Environmental constraint violations in Manchester: 3 features",
+      "Environmental constraint violations in Edinburgh: 3 features"
+    ]
+  },
+  "detailed_results": {
+    "data_structure": {
+      "cities_found": [
+        "London",
+        "Manchester",
+        "Edinburgh"
+      ],
+      "expected_cities": [
+        "London",
+        "Manchester",
+        "Edinburgh"
+      ],
+      "missing_cities": []
+    },
+    "data_completeness": {
+      "overall_completeness": 0.7596358216692587,
+      "city_completeness": {
+        "London": 0.7596358216692587,
+        "Manchester": 0.7596358216692587,
+        "Edinburgh": 0.7596358216692587
+      },
+      "threshold": 0.7
+    },
+    "environmental_constraints": {
+      "London": {
+        "meteorological_temperature": {
+          "below_min": 0,
+          "above_max": 264,
+          "constraint_range": [
+            -30,
+            45
+          ],
+          "actual_range": [
+            -8.1,
+            75.79953805512932
+          ]
+        },
+        "socioeconomic_life_expectancy": {
+          "below_min": 0,
+          "above_max": 34,
+          "constraint_range": [
+            70,
+            90
+          ],
+          "actual_range": [
+            82.72,
+            96.72
+          ]
+        },
+        "socioeconomic_population_growth_rate": {
+          "below_min": 0,
+          "above_max": 53,
+          "constraint_range": [
+            -0.05,
+            0.05
+          ],
+          "actual_range": [
+            -0.017791,
+            0.157484
+          ]
+        }
+      },
+      "Manchester": {
+        "meteorological_temperature": {
+          "below_min": 0,
+          "above_max": 262,
+          "constraint_range": [
+            -30,
+            45
+          ],
+          "actual_range": [
+            -9.1,
+            76.2105448325552
+          ]
+        },
+        "socioeconomic_life_expectancy": {
+          "below_min": 0,
+          "above_max": 14,
+          "constraint_range": [
+            70,
+            90
+          ],
+          "actual_range": [
+            77.95,
+            91.95
+          ]
+        },
+        "socioeconomic_population_growth_rate": {
+          "below_min": 0,
+          "above_max": 68,
+          "constraint_range": [
+            -0.05,
+            0.05
+          ],
+          "actual_range": [
+            0.016586,
+            0.193857
+          ]
+        }
+      },
+      "Edinburgh": {
+        "meteorological_temperature": {
+          "below_min": 0,
+          "above_max": 256,
+          "constraint_range": [
+            -30,
+            45
+          ],
+          "actual_range": [
+            -10.4,
+            74.49045301308846
+          ]
+        },
+        "socioeconomic_life_expectancy": {
+          "below_min": 0,
+          "above_max": 19,
+          "constraint_range": [
+            70,
+            90
+          ],
+          "actual_range": [
+            80.2,
+            94.2
+          ]
+        },
+        "socioeconomic_population_growth_rate": {
+          "below_min": 0,
+          "above_max": 73,
+          "constraint_range": [
+            -0.05,
+            0.05
+          ],
+          "actual_range": [
+            0.03202,
+            0.30328
+          ]
+        }
+      }
+    }
+  }
+}

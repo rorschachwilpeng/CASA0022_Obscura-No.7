@@ -1,0 +1,1035 @@
+{
+  "validation_type": "engineered_features",
+  "timestamp": "2025-07-06T20:31:45.775865",
+  "overall_result": {
+    "passed": false,
+    "score": 0.7,
+    "grade": "C"
+  },
+  "summary": {
+    "total_errors": 0,
+    "total_warnings": 6,
+    "error_messages": [],
+    "warning_messages": [
+      "Many highly correlated features in London: 51 pairs",
+      "Many highly correlated features in Manchester: 50 pairs",
+      "Many highly correlated features in Edinburgh: 56 pairs",
+      "Extreme feature distributions in London: 5 features",
+      "Extreme feature distributions in Manchester: 9 features",
+      "Extreme feature distributions in Edinburgh: 12 features"
+    ]
+  },
+  "detailed_results": {
+    "feature_engineering": {
+      "London": {
+        "total_features": 25,
+        "feature_types": {
+          "original_features": 2,
+          "lag_features": 4,
+          "moving_average_features": 6,
+          "seasonal_features": 4,
+          "interaction_features": 9
+        },
+        "feature_type_details": {
+          "original_features": [
+            "meteorological_solar_radiation",
+            "geospatial_soil_temperature_0_7cm"
+          ],
+          "lag_features": [
+            "meteorological_solar_radiation_lag_1",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            "geospatial_soil_temperature_0_7cm_lag_3"
+          ],
+          "moving_average_features": [
+            "meteorological_humidity_ma_3",
+            "meteorological_solar_radiation_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "meteorological_humidity_ma_6",
+            "meteorological_solar_radiation_ma_6",
+            "geospatial_soil_temperature_0_7cm_ma_6"
+          ],
+          "seasonal_features": [
+            "meteorological_humidity_seasonal_12",
+            "meteorological_solar_radiation_seasonal_12",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            "geospatial_reference_evapotranspiration_seasonal_12"
+          ],
+          "interaction_features": [
+            "meteorological_humidity_geospatial_urban_flood_risk_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            "meteorological_humidity_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_wind_speed_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_solar_radiation_cumchange_geospatial_soil_temperature_0_7cm_interaction"
+          ]
+        }
+      },
+      "Manchester": {
+        "total_features": 25,
+        "feature_types": {
+          "original_features": 2,
+          "lag_features": 4,
+          "moving_average_features": 8,
+          "seasonal_features": 4,
+          "interaction_features": 7
+        },
+        "feature_type_details": {
+          "original_features": [
+            "meteorological_solar_radiation",
+            "geospatial_soil_temperature_0_7cm"
+          ],
+          "lag_features": [
+            "meteorological_solar_radiation_lag_1",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            "geospatial_soil_temperature_0_7cm_lag_3"
+          ],
+          "moving_average_features": [
+            "meteorological_humidity_ma_3",
+            "meteorological_solar_radiation_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_reference_evapotranspiration_ma_3",
+            "meteorological_humidity_ma_6",
+            "meteorological_solar_radiation_ma_6",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            "geospatial_reference_evapotranspiration_ma_6"
+          ],
+          "seasonal_features": [
+            "meteorological_humidity_seasonal_12",
+            "meteorological_solar_radiation_seasonal_12",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            "geospatial_reference_evapotranspiration_seasonal_12"
+          ],
+          "interaction_features": [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            "meteorological_wind_speed_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_solar_radiation_cumchange_geospatial_soil_temperature_0_7cm_interaction"
+          ]
+        }
+      },
+      "Edinburgh": {
+        "total_features": 25,
+        "feature_types": {
+          "original_features": 2,
+          "lag_features": 4,
+          "moving_average_features": 5,
+          "seasonal_features": 4,
+          "interaction_features": 10
+        },
+        "feature_type_details": {
+          "original_features": [
+            "meteorological_solar_radiation",
+            "geospatial_soil_temperature_0_7cm"
+          ],
+          "lag_features": [
+            "meteorological_solar_radiation_lag_1",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            "geospatial_soil_temperature_0_7cm_lag_3"
+          ],
+          "moving_average_features": [
+            "meteorological_solar_radiation_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "meteorological_humidity_ma_6",
+            "meteorological_solar_radiation_ma_6",
+            "geospatial_soil_temperature_0_7cm_ma_6"
+          ],
+          "seasonal_features": [
+            "meteorological_humidity_seasonal_12",
+            "meteorological_solar_radiation_seasonal_12",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            "geospatial_reference_evapotranspiration_seasonal_12"
+          ],
+          "interaction_features": [
+            "meteorological_humidity_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_humidity_geospatial_urban_flood_risk_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_interaction",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            "meteorological_NO2_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_solar_radiation_cumchange_geospatial_soil_temperature_0_7cm_interaction"
+          ]
+        }
+      }
+    },
+    "feature_correlations": {
+      "London": {
+        "high_correlation_pairs": [
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_1",
+            0.9853904394497428
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_3",
+            0.9769979662039509
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_3",
+            0.9939432062106195
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_6",
+            0.9899151839344915
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9849784733299408
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9946648738869573
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9906924573557356
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9815397716551904
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            0.9742142730079353
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9847013760516335
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9636865434999111
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            0.9800275473675157
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_3",
+            0.9957040824752498
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_6",
+            0.9920424507988505
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9870104677922557
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9812996409537648
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.980116962846362
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9735619429233378
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9947089770621073
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.977628760654038
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9513097021646219
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_3",
+            0.9861814926534446
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_6",
+            0.9929263365876156
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9895010283055813
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9736044503758117
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9736112461815216
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9683473246972955
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9584500479170578
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9843449671541495
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9648656077560337
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_ma_6",
+            0.9970965156685317
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9922524882947418
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.98954692371165
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9876606805148157
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9804703819560422
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9870276624599194
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9617816055325533
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_seasonal_12",
+            0.996803054401172
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.986020622087052
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9851412088226402
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9789394296624071
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.983329903427357
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9814519494768135
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9812637665117726
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9757014537849751
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9942350611806501
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9879788594755075
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.996774341560562
+          ],
+          [
+            "meteorological_humidity_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_wind_speed_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            0.9883083137408094
+          ],
+          [
+            "meteorological_humidity_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            0.9983860200789684
+          ],
+          [
+            "meteorological_wind_speed_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            0.9835878504490055
+          ]
+        ],
+        "max_correlation": 1.0,
+        "mean_correlation": 0.5810898068897454
+      },
+      "Manchester": {
+        "high_correlation_pairs": [
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_1",
+            0.987750029726533
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_3",
+            0.9801000634932893
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_3",
+            0.9948560301687654
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_6",
+            0.9911808572785283
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9865369874966641
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9866608087422073
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9809856804255349
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9816886469119249
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            0.9693392609465615
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9816753755363722
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9571944792503213
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            0.9829458905825844
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_3",
+            0.9964330654612613
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_6",
+            0.9931936649345907
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_seasonal_12",
+            0.988450888076278
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9779703667478975
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9741722414890504
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9752431731861658
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9937650980865661
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9734300772404963
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_3",
+            0.9881465235548971
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_6",
+            0.9940444755051644
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.990868586083751
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9716318239940429
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9685204267488757
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9700376344849593
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9505524524849653
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9811559495316579
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.958605634388764
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_ma_6",
+            0.9974252683522119
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9928695395389843
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9841482911266843
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9798810045298924
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9809112196738496
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9846690676154272
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9559485810293421
+          ],
+          [
+            "geospatial_reference_evapotranspiration_ma_3",
+            "geospatial_reference_evapotranspiration_ma_6",
+            0.969212946881481
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9970346098703686
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9816003702711221
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9779238984878226
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9792703337830452
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9808046351932063
+          ],
+          [
+            "geospatial_reference_evapotranspiration_ma_6",
+            "geospatial_reference_evapotranspiration_seasonal_12",
+            0.9736688301964149
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9775665714630033
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.974199419447554
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9759964421872439
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.989655507630539
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9957148735185674
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            -0.9951600308002443
+          ],
+          [
+            "meteorological_wind_speed_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction",
+            0.9897063710070777
+          ]
+        ],
+        "max_correlation": 1.0,
+        "mean_correlation": 0.5484525122510092
+      },
+      "Edinburgh": {
+        "high_correlation_pairs": [
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_1",
+            0.9885214202236345
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_lag_3",
+            0.9822068086439073
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_3",
+            0.9953366169195086
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_ma_6",
+            0.9922517319527352
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9881840130528058
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9815326470025638
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9621359308492199
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9865089379779115
+          ],
+          [
+            "meteorological_solar_radiation",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9852515669428101
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            0.9656970177481327
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.9798686293715992
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9543968045286114
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_lag_3",
+            0.9847203162074252
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_3",
+            0.9965798393564081
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_ma_6",
+            0.9938478725971879
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9898299679723737
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9762350113934992
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9570541191138563
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9799038701628275
+          ],
+          [
+            "meteorological_solar_radiation_lag_1",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9794133175812192
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            0.99282915952635
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_1",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9711560133171222
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_3",
+            0.9893384690228824
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_ma_6",
+            0.9945192722248177
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9919035754143519
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9718701240671568
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9527889631847376
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9750290768199256
+          ],
+          [
+            "meteorological_solar_radiation_lag_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9749785579421013
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9789856860008826
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_lag_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9557132330177553
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_ma_6",
+            0.997790907221355
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9939151482809675
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9814135193843557
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9621085760318315
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.985410693777919
+          ],
+          [
+            "meteorological_solar_radiation_ma_3",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9847453202328815
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            0.9837335024452761
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_3",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.9554002895679742
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_seasonal_12",
+            0.9974874044670997
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.9801031695251927
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9608960691539736
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9836802992341276
+          ],
+          [
+            "meteorological_solar_radiation_ma_6",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9833822195592933
+          ],
+          [
+            "geospatial_soil_temperature_0_7cm_ma_6",
+            "geospatial_soil_temperature_0_7cm_seasonal_12",
+            0.980620743663259
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            0.977166893014956
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.958204743791526
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9804593340082546
+          ],
+          [
+            "meteorological_solar_radiation_seasonal_12",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.980539496181877
+          ],
+          [
+            "meteorological_humidity_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_humidity_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9678123161761758
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            0.9829661680864538
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.997119588396301
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9980062495498174
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            0.9843807959292236
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9833957429145422
+          ],
+          [
+            "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction",
+            "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction",
+            0.9974555059710588
+          ]
+        ],
+        "max_correlation": 1.0,
+        "mean_correlation": 0.5254984128194619
+      }
+    },
+    "feature_variance": {
+      "London": {
+        "low_variance_features": {},
+        "min_variance": 0.6264377904154227,
+        "max_variance": 625266859.4197557,
+        "mean_variance": 30543007.983198654
+      },
+      "Manchester": {
+        "low_variance_features": {},
+        "min_variance": 0.49595439012754394,
+        "max_variance": 129234304.45506875,
+        "mean_variance": 6362007.496552029
+      },
+      "Edinburgh": {
+        "low_variance_features": {},
+        "min_variance": 0.38368235898453024,
+        "max_variance": 133119544.63703519,
+        "mean_variance": 5903942.489362552
+      }
+    },
+    "feature_distributions": {
+      "London": {
+        "extreme_features": [
+          "meteorological_solar_radiation_ma_3: highly skewed (5.02)",
+          "meteorological_solar_radiation_ma_6: highly skewed (5.06)",
+          "meteorological_solar_radiation_seasonal_12: highly skewed (5.10)",
+          "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction: highly skewed (5.26)",
+          "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction: highly skewed (-5.42)"
+        ],
+        "total_features": 25
+      },
+      "Manchester": {
+        "extreme_features": [
+          "meteorological_solar_radiation: highly skewed (5.14)",
+          "meteorological_solar_radiation_lag_1: highly skewed (5.14)",
+          "meteorological_solar_radiation_lag_3: highly skewed (5.16)",
+          "meteorological_solar_radiation_ma_3: highly skewed (5.20)",
+          "meteorological_solar_radiation_ma_6: highly skewed (5.24)",
+          "meteorological_solar_radiation_seasonal_12: highly skewed (5.28)",
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction: highly skewed (5.30)",
+          "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction: highly skewed (5.41)",
+          "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction: highly skewed (-5.45)"
+        ],
+        "total_features": 25
+      },
+      "Edinburgh": {
+        "extreme_features": [
+          "meteorological_solar_radiation: highly skewed (5.23)",
+          "meteorological_solar_radiation_lag_1: highly skewed (5.23)",
+          "meteorological_solar_radiation_lag_3: highly skewed (5.25)",
+          "meteorological_solar_radiation_ma_3: highly skewed (5.29)",
+          "meteorological_solar_radiation_ma_6: highly skewed (5.32)",
+          "meteorological_solar_radiation_seasonal_12: highly skewed (5.36)",
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_interaction: highly skewed (-5.15)",
+          "meteorological_solar_radiation_geospatial_urban_flood_risk_interaction: highly skewed (7.45)",
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_cumchange_interaction: highly skewed (5.50)",
+          "meteorological_solar_radiation_geospatial_soil_moisture_7_28cm_cumchange_interaction: highly skewed (5.13)",
+          "meteorological_solar_radiation_geospatial_reference_evapotranspiration_cumchange_interaction: highly skewed (5.46)",
+          "meteorological_solar_radiation_geospatial_urban_flood_risk_cumchange_interaction: highly skewed (5.51)"
+        ],
+        "total_features": 25
+      }
+    }
+  }
+}

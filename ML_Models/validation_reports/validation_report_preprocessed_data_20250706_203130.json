@@ -1,0 +1,489 @@
+{
+  "validation_type": "preprocessed_data",
+  "timestamp": "2025-07-06T20:31:30.117659",
+  "overall_result": {
+    "passed": false,
+    "score": 0.6499999999999999,
+    "grade": "D"
+  },
+  "summary": {
+    "total_errors": 0,
+    "total_warnings": 7,
+    "error_messages": [],
+    "warning_messages": [
+      "Standardization issue in Manchester: means not close to 0",
+      "Standardization issue in Manchester: standard deviations not close to 1",
+      "Standardization issue in Edinburgh: means not close to 0",
+      "Standardization issue in Edinburgh: standard deviations not close to 1",
+      "Extreme skewness in London: 5 features",
+      "Extreme skewness in Manchester: 5 features",
+      "Extreme skewness in Edinburgh: 5 features"
+    ]
+  },
+  "detailed_results": {
+    "preprocessing_quality": {
+      "London": {
+        "mean_check_passed": "True",
+        "std_check_passed": "True",
+        "mean_values": {
+          "meteorological_temperature": -3.005717327010066e-16,
+          "meteorological_humidity": -5.3926104984592365e-16,
+          "meteorological_wind_speed": 1.9448759174771016e-16,
+          "meteorological_precipitation": 4.64118116670672e-17,
+          "meteorological_solar_radiation": 0.0,
+          "meteorological_NO2": 5.038996695281582e-16,
+          "geospatial_soil_temperature_0_7cm": 2.3426914460519633e-16,
+          "geospatial_soil_moisture_7_28cm": 7.691100219113993e-16,
+          "geospatial_reference_evapotranspiration": 2.8731121508184457e-16,
+          "geospatial_urban_flood_risk": -5.304207047664823e-17,
+          "socioeconomic_life_expectancy": -4.887826794423134e-14,
+          "socioeconomic_population_growth_rate": -2.0719558779940713e-16
+        },
+        "std_values": {
+          "meteorological_temperature": 1.0000388825164859,
+          "meteorological_humidity": 1.0000388825164803,
+          "meteorological_wind_speed": 1.0000388825164888,
+          "meteorological_precipitation": 1.0000388825164888,
+          "meteorological_solar_radiation": 1.0000388825164883,
+          "meteorological_NO2": 1.000038882516491,
+          "geospatial_soil_temperature_0_7cm": 1.0000388825164876,
+          "geospatial_soil_moisture_7_28cm": 1.0000388825164939,
+          "geospatial_reference_evapotranspiration": 1.0000388825165023,
+          "geospatial_urban_flood_risk": 1.0000388825165003,
+          "socioeconomic_life_expectancy": 1.0000388825166937,
+          "socioeconomic_population_growth_rate": 1.0000388825163333
+        }
+      },
+      "Manchester": {
+        "mean_check_passed": "False",
+        "std_check_passed": "False",
+        "mean_values": {
+          "meteorological_temperature": -0.16983816871552407,
+          "meteorological_humidity": 0.3053586513413756,
+          "meteorological_wind_speed": 0.0032480824078260574,
+          "meteorological_precipitation": 0.33015801124568633,
+          "meteorological_solar_radiation": -0.06692843588735799,
+          "meteorological_NO2": -0.8429390708984802,
+          "geospatial_soil_temperature_0_7cm": -0.2654975062313566,
+          "geospatial_soil_moisture_7_28cm": 0.5699591626610817,
+          "geospatial_reference_evapotranspiration": -0.23780980319196493,
+          "geospatial_urban_flood_risk": 0.018091956840975986,
+          "socioeconomic_life_expectancy": -12.234300835562626,
+          "socioeconomic_population_growth_rate": 15.386767758898731
+        },
+        "std_values": {
+          "meteorological_temperature": 0.9511226481935167,
+          "meteorological_humidity": 0.9022546010191536,
+          "meteorological_wind_speed": 1.0451701842142116,
+          "meteorological_precipitation": 1.3152514903427759,
+          "meteorological_solar_radiation": 1.0095421741062445,
+          "meteorological_NO2": 0.9666304809472175,
+          "geospatial_soil_temperature_0_7cm": 0.884148752653473,
+          "geospatial_soil_moisture_7_28cm": 0.7165781881961806,
+          "geospatial_reference_evapotranspiration": 0.862493896525501,
+          "geospatial_urban_flood_risk": 0.6021366306081939,
+          "socioeconomic_life_expectancy": 1.00003888251671,
+          "socioeconomic_population_growth_rate": 1.0056531348067115
+        }
+      },
+      "Edinburgh": {
+        "mean_check_passed": "False",
+        "std_check_passed": "False",
+        "mean_values": {
+          "meteorological_temperature": -0.27776315740454577,
+          "meteorological_humidity": 0.12184110453567533,
+          "meteorological_wind_speed": 0.1547170919406836,
+          "meteorological_precipitation": 0.157449323100923,
+          "meteorological_solar_radiation": -0.08131478721452988,
+          "meteorological_NO2": -1.6845631432861443,
+          "geospatial_soil_temperature_0_7cm": -0.4158992897717807,
+          "geospatial_soil_moisture_7_28cm": 1.1291744973694338,
+          "geospatial_reference_evapotranspiration": -0.2803357894194027,
+          "geospatial_urban_flood_risk": 5.9854775847010835,
+          "socioeconomic_life_expectancy": -6.463404215014236,
+          "socioeconomic_population_growth_rate": 30.543608252974497
+        },
+        "std_values": {
+          "meteorological_temperature": 0.9043672479013954,
+          "meteorological_humidity": 0.8744675838122486,
+          "meteorological_wind_speed": 1.1492211325004968,
+          "meteorological_precipitation": 1.141687011565,
+          "meteorological_solar_radiation": 0.9935140546890806,
+          "meteorological_NO2": 0.8964547666401772,
+          "geospatial_soil_temperature_0_7cm": 0.8245415205761092,
+          "geospatial_soil_moisture_7_28cm": 1.5612384412179077,
+          "geospatial_reference_evapotranspiration": 0.7755624065541344,
+          "geospatial_urban_flood_risk": 3.7672934392330557,
+          "socioeconomic_life_expectancy": 1.0000388825167075,
+          "socioeconomic_population_growth_rate": 1.4499388855563553
+        }
+      }
+    },
+    "data_distributions": {
+      "London": {
+        "skewness": {
+          "meteorological_temperature": 1.2462814619780531,
+          "meteorological_humidity": -0.5656868490161857,
+          "meteorological_wind_speed": 1.295700020348965,
+          "meteorological_precipitation": 2.140742954828707,
+          "meteorological_solar_radiation": 4.947494224134795,
+          "meteorological_NO2": 1.880975721649917,
+          "geospatial_soil_temperature_0_7cm": 0.056437769740153,
+          "geospatial_soil_moisture_7_28cm": -0.7605924612332642,
+          "geospatial_reference_evapotranspiration": 0.7131249934520018,
+          "geospatial_urban_flood_risk": 2.6983487754792304,
+          "socioeconomic_life_expectancy": 10.138790369672947,
+          "socioeconomic_population_growth_rate": -11.371565049009755
+        },
+        "kurtosis": {
+          "meteorological_temperature": 3.516247073905015,
+          "meteorological_humidity": 0.2682217524086492,
+          "meteorological_wind_speed": 2.2366537887072,
+          "meteorological_precipitation": 3.9944918816319057,
+          "meteorological_solar_radiation": 24.924231259541465,
+          "meteorological_NO2": 6.092568268915127,
+          "geospatial_soil_temperature_0_7cm": -0.7813283904528783,
+          "geospatial_soil_moisture_7_28cm": -0.2457364823494399,
+          "geospatial_reference_evapotranspiration": -0.2933839669406617,
+          "geospatial_urban_flood_risk": 7.609531022904871,
+          "socioeconomic_life_expectancy": 326.16840359022154,
+          "socioeconomic_population_growth_rate": 349.5372300157502
+        },
+        "min_values": {
+          "meteorological_temperature": -2.8025486960676167,
+          "meteorological_humidity": -3.110809047223231,
+          "meteorological_wind_speed": -1.806852403147601,
+          "meteorological_precipitation": -0.5834811203298058,
+          "meteorological_solar_radiation": -0.5656951371980244,
+          "meteorological_NO2": -2.5687214887621344,
+          "geospatial_soil_temperature_0_7cm": -2.3149600477545573,
+          "geospatial_soil_moisture_7_28cm": -3.0337525508634435,
+          "geospatial_reference_evapotranspiration": -1.3541367002479472,
+          "geospatial_urban_flood_risk": -0.7915037666693051,
+          "socioeconomic_life_expectancy": -13.480982038110552,
+          "socioeconomic_population_growth_rate": -25.308429629365364
+        },
+        "max_values": {
+          "meteorological_temperature": 3.7945769983697186,
+          "meteorological_humidity": 2.175765360214638,
+          "meteorological_wind_speed": 3.51740320995582,
+          "meteorological_precipitation": 3.595398795601494,
+          "meteorological_solar_radiation": 5.6121645537533675,
+          "meteorological_NO2": 5.146868490882538,
+          "geospatial_soil_temperature_0_7cm": 3.031505362160184,
+          "geospatial_soil_moisture_7_28cm": 1.5084288146353428,
+          "geospatial_reference_evapotranspiration": 3.0446325853897456,
+          "geospatial_urban_flood_risk": 4.490273819800928,
+          "socioeconomic_life_expectancy": 22.426819156412773,
+          "socioeconomic_population_growth_rate": 12.794658333498392
+        }
+      },
+      "Manchester": {
+        "skewness": {
+          "meteorological_temperature": 1.4090390800444357,
+          "meteorological_humidity": -0.8525864926505305,
+          "meteorological_wind_speed": 1.205223950508259,
+          "meteorological_precipitation": 1.7951399538052,
+          "meteorological_solar_radiation": 5.138279605184785,
+          "meteorological_NO2": 2.8968099203619295,
+          "geospatial_soil_temperature_0_7cm": -0.028254234504759404,
+          "geospatial_soil_moisture_7_28cm": -1.2450530675653826,
+          "geospatial_reference_evapotranspiration": 0.7979074014635975,
+          "geospatial_urban_flood_risk": 2.1914790648942395,
+          "socioeconomic_life_expectancy": 10.138790369672932,
+          "socioeconomic_population_growth_rate": -24.495451489963358
+        },
+        "kurtosis": {
+          "meteorological_temperature": 4.27581811026106,
+          "meteorological_humidity": 1.0645809825059307,
+          "meteorological_wind_speed": 1.8684871492335682,
+          "meteorological_precipitation": 2.6857552313947584,
+          "meteorological_solar_radiation": 26.301237625535542,
+          "meteorological_NO2": 10.011534248719743,
+          "geospatial_soil_temperature_0_7cm": -0.8096756354149908,
+          "geospatial_soil_moisture_7_28cm": 1.2921144675012628,
+          "geospatial_reference_evapotranspiration": -0.04187325646716644,
+          "geospatial_urban_flood_risk": 5.599079916312425,
+          "socioeconomic_life_expectancy": 326.1684035902213,
+          "socioeconomic_population_growth_rate": 680.383507899454
+        },
+        "min_values": {
+          "meteorological_temperature": -2.9450397234724086,
+          "meteorological_humidity": -2.6086772509653366,
+          "meteorological_wind_speed": -1.8610314437569977,
+          "meteorological_precipitation": -0.5834811203298058,
+          "meteorological_solar_radiation": -0.5679473477175284,
+          "meteorological_NO2": -2.7207061529781984,
+          "geospatial_soil_temperature_0_7cm": -2.4044725823752096,
+          "geospatial_soil_moisture_7_28cm": -1.70170257993135,
+          "geospatial_reference_evapotranspiration": -1.376836668050579,
+          "geospatial_urban_flood_risk": -0.7439566410482757,
+          "socioeconomic_life_expectancy": -25.715282873673132,
+          "socioeconomic_population_growth_rate": -17.835202672301506
+        },
+        "max_values": {
+          "meteorological_temperature": 3.549763335895778,
+          "meteorological_humidity": 2.175765360214638,
+          "meteorological_wind_speed": 3.6103323636001705,
+          "meteorological_precipitation": 4.899049713690303,
+          "meteorological_solar_radiation": 5.665778032423582,
+          "meteorological_NO2": 4.183594405390965,
+          "geospatial_soil_temperature_0_7cm": 2.413853958003594,
+          "geospatial_soil_moisture_7_28cm": 1.6421551085532609,
+          "geospatial_reference_evapotranspiration": 2.4016488528244535,
+          "geospatial_urban_flood_risk": 2.6158181595579855,
+          "socioeconomic_life_expectancy": 10.192518320850192,
+          "socioeconomic_population_growth_rate": 20.70179636501026
+        }
+      },
+      "Edinburgh": {
+        "skewness": {
+          "meteorological_temperature": 1.6415976644198575,
+          "meteorological_humidity": -0.7789159684024222,
+          "meteorological_wind_speed": 1.0899954295477867,
+          "meteorological_precipitation": 2.010017144614991,
+          "meteorological_solar_radiation": 5.228064113956911,
+          "meteorological_NO2": 3.815643429139838,
+          "geospatial_soil_temperature_0_7cm": -0.017155591608828003,
+          "geospatial_soil_moisture_7_28cm": -1.2217244625947083,
+          "geospatial_reference_evapotranspiration": 0.6755772522256149,
+          "geospatial_urban_flood_risk": 1.7938241644163153,
+          "socioeconomic_life_expectancy": 10.138790369672936,
+          "socioeconomic_population_growth_rate": -18.25749437431434
+        },
+        "kurtosis": {
+          "meteorological_temperature": 5.354894836741126,
+          "meteorological_humidity": 0.909916147318488,
+          "meteorological_wind_speed": 1.3527772161913982,
+          "meteorological_precipitation": 3.590193744821225,
+          "meteorological_solar_radiation": 26.974377336324682,
+          "meteorological_NO2": 16.049411982615194,
+          "geospatial_soil_temperature_0_7cm": -0.8877159600450897,
+          "geospatial_soil_moisture_7_28cm": 0.20345992620509668,
+          "geospatial_reference_evapotranspiration": -0.3161269929082118,
+          "geospatial_urban_flood_risk": 3.4750180055146696,
+          "socioeconomic_life_expectancy": 326.1684035902214,
+          "socioeconomic_population_growth_rate": 501.9443297582553
+        },
+        "min_values": {
+          "meteorological_temperature": -3.130278059098639,
+          "meteorological_humidity": -2.69895768729966,
+          "meteorological_wind_speed": -1.8474866836046484,
+          "meteorological_precipitation": -0.5834811203298058,
+          "meteorological_solar_radiation": -0.5701995582370324,
+          "meteorological_NO2": -2.9431472642122642,
+          "geospatial_soil_temperature_0_7cm": -2.423091189576305,
+          "geospatial_soil_moisture_7_28cm": -3.610925883911307,
+          "geospatial_reference_evapotranspiration": -1.376836668050579,
+          "geospatial_urban_flood_risk": 0.8964191928772371,
+          "socioeconomic_life_expectancy": -19.94438625312474,
+          "socioeconomic_population_growth_rate": -14.480000506454473
+        },
+        "max_values": {
+          "meteorological_temperature": 3.4030080593570458,
+          "meteorological_humidity": 2.0734353862072785,
+          "meteorological_wind_speed": 3.961238747301205,
+          "meteorological_precipitation": 4.269943093125153,
+          "meteorological_solar_radiation": 5.592987418976491,
+          "meteorological_NO2": 3.253849981282116,
+          "geospatial_soil_temperature_0_7cm": 2.0831774274054826,
+          "geospatial_soil_moisture_7_28cm": 2.7633510265410046,
+          "geospatial_reference_evapotranspiration": 2.080647555975521,
+          "geospatial_urban_flood_risk": 20.288701355082946,
+          "socioeconomic_life_expectancy": 15.963414941398584,
+          "socioeconomic_population_growth_rate": 44.48929711617523
+        }
+      }
+    },
+    "missing_values": {
+      "London": {
+        "missing_counts": {
+          "meteorological_temperature": 0,
+          "meteorological_humidity": 0,
+          "meteorological_wind_speed": 0,
+          "meteorological_precipitation": 0,
+          "meteorological_solar_radiation": 0,
+          "meteorological_NO2": 0,
+          "geospatial_soil_temperature_0_7cm": 0,
+          "geospatial_soil_moisture_7_28cm": 0,
+          "geospatial_reference_evapotranspiration": 0,
+          "geospatial_urban_flood_risk": 0,
+          "socioeconomic_life_expectancy": 0,
+          "socioeconomic_population_growth_rate": 0
+        },
+        "missing_percentages": {
+          "meteorological_temperature": 0.0,
+          "meteorological_humidity": 0.0,
+          "meteorological_wind_speed": 0.0,
+          "meteorological_precipitation": 0.0,
+          "meteorological_solar_radiation": 0.0,
+          "meteorological_NO2": 0.0,
+          "geospatial_soil_temperature_0_7cm": 0.0,
+          "geospatial_soil_moisture_7_28cm": 0.0,
+          "geospatial_reference_evapotranspiration": 0.0,
+          "geospatial_urban_flood_risk": 0.0,
+          "socioeconomic_life_expectancy": 0.0,
+          "socioeconomic_population_growth_rate": 0.0
+        },
+        "excessive_missing_features": []
+      },
+      "Manchester": {
+        "missing_counts": {
+          "meteorological_temperature": 0,
+          "meteorological_humidity": 0,
+          "meteorological_wind_speed": 0,
+          "meteorological_precipitation": 0,
+          "meteorological_solar_radiation": 0,
+          "meteorological_NO2": 0,
+          "geospatial_soil_temperature_0_7cm": 0,
+          "geospatial_soil_moisture_7_28cm": 0,
+          "geospatial_reference_evapotranspiration": 0,
+          "geospatial_urban_flood_risk": 0,
+          "socioeconomic_life_expectancy": 0,
+          "socioeconomic_population_growth_rate": 0
+        },
+        "missing_percentages": {
+          "meteorological_temperature": 0.0,
+          "meteorological_humidity": 0.0,
+          "meteorological_wind_speed": 0.0,
+          "meteorological_precipitation": 0.0,
+          "meteorological_solar_radiation": 0.0,
+          "meteorological_NO2": 0.0,
+          "geospatial_soil_temperature_0_7cm": 0.0,
+          "geospatial_soil_moisture_7_28cm": 0.0,
+          "geospatial_reference_evapotranspiration": 0.0,
+          "geospatial_urban_flood_risk": 0.0,
+          "socioeconomic_life_expectancy": 0.0,
+          "socioeconomic_population_growth_rate": 0.0
+        },
+        "excessive_missing_features": []
+      },
+      "Edinburgh": {
+        "missing_counts": {
+          "meteorological_temperature": 0,
+          "meteorological_humidity": 0,
+          "meteorological_wind_speed": 0,
+          "meteorological_precipitation": 0,
+          "meteorological_solar_radiation": 0,
+          "meteorological_NO2": 0,
+          "geospatial_soil_temperature_0_7cm": 0,
+          "geospatial_soil_moisture_7_28cm": 0,
+          "geospatial_reference_evapotranspiration": 0,
+          "geospatial_urban_flood_risk": 0,
+          "socioeconomic_life_expectancy": 0,
+          "socioeconomic_population_growth_rate": 0
+        },
+        "missing_percentages": {
+          "meteorological_temperature": 0.0,
+          "meteorological_humidity": 0.0,
+          "meteorological_wind_speed": 0.0,
+          "meteorological_precipitation": 0.0,
+          "meteorological_solar_radiation": 0.0,
+          "meteorological_NO2": 0.0,
+          "geospatial_soil_temperature_0_7cm": 0.0,
+          "geospatial_soil_moisture_7_28cm": 0.0,
+          "geospatial_reference_evapotranspiration": 0.0,
+          "geospatial_urban_flood_risk": 0.0,
+          "socioeconomic_life_expectancy": 0.0,
+          "socioeconomic_population_growth_rate": 0.0
+        },
+        "excessive_missing_features": []
+      }
+    },
+    "outlier_handling": {
+      "London": {
+        "outlier_counts": {
+          "meteorological_temperature": 353,
+          "meteorological_humidity": 171,
+          "meteorological_wind_speed": 325,
+          "meteorological_precipitation": 459,
+          "meteorological_solar_radiation": 364,
+          "meteorological_NO2": 345,
+          "geospatial_soil_temperature_0_7cm": 4,
+          "geospatial_soil_moisture_7_28cm": 10,
+          "geospatial_reference_evapotranspiration": 50,
+          "geospatial_urban_flood_risk": 404,
+          "socioeconomic_life_expectancy": 72,
+          "socioeconomic_population_growth_rate": 67
+        },
+        "outlier_percentages": {
+          "meteorological_temperature": 0.02744945567651633,
+          "meteorological_humidity": 0.013297045101088647,
+          "meteorological_wind_speed": 0.025272161741835147,
+          "meteorological_precipitation": 0.035692068429237944,
+          "meteorological_solar_radiation": 0.028304821150855364,
+          "meteorological_NO2": 0.026827371695178848,
+          "geospatial_soil_temperature_0_7cm": 0.00031104199066874026,
+          "geospatial_soil_moisture_7_28cm": 0.0007776049766718507,
+          "geospatial_reference_evapotranspiration": 0.0038880248833592537,
+          "geospatial_urban_flood_risk": 0.031415241057542766,
+          "socioeconomic_life_expectancy": 0.005598755832037325,
+          "socioeconomic_population_growth_rate": 0.0052099533437014
+        },
+        "excessive_outlier_features": []
+      },
+      "Manchester": {
+        "outlier_counts": {
+          "meteorological_temperature": 360,
+          "meteorological_humidity": 276,
+          "meteorological_wind_speed": 319,
+          "meteorological_precipitation": 353,
+          "meteorological_solar_radiation": 364,
+          "meteorological_NO2": 438,
+          "geospatial_soil_temperature_0_7cm": 1,
+          "geospatial_soil_moisture_7_28cm": 279,
+          "geospatial_reference_evapotranspiration": 86,
+          "geospatial_urban_flood_risk": 348,
+          "socioeconomic_life_expectancy": 72,
+          "socioeconomic_population_growth_rate": 56
+        },
+        "outlier_percentages": {
+          "meteorological_temperature": 0.027993779160186624,
+          "meteorological_humidity": 0.02146189735614308,
+          "meteorological_wind_speed": 0.024805598755832037,
+          "meteorological_precipitation": 0.02744945567651633,
+          "meteorological_solar_radiation": 0.028304821150855364,
+          "meteorological_NO2": 0.03405909797822706,
+          "geospatial_soil_temperature_0_7cm": 7.776049766718506e-05,
+          "geospatial_soil_moisture_7_28cm": 0.021695178849144636,
+          "geospatial_reference_evapotranspiration": 0.006687402799377916,
+          "geospatial_urban_flood_risk": 0.027060653188180406,
+          "socioeconomic_life_expectancy": 0.005598755832037325,
+          "socioeconomic_population_growth_rate": 0.004354587869362364
+        },
+        "excessive_outlier_features": []
+      },
+      "Edinburgh": {
+        "outlier_counts": {
+          "meteorological_temperature": 360,
+          "meteorological_humidity": 239,
+          "meteorological_wind_speed": 297,
+          "meteorological_precipitation": 411,
+          "meteorological_solar_radiation": 364,
+          "meteorological_NO2": 407,
+          "geospatial_soil_temperature_0_7cm": 3,
+          "geospatial_soil_moisture_7_28cm": 47,
+          "geospatial_reference_evapotranspiration": 52,
+          "geospatial_urban_flood_risk": 350,
+          "socioeconomic_life_expectancy": 72,
+          "socioeconomic_population_growth_rate": 65
+        },
+        "outlier_percentages": {
+          "meteorological_temperature": 0.027993779160186624,
+          "meteorological_humidity": 0.01858475894245723,
+          "meteorological_wind_speed": 0.023094867807153967,
+          "meteorological_precipitation": 0.03195956454121306,
+          "meteorological_solar_radiation": 0.028304821150855364,
+          "meteorological_NO2": 0.031648522550544324,
+          "geospatial_soil_temperature_0_7cm": 0.00023328149300155522,
+          "geospatial_soil_moisture_7_28cm": 0.003654743390357698,
+          "geospatial_reference_evapotranspiration": 0.004043545878693624,
+          "geospatial_urban_flood_risk": 0.027216174183514776,
+          "socioeconomic_life_expectancy": 0.005598755832037325,
+          "socioeconomic_population_growth_rate": 0.00505443234836703
+        },
+        "excessive_outlier_features": []
+      }
+    }
+  }
+}
