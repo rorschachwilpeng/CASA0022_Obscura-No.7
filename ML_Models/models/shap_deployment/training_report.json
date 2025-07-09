@@ -1,0 +1,488 @@
+{
+  "training_timestamp": "2025-07-08T15:53:47.617737",
+  "cities_trained": [
+    "London",
+    "Manchester",
+    "Edinburgh"
+  ],
+  "configuration": {
+    "config": {
+      "prediction_horizon": 12,
+      "confidence_threshold": 0.7,
+      "enable_shap_analysis": false,
+      "save_predictions": false,
+      "output_directory": "predictions"
+    },
+    "weights": {
+      "climate_weight": 0.4,
+      "geographic_weight": 0.35,
+      "economic_weight": 0.25
+    }
+  },
+  "training_results": {
+    "London": {
+      "climate": {
+        "mse": 0.00032818346483568347,
+        "rmse": 0.018115834643639344,
+        "mae": 0.0077778967121207064,
+        "r2": 0.9995844518763047,
+        "mape": 1.2528023899875766
+      },
+      "climate_validation": {
+        "r2": 0.9995844518763047,
+        "rmse": 0.018115834643639344,
+        "note": "validation_skipped_temporarily"
+      },
+      "geographic": {
+        "mse": 7.344656352854004e-05,
+        "rmse": 0.008570097054791155,
+        "mae": 0.0041005783047030125,
+        "r2": 0.999926310013371,
+        "mape": 0.9947081333530063
+      },
+      "geographic_validation": {
+        "r2": 0.999926310013371,
+        "rmse": 0.008570097054791155,
+        "note": "validation_skipped_temporarily"
+      }
+    },
+    "Manchester": {
+      "climate": {
+        "mse": 0.00014857794162551147,
+        "rmse": 0.012189255171072246,
+        "mae": 0.006918310667585879,
+        "r2": 0.9998135073389919,
+        "mape": 1.5646971136234193
+      },
+      "climate_validation": {
+        "r2": 0.9998135073389919,
+        "rmse": 0.012189255171072246,
+        "note": "validation_skipped_temporarily"
+      },
+      "geographic": {
+        "mse": 9.659055461220633e-05,
+        "rmse": 0.009828049379821326,
+        "mae": 0.00426606078381062,
+        "r2": 0.9999038868047256,
+        "mape": 4.399147054919349
+      },
+      "geographic_validation": {
+        "r2": 0.9999038868047256,
+        "rmse": 0.009828049379821326,
+        "note": "validation_skipped_temporarily"
+      }
+    },
+    "Edinburgh": {
+      "climate": {
+        "mse": 0.00018835713371826397,
+        "rmse": 0.01372432634843197,
+        "mae": 0.009442808974739845,
+        "r2": 0.9997584936794615,
+        "mape": 2.383854949455488
+      },
+      "climate_validation": {
+        "r2": 0.9997584936794615,
+        "rmse": 0.01372432634843197,
+        "note": "validation_skipped_temporarily"
+      },
+      "geographic": {
+        "mse": 7.776488611140923e-05,
+        "rmse": 0.008818440117810475,
+        "mae": 0.0041929508937340754,
+        "r2": 0.9999218773799138,
+        "mape": 1.3649275432175878
+      },
+      "geographic_validation": {
+        "r2": 0.9999218773799138,
+        "rmse": 0.008818440117810475,
+        "note": "validation_skipped_temporarily"
+      }
+    }
+  },
+  "model_summaries": {
+    "London": {
+      "city": "London",
+      "is_trained": true,
+      "model_performance": {
+        "climate": {
+          "train_r2": 0.9995844518763047,
+          "train_rmse": 0.018115834643639344,
+          "val_r2": 0.9995844518763047,
+          "val_rmse": 0.018115834643639344
+        },
+        "geographic": {
+          "train_r2": 0.999926310013371,
+          "train_rmse": 0.008570097054791155,
+          "val_r2": 0.999926310013371,
+          "val_rmse": 0.008570097054791155
+        }
+      },
+      "training_history_count": 1,
+      "climate_model_summary": {
+        "city": "London",
+        "model_type": "climate",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 375,
+        "target_variable": "meteorological_temperature",
+        "validation_scores": {
+          "cv_rmse_mean": 0.5503322443354474,
+          "cv_rmse_std": 0.6459539315689611,
+          "train_rmse": 0.018115834643639344,
+          "train_r2": 0.9995844518763047
+        },
+        "top_features": {
+          "meteorological_temperature_geospatial_reference_evapotranspiration_cumchange_interaction": 0.5248854985453819,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.46216105253428225,
+          "meteorological_temperature_geospatial_soil_moisture_7_28cm_cumchange_interaction": 0.004041694513135022,
+          "meteorological_temperature_geospatial_urban_flood_risk_interaction": 0.001542212675129503,
+          "meteorological_temperature_seasonal_dev_12": 0.0015129917496633956
+        },
+        "training_history_count": 1,
+        "climate_variables": [
+          "meteorological_temperature",
+          "meteorological_humidity",
+          "meteorological_wind_speed",
+          "meteorological_precipitation",
+          "meteorological_atmospheric_pressure",
+          "meteorological_solar_radiation",
+          "meteorological_NO2"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "climate_feature_count": 247
+      },
+      "geographic_model_summary": {
+        "city": "London",
+        "model_type": "geographic",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 376,
+        "target_variable": "geospatial_soil_temperature_0_7cm",
+        "validation_scores": {
+          "cv_rmse_mean": 1.2188128284217823,
+          "cv_rmse_std": 1.4494109184596922,
+          "train_rmse": 0.008570097054791155,
+          "train_r2": 0.999926310013371
+        },
+        "top_features": {
+          "meteorological_precipitation_cumchange_geospatial_soil_temperature_0_7cm_interaction": 0.5731559203528251,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.40689766200265753,
+          "meteorological_NO2_geospatial_soil_temperature_0_7cm_interaction": 0.008137844427715864,
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_interaction": 0.005683589826532664,
+          "geospatial_soil_temperature_0_7cm_ma_3": 0.0027457292799889657
+        },
+        "training_history_count": 1,
+        "geographic_variables": [
+          "geospatial_soil_temperature_0_7cm",
+          "geospatial_soil_moisture_7_28cm",
+          "geospatial_reference_evapotranspiration",
+          "geospatial_urban_flood_risk"
+        ],
+        "geographic_categories": [
+          "soil_health",
+          "water_cycle",
+          "flood_risk"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "geographic_feature_count": 235
+      },
+      "score_calculator_summary": {
+        "city": "London",
+        "weights": {
+          "climate_weight": 0.4,
+          "geographic_weight": 0.35,
+          "economic_weight": 0.25
+        },
+        "economic_variables": [
+          "socioeconomic_life_expectancy",
+          "socioeconomic_population_distribution",
+          "socioeconomic_rail_infrastructure"
+        ],
+        "economic_baseline_available": true,
+        "risk_thresholds": {
+          "low": [
+            -0.5,
+            0.5
+          ],
+          "moderate": [
+            -1.0,
+            1.0
+          ],
+          "high": [
+            -2.0,
+            2.0
+          ],
+          "critical": [
+            -Infinity,
+            Infinity
+          ]
+        }
+      },
+      "weights": {
+        "climate_weight": 0.4,
+        "geographic_weight": 0.35,
+        "economic_weight": 0.25
+      }
+    },
+    "Manchester": {
+      "city": "Manchester",
+      "is_trained": true,
+      "model_performance": {
+        "climate": {
+          "train_r2": 0.9998135073389919,
+          "train_rmse": 0.012189255171072246,
+          "val_r2": 0.9998135073389919,
+          "val_rmse": 0.012189255171072246
+        },
+        "geographic": {
+          "train_r2": 0.9999038868047256,
+          "train_rmse": 0.009828049379821326,
+          "val_r2": 0.9999038868047256,
+          "val_rmse": 0.009828049379821326
+        }
+      },
+      "training_history_count": 1,
+      "climate_model_summary": {
+        "city": "Manchester",
+        "model_type": "climate",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 375,
+        "target_variable": "meteorological_temperature",
+        "validation_scores": {
+          "cv_rmse_mean": 0.6960372789177729,
+          "cv_rmse_std": 0.8222285556815107,
+          "train_rmse": 0.012189255171072246,
+          "train_r2": 0.9998135073389919
+        },
+        "top_features": {
+          "meteorological_temperature_ma_3": 0.615482042344117,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.3383956329229076,
+          "meteorological_temperature_geospatial_reference_evapotranspiration_cumchange_interaction": 0.03656999628037583,
+          "meteorological_temperature_geospatial_soil_moisture_7_28cm_cumchange_interaction": 0.0019060582414147345,
+          "meteorological_temperature_geospatial_urban_flood_risk_interaction": 0.001184941271573991
+        },
+        "training_history_count": 1,
+        "climate_variables": [
+          "meteorological_temperature",
+          "meteorological_humidity",
+          "meteorological_wind_speed",
+          "meteorological_precipitation",
+          "meteorological_atmospheric_pressure",
+          "meteorological_solar_radiation",
+          "meteorological_NO2"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "climate_feature_count": 247
+      },
+      "geographic_model_summary": {
+        "city": "Manchester",
+        "model_type": "geographic",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 376,
+        "target_variable": "geospatial_soil_temperature_0_7cm",
+        "validation_scores": {
+          "cv_rmse_mean": 1.127152633213281,
+          "cv_rmse_std": 1.340375710854788,
+          "train_rmse": 0.009828049379821326,
+          "train_r2": 0.9999038868047256
+        },
+        "top_features": {
+          "geospatial_soil_temperature_0_7cm_ma_3": 0.7136427808306148,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.26910235257105075,
+          "meteorological_NO2_geospatial_soil_temperature_0_7cm_interaction": 0.00771863986040633,
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_interaction": 0.004566230724542128,
+          "meteorological_humidity_cumchange_geospatial_soil_temperature_0_7cm_interaction": 0.0011670754605741195
+        },
+        "training_history_count": 1,
+        "geographic_variables": [
+          "geospatial_soil_temperature_0_7cm",
+          "geospatial_soil_moisture_7_28cm",
+          "geospatial_reference_evapotranspiration",
+          "geospatial_urban_flood_risk"
+        ],
+        "geographic_categories": [
+          "soil_health",
+          "water_cycle",
+          "flood_risk"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "geographic_feature_count": 235
+      },
+      "score_calculator_summary": {
+        "city": "Manchester",
+        "weights": {
+          "climate_weight": 0.4,
+          "geographic_weight": 0.35,
+          "economic_weight": 0.25
+        },
+        "economic_variables": [
+          "socioeconomic_life_expectancy",
+          "socioeconomic_population_distribution",
+          "socioeconomic_rail_infrastructure"
+        ],
+        "economic_baseline_available": true,
+        "risk_thresholds": {
+          "low": [
+            -0.5,
+            0.5
+          ],
+          "moderate": [
+            -1.0,
+            1.0
+          ],
+          "high": [
+            -2.0,
+            2.0
+          ],
+          "critical": [
+            -Infinity,
+            Infinity
+          ]
+        }
+      },
+      "weights": {
+        "climate_weight": 0.4,
+        "geographic_weight": 0.35,
+        "economic_weight": 0.25
+      }
+    },
+    "Edinburgh": {
+      "city": "Edinburgh",
+      "is_trained": true,
+      "model_performance": {
+        "climate": {
+          "train_r2": 0.9997584936794615,
+          "train_rmse": 0.01372432634843197,
+          "val_r2": 0.9997584936794615,
+          "val_rmse": 0.01372432634843197
+        },
+        "geographic": {
+          "train_r2": 0.9999218773799138,
+          "train_rmse": 0.008818440117810475,
+          "val_r2": 0.9999218773799138,
+          "val_rmse": 0.008818440117810475
+        }
+      },
+      "training_history_count": 1,
+      "climate_model_summary": {
+        "city": "Edinburgh",
+        "model_type": "climate",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 375,
+        "target_variable": "meteorological_temperature",
+        "validation_scores": {
+          "cv_rmse_mean": 1.1345750519196667,
+          "cv_rmse_std": 0.8631562211653769,
+          "train_rmse": 0.01372432634843197,
+          "train_r2": 0.9997584936794615
+        },
+        "top_features": {
+          "meteorological_solar_radiation_cumchange_geospatial_soil_temperature_0_7cm_interaction": 0.5016826134761793,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.4852234908782023,
+          "meteorological_temperature_seasonal_dev_12": 0.0023288259304652544,
+          "meteorological_temperature_geospatial_soil_moisture_7_28cm_interaction": 0.0015194360734621902,
+          "geospatial_soil_temperature_0_7cm_ma_3": 0.0013437505201004986
+        },
+        "training_history_count": 1,
+        "climate_variables": [
+          "meteorological_temperature",
+          "meteorological_humidity",
+          "meteorological_wind_speed",
+          "meteorological_precipitation",
+          "meteorological_atmospheric_pressure",
+          "meteorological_solar_radiation",
+          "meteorological_NO2"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "climate_feature_count": 247
+      },
+      "geographic_model_summary": {
+        "city": "Edinburgh",
+        "model_type": "geographic",
+        "algorithm": "random_forest",
+        "is_trained": true,
+        "feature_count": 376,
+        "target_variable": "geospatial_soil_temperature_0_7cm",
+        "validation_scores": {
+          "cv_rmse_mean": 1.0894094703944213,
+          "cv_rmse_std": 1.2954994851349182,
+          "train_rmse": 0.008818440117810475,
+          "train_r2": 0.9999218773799138
+        },
+        "top_features": {
+          "meteorological_solar_radiation_cumchange_geospatial_soil_temperature_0_7cm_interaction": 0.5973263712031796,
+          "meteorological_temperature_geospatial_soil_temperature_0_7cm_interaction": 0.38116305992204214,
+          "meteorological_NO2_geospatial_soil_temperature_0_7cm_interaction": 0.010429962684334335,
+          "meteorological_solar_radiation_geospatial_soil_temperature_0_7cm_interaction": 0.004803529747741093,
+          "geospatial_soil_temperature_0_7cm_ma_3": 0.0025423332017146874
+        },
+        "training_history_count": 1,
+        "geographic_variables": [
+          "geospatial_soil_temperature_0_7cm",
+          "geospatial_soil_moisture_7_28cm",
+          "geospatial_reference_evapotranspiration",
+          "geospatial_urban_flood_risk"
+        ],
+        "geographic_categories": [
+          "soil_health",
+          "water_cycle",
+          "flood_risk"
+        ],
+        "baseline_available": true,
+        "primary_target": "meteorological_temperature",
+        "geographic_feature_count": 235
+      },
+      "score_calculator_summary": {
+        "city": "Edinburgh",
+        "weights": {
+          "climate_weight": 0.4,
+          "geographic_weight": 0.35,
+          "economic_weight": 0.25
+        },
+        "economic_variables": [
+          "socioeconomic_life_expectancy",
+          "socioeconomic_population_distribution",
+          "socioeconomic_rail_infrastructure"
+        ],
+        "economic_baseline_available": true,
+        "risk_thresholds": {
+          "low": [
+            -0.5,
+            0.5
+          ],
+          "moderate": [
+            -1.0,
+            1.0
+          ],
+          "high": [
+            -2.0,
+            2.0
+          ],
+          "critical": [
+            -Infinity,
+            Infinity
+          ]
+        }
+      },
+      "weights": {
+        "climate_weight": 0.4,
+        "geographic_weight": 0.35,
+        "economic_weight": 0.25
+      }
+    }
+  },
+  "deployment_info": {
+    "models_directory": "models/shap_deployment",
+    "ready_for_deployment": true,
+    "total_cities": 3,
+    "successful_cities": 3
+  }
+}

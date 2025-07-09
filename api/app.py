@@ -46,6 +46,7 @@ from api.routes.images import images_bp
 from api.routes.frontend import frontend_bp
 from api.routes.environmental import environmental_bp
 from api.routes.lightweight_ml_predict import lightweight_ml_bp
+from api.routes.shap_predict import shap_bp
 
 # 配置日志
 logging.basicConfig(
@@ -104,6 +105,9 @@ def register_blueprints(app):
     
     # 轻量级ML API蓝图（云端部署优化）
     app.register_blueprint(lightweight_ml_bp)
+    
+    # SHAP预测API蓝图（环境变化指数框架）
+    app.register_blueprint(shap_bp)
     
     # 前端蓝图（注册到根路径）
     app.register_blueprint(frontend_bp)

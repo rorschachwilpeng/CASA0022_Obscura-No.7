@@ -434,7 +434,10 @@ class FeatureEngineer:
         # Step 6: Create interaction features
         data_engineered = self.create_interaction_features(data_engineered)
         
-        # Step 7: Apply feature selection (if target is provided)
+        # Step 7: Handle missing values with time series interpolation
+        data_engineered = self._interpolate_time_series_nans(data_engineered)
+        
+        # Step 8: Apply feature selection (if target is provided)
         if target is not None:
             data_engineered = self.apply_feature_selection(data_engineered, target)
         
@@ -466,3 +469,66 @@ class FeatureEngineer:
         }
         
         return summary 
+
+    def _interpolate_time_series_nans(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        处理时序数据中的缺失值，使用线性插值和前后平均。
+        
+        Args:
+            data: 包含NaN值的DataFrame
+            
+        Returns:
+            处理后的DataFrame
+        """
+        logger.info("处理特征工程产生的缺失值...")
+        
+        data_filled = data.copy()
+        
+        # 首先统计每列的NaN数量
+        nan_counts_before = data_filled.isna().sum()
+        total_nans_before = nan_counts_before.sum()
+        
+        if total_nans_before == 0:
+            logger.info("没有发现缺失值")
+            return data_filled
+        
+        logger.info(f"发现 {total_nans_before} 个缺失值，开始插值处理...")
+        
+        # 对每一列进行时序插值
+        for col in data_filled.columns:
+            if data_filled[col].isna().any():
+                # 方法1: 线性插值 (对时序数据最有效)
+                data_filled[col] = data_filled[col].interpolate(method='linear')
+                
+                # 方法2: 对于开头和结尾仍然是NaN的，用前向和后向填充
+                if data_filled[col].isna().any():
+                    # 前向填充 (用前一个有效值填充)
+                    data_filled[col] = data_filled[col].ffill()
+                    
+                    # 后向填充 (用后一个有效值填充)
+                    if data_filled[col].isna().any():
+                        data_filled[col] = data_filled[col].bfill()
+                
+                # 方法3: 如果还有NaN（整列都是NaN的情况），用列的中位数填充
+                if data_filled[col].isna().any():
+                    median_value = data_filled[col].median()
+                    if pd.isna(median_value):
+                        # 如果中位数也是NaN，用0填充
+                        data_filled[col] = data_filled[col].fillna(0)
+                    else:
+                        data_filled[col] = data_filled[col].fillna(median_value)
+        
+        # 检查结果
+        nan_counts_after = data_filled.isna().sum()
+        total_nans_after = nan_counts_after.sum()
+        
+        logger.info(f"缺失值处理完成: {total_nans_before} → {total_nans_after}")
+        
+        if total_nans_after > 0:
+            logger.warning(f"仍有 {total_nans_after} 个缺失值未能处理")
+            # 显示哪些列还有缺失值
+            remaining_nans = nan_counts_after[nan_counts_after > 0]
+            if len(remaining_nans) > 0:
+                logger.warning(f"剩余缺失值分布: {dict(remaining_nans.head(10))}")
+        
+        return data_filled 

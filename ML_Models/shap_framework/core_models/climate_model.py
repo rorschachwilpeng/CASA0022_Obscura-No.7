@@ -104,21 +104,25 @@ class ClimateModel(TimeSeriesPredictor):
         
         feature_vars = [var for var in available_climate_vars if var != target_var]
         
-        # Add time-based features if they exist
-        time_features = [col for col in data.columns if any(time_term in col.lower() for time_term in 
-                        ['year', 'month', 'quarter', 'season', 'day', 'time'])]
+        # Add time-based features if they exist (sorted for consistency)
+        time_features = sorted([col for col in data.columns if any(time_term in col.lower() for time_term in 
+                        ['year', 'month', 'quarter', 'season', 'day', 'time'])])
         
-        # Add lag and trend features if they exist
-        lag_features = [col for col in data.columns if 'lag_' in col.lower()]
-        trend_features = [col for col in data.columns if any(trend_term in col.lower() for trend_term in 
-                         ['trend', 'slope', 'change', 'ma_', 'moving'])]
+        # Add lag and trend features if they exist (sorted for consistency)
+        lag_features = sorted([col for col in data.columns if 'lag_' in col.lower()])
+        trend_features = sorted([col for col in data.columns if any(trend_term in col.lower() for trend_term in 
+                         ['trend', 'slope', 'change', 'ma_', 'moving'])])
         
-        # Add interaction features for climate variables
-        interaction_features = [col for col in data.columns if 'interaction' in col.lower() and 
-                              any(climate_var.split('_')[-1] in col for climate_var in self.climate_variables)]
+        # Add interaction features for climate variables (sorted for consistency)
+        interaction_features = sorted([col for col in data.columns if 'interaction' in col.lower() and 
+                              any(climate_var.split('_')[-1] in col for climate_var in self.climate_variables)])
         
+        # Combine all features in a consistent order
         all_features = feature_vars + time_features + lag_features + trend_features + interaction_features
         available_features = [feat for feat in all_features if feat in data.columns]
+        
+        # Ensure consistent ordering by sorting the final feature list
+        available_features = sorted(available_features)
         
         X = data[available_features].copy()
         y = data[target_var].copy()

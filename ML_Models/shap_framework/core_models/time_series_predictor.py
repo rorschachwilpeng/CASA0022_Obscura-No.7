@@ -202,8 +202,8 @@ class TimeSeriesPredictor(ABC):
         """
         logger.info(f"Training {self.city} {self.model_type} model with {X.shape[0]} samples, {X.shape[1]} features")
         
-        # Store feature and target names
-        self.feature_names = list(X.columns)
+        # Store original feature and target names
+        self.original_feature_names = list(X.columns)
         self.target_name = y.name if hasattr(y, 'name') and y.name else self.config.target_variable
         
         # Feature selection
@@ -267,17 +267,63 @@ class TimeSeriesPredictor(ABC):
         
         # Apply feature selection if used during training
         if self.feature_selector is not None:
-            X_selected = X[self.feature_names]
+            # 确保我们有训练时的原始特征
+            if hasattr(self, 'original_feature_names'):
+                # 检查原始特征是否存在
+                missing_original = set(self.original_feature_names) - set(X.columns)
+                if missing_original:
+                    raise ValueError(f"Missing original features: {missing_original}")
+                
+                # 按训练时的确切顺序选择原始特征
+                X_for_selection = X[self.original_feature_names].copy()
+                
+                # 确保数据类型一致
+                X_for_selection = X_for_selection.astype(float)
+                
+                # 应用特征选择器
+                try:
+                    X_selected_array = self.feature_selector.transform(X_for_selection)
+                    
+                    # 创建具有正确特征名称的DataFrame
+                    X_selected = pd.DataFrame(
+                        X_selected_array,
+                        columns=self.feature_names,
+                        index=X_for_selection.index
+                    )
+                    
+                except ValueError as e:
+                    logger.error(f"Feature selector transform failed: {str(e)}")
+                    logger.error(f"Expected {len(self.original_feature_names)} features, got {X_for_selection.shape[1]}")
+                    logger.error(f"Training features: {self.original_feature_names[:5]}... (showing first 5)")
+                    logger.error(f"Input features: {list(X.columns)[:5]}... (showing first 5)")
+                    
+                    # 直接使用选定的特征名称作为fallback
+                    logger.warning("Falling back to direct feature selection")
+                    missing_selected = set(self.feature_names) - set(X.columns)
+                    if missing_selected:
+                        raise ValueError(f"Missing selected features: {missing_selected}")
+                    X_selected = X[self.feature_names].copy()
+                    
+            else:
+                # Fallback: 直接使用特征名称
+                missing_features = set(self.feature_names) - set(X.columns)
+                if missing_features:
+                    raise ValueError(f"Missing features: {missing_features}")
+                X_selected = X[self.feature_names].copy()
         else:
-            # Ensure we have the same features as training
+            # 没有特征选择器时，确保使用训练时的特征
             missing_features = set(self.feature_names) - set(X.columns)
             if missing_features:
                 raise ValueError(f"Missing features: {missing_features}")
-            X_selected = X[self.feature_names]
+            X_selected = X[self.feature_names].copy()
         
+        # 确保数据类型正确
+        X_selected = X_selected.astype(float)
+        
+        # 生成预测
         predictions = self.model.predict(X_selected)
         
-        logger.info(f"Generated {len(predictions)} predictions")
+        logger.info(f"Generated {len(predictions)} predictions using {X_selected.shape[1]} features")
         return predictions
     
     def evaluate(self, X: pd.DataFrame, y: pd.Series) -> PredictionResult:

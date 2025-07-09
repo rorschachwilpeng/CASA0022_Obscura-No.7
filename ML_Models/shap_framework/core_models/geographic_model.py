@@ -106,26 +106,29 @@ class GeographicModel(TimeSeriesPredictor):
         feature_vars = [var for var in available_geo_vars if var != target_var]
         
         # Add relevant meteorological features (climate-geographic interactions)
-        climate_features = [col for col in data.columns if any(climate_term in col.lower() for climate_term in 
-                           ['meteorological_temperature', 'meteorological_precipitation', 'meteorological_humidity'])]
+        climate_features = sorted([col for col in data.columns if any(climate_term in col.lower() for climate_term in 
+                           ['meteorological_temperature', 'meteorological_precipitation', 'meteorological_humidity'])])
         
-        # Add time-based features
-        time_features = [col for col in data.columns if any(time_term in col.lower() for time_term in 
-                        ['year', 'month', 'quarter', 'season', 'day', 'time'])]
+        # Add time-based features (sorted for consistency)
+        time_features = sorted([col for col in data.columns if any(time_term in col.lower() for time_term in 
+                        ['year', 'month', 'quarter', 'season', 'day', 'time'])])
         
-        # Add lag and trend features
-        lag_features = [col for col in data.columns if 'lag_' in col.lower()]
-        trend_features = [col for col in data.columns if any(trend_term in col.lower() for trend_term in 
-                         ['trend', 'slope', 'change', 'ma_', 'moving'])]
+        # Add lag and trend features (sorted for consistency)
+        lag_features = sorted([col for col in data.columns if 'lag_' in col.lower()])
+        trend_features = sorted([col for col in data.columns if any(trend_term in col.lower() for trend_term in 
+                         ['trend', 'slope', 'change', 'ma_', 'moving'])])
         
-        # Add interaction features for geographic variables
-        interaction_features = [col for col in data.columns if 'interaction' in col.lower() and 
+        # Add interaction features for geographic variables (sorted for consistency)
+        interaction_features = sorted([col for col in data.columns if 'interaction' in col.lower() and 
                               any(geo_var.split('_')[-1] in col or geo_var.split('_')[-2] in col 
-                                  for geo_var in self.geographic_variables)]
+                                  for geo_var in self.geographic_variables)])
         
         all_features = (feature_vars + climate_features[:3] + time_features + 
                        lag_features + trend_features + interaction_features)
         available_features = [feat for feat in all_features if feat in data.columns]
+        
+        # Ensure consistent ordering by sorting the final feature list
+        available_features = sorted(available_features)
         
         X = data[available_features].copy()
         y = data[target_var].copy()
