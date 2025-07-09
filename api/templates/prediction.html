@@ -2,37 +2,193 @@
 
 {% block title %}Environmental Prediction - Obscura No.7{% endblock %}
 
-{% block og_title %}Environmental Prediction - Obscura No.7 Virtual Telescope{% endblock %}
-
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/prediction.css') }}">
+    <style>
+        /* SHAP Analysis Styles */
+        .shap-option {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(139, 69, 19, 0.2);
+            border-radius: 8px;
+            border: 1px solid #8b4513;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            color: #d4af37;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .form-help {
+            color: #999;
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        
+        .quick-locations {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(101, 67, 33, 0.2);
+            border-radius: 8px;
+            border: 1px solid #654321;
+        }
+        
+        .form-label {
+            color: #d4af37;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .location-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .location-btn {
+            padding: 8px 16px;
+            background: rgba(139, 69, 19, 0.5);
+            color: #d4af37;
+            border: 1px solid #8b4513;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .location-btn:hover {
+            background: rgba(139, 69, 19, 0.8);
+            transform: translateY(-1px);
+        }
+        
+        /* SHAP Score Cards */
+        .shap-score-section {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .shap-score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .shap-score-card {
+            background: rgba(139, 69, 19, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #d4af37;
+        }
+        
+        .shap-score-card.final-score {
+            border: 3px solid #d4af37;
+            background: rgba(139, 69, 19, 0.4);
+        }
+        
+        .shap-score-value {
+            font-size: 2em;
+            color: #d4af37;
+            font-weight: bold;
+        }
+        
+        .shap-score-label {
+            color: #ddd;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        
+        /* SHAP Feature Analysis */
+        .shap-analysis-section {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .feature-importance {
+            margin-top: 15px;
+        }
+        
+        .feature-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .feature-name {
+            width: 150px;
+            color: #d4af37;
+            font-size: 12px;
+        }
+        
+        .feature-value-bar {
+            flex: 1;
+            height: 20px;
+            background: linear-gradient(90deg, #d4af37, #8b4513);
+            border-radius: 10px;
+            margin: 0 10px;
+        }
+        
+        .feature-score {
+            color: #d4af37;
+            font-size: 12px;
+            width: 60px;
+            text-align: right;
+        }
+        
+        .shap-story-section {
+            background: rgba(101, 67, 33, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .story-content {
+            color: #ddd;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .story-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+        
+        .story-title {
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="steampunk-container">
-    <!-- Main Title Section -->
-    <section class="hero-section" aria-labelledby="main-title">
-        <div class="brass-panel main-panel">
-            <div class="panel-header">
-                <h1 id="main-title" class="steampunk-title">🔮 ENVIRONMENTAL PREDICTION</h1>
-                <h2 class="steampunk-subtitle">Atmospheric Conditions Oracle</h2>
-                <p class="project-description">
-                    "Peer into the veils of time and witness the dance of atmospheric elements, 
-                    guided by the wisdom of mechanical learning engines."
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Prediction Input Form -->
-    <section class="prediction-section" aria-labelledby="prediction-title">
+<div class="prediction-container">
+    <!-- Prediction Form -->
+    <section class="prediction-form-section" aria-labelledby="form-title">
         <div class="section-header">
-            <h3 id="prediction-title" class="section-title">📍 LOCATION & TIME PARAMETERS</h3>
+            <h2 id="form-title" class="section-title">🔮 ENVIRONMENTAL PREDICTION</h2>
             <div class="brass-line" aria-hidden="true"></div>
         </div>
         
-        <div class="brass-panel prediction-panel">
-            <form id="prediction-form" class="prediction-form">
+        <div class="form-container">
+            <form id="prediction-form" class="steampunk-form" novalidate>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="latitude">Latitude (纬度)</label>
@@ -72,6 +228,30 @@
                         <input type="number" id="future_years" name="future_years" 
                                min="0" max="10" step="1" 
                                placeholder="0" value="0">
+                    </div>
+                    
+                    <div class="form-group shap-option">
+                        <label for="analyze_shap" class="checkbox-label">
+                            <input type="checkbox" id="analyze_shap" name="analyze_shap" checked> 
+                            <span>Enable SHAP Explainable AI Analysis</span>
+                        </label>
+                        <small class="form-help">Advanced AI analysis with feature importance and environmental scoring</small>
+                    </div>
+                </div>
+                
+                <!-- Quick Location Selection -->
+                <div class="quick-locations">
+                    <label class="form-label">🌍 Quick Location Selection:</label>
+                    <div class="location-buttons">
+                        <button type="button" class="location-btn" onclick="setLocation(51.5074, -0.1278, 'London')">
+                            London
+                        </button>
+                        <button type="button" class="location-btn" onclick="setLocation(53.4808, -2.2426, 'Manchester')">
+                            Manchester
+                        </button>
+                        <button type="button" class="location-btn" onclick="setLocation(55.9533, -3.1883, 'Edinburgh')">
+                            Edinburgh
+                        </button>
                     </div>
                 </div>
                 
@@ -160,6 +340,53 @@
             </div>
         </div>
         
+        <!-- SHAP Score Section -->
+        <div class="shap-score-section" id="shap-score-section">
+            <h4 style="color: #d4af37; margin-bottom: 15px;">🧠 SHAP Environmental Scoring</h4>
+            <div class="shap-score-grid">
+                <div class="shap-score-card">
+                    <div class="shap-score-value" id="climate-score">-</div>
+                    <div class="shap-score-label">Climate Score<br>气候评分</div>
+                </div>
+                <div class="shap-score-card">
+                    <div class="shap-score-value" id="geographic-score">-</div>
+                    <div class="shap-score-label">Geographic Score<br>地理评分</div>
+                </div>
+                <div class="shap-score-card">
+                    <div class="shap-score-value" id="economic-score">-</div>
+                    <div class="shap-score-label">Economic Score<br>经济评分</div>
+                </div>
+                <div class="shap-score-card final-score">
+                    <div class="shap-score-value" id="final-score">-</div>
+                    <div class="shap-score-label">Final Score<br>综合评分</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SHAP Feature Analysis -->
+        <div class="shap-analysis-section" id="shap-analysis-section">
+            <h4 style="color: #d4af37; margin-bottom: 15px;">🔍 SHAP Feature Importance Analysis</h4>
+            <div style="color: #d4af37; margin-bottom: 10px;">
+                <strong>Base Value:</strong> <span id="base-value">-</span>
+            </div>
+            <div style="color: #d4af37; margin-bottom: 15px;">
+                <strong>Prediction Value:</strong> <span id="prediction-value">-</span>
+            </div>
+            
+            <h5 style="color: #d4af37; margin-bottom: 10px;">🎯 Key Feature Importance</h5>
+            <div id="feature-importance" class="feature-importance">
+                <!-- Feature importance bars will be dynamically generated here -->
+            </div>
+        </div>
+        
+        <!-- SHAP Story Section -->
+        <div class="shap-story-section" id="shap-story-section">
+            <h4 style="color: #d4af37; margin-bottom: 15px;">📖 AI Environmental Story</h4>
+            <div id="story-content" class="story-content">
+                <!-- AI generated story will appear here -->
+            </div>
+        </div>
+        
         <!-- Location Info -->
         <div class="location-info-panel" id="location-info-panel">
             <div class="brass-panel">
@@ -207,17 +434,27 @@
 </div>
 
 <script>
+// Quick location selection
+function setLocation(lat, lon, name) {
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lon;
+    console.log(`Location set to ${name}: ${lat}, ${lon}`);
+}
+
 // Prediction form handling
 document.getElementById('prediction-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     // Get form data
     const formData = new FormData(e.target);
+    const analyzeShap = document.getElementById('analyze_shap').checked;
+    
     const data = {
         latitude: parseFloat(formData.get('latitude')),
         longitude: parseFloat(formData.get('longitude')),
         month: parseInt(formData.get('month')),
-        future_years: parseInt(formData.get('future_years')) || 0
+        future_years: parseInt(formData.get('future_years')) || 0,
+        analyze_shap: analyzeShap
     };
     
     // Validate data
@@ -230,8 +467,11 @@ document.getElementById('prediction-form').addEventListener('submit', async func
     showLoading();
     
     try {
+        // Determine API endpoint based on SHAP selection
+        const apiEndpoint = analyzeShap ? '/api/v1/shap/predict' : '/api/v1/ml/predict';
+        
         // Call prediction API
-        const response = await fetch('/api/v1/ml/predict', {
+        const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -241,10 +481,10 @@ document.getElementById('prediction-form').addEventListener('submit', async func
         
         const result = await response.json();
         
-        if (response.ok) {
-            displayResults(result);
+        if (response.ok || result.success) {
+            displayResults(result, analyzeShap);
         } else {
-            showError(result.error || 'Prediction failed. Please try again.');
+            showError(result.error || result.message || 'Prediction failed. Please try again.');
         }
     } catch (error) {
         showError('Network error. Please check your connection and try again.');
@@ -254,52 +494,194 @@ document.getElementById('prediction-form').addEventListener('submit', async func
     }
 });
 
-function displayResults(result) {
-    const prediction = result.prediction || {};
-    const modelInfo = result.model_info || {};
-    const locationInfo = result.location_info || {};
+function displayResults(result, isShapAnalysis = false) {
+    let prediction, modelInfo, locationInfo, shapData;
     
-    // Update temperature
+    if (isShapAnalysis && result.data) {
+        // SHAP API response format
+        shapData = result.data;
+        prediction = {
+            temperature: shapData.temperature || 15.0,
+            humidity: shapData.humidity || 75.0,
+            pressure: shapData.pressure || 1013.25
+        };
+        modelInfo = {
+            confidence: shapData.model_accuracy || 0.999,
+            model_type: 'SHAP Enhanced',
+            processing_time: shapData.processing_time || 0.5
+        };
+        locationInfo = {
+            city: shapData.city,
+            coordinates: shapData.coordinates
+        };
+    } else {
+        // Regular ML API response format
+        prediction = result.prediction || {};
+        modelInfo = result.model_info || {};
+        locationInfo = result.location_info || {};
+    }
+    
+    // Update basic prediction values
     document.getElementById('temperature-value').textContent = 
         prediction.temperature ? `${prediction.temperature.toFixed(1)}°C` : '--°C';
     
-    // Update humidity
     document.getElementById('humidity-value').textContent = 
         prediction.humidity ? `${prediction.humidity.toFixed(1)}%` : '--%';
     
-    // Update pressure
     document.getElementById('pressure-value').textContent = 
         prediction.pressure ? `${prediction.pressure.toFixed(1)} hPa` : '-- hPa';
     
     // Update model info
     document.getElementById('confidence-value').textContent = 
         modelInfo.confidence ? `${(modelInfo.confidence * 100).toFixed(1)}%` : '--';
+    
     document.getElementById('model-type-value').textContent = 
         modelInfo.model_type || '--';
+    
     document.getElementById('prediction-time-value').textContent = 
-        result.timestamp ? new Date(result.timestamp).toLocaleString() : '--';
+        modelInfo.processing_time ? `${modelInfo.processing_time.toFixed(2)}s` : '--';
     
     // Update location info
     document.getElementById('coordinates-value').textContent = 
-        `${result.input_parameters.latitude.toFixed(4)}, ${result.input_parameters.longitude.toFixed(4)}`;
-    document.getElementById('nearest-city-value').textContent = 
-        locationInfo.nearest_city || 'Unknown';
+        locationInfo.coordinates ? 
+        `(${locationInfo.coordinates.latitude?.toFixed(4)}, ${locationInfo.coordinates.longitude?.toFixed(4)})` : 
+        `(${shapData?.coordinates?.latitude?.toFixed(4) || '--'}, ${shapData?.coordinates?.longitude?.toFixed(4) || '--'})`;
     
-    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-                       'July', 'August', 'September', 'October', 'November', 'December'];
-    const futureYears = result.input_parameters.future_years || 0;
-    const currentYear = new Date().getFullYear();
-    const targetYear = currentYear + futureYears;
+    document.getElementById('nearest-city-value').textContent = 
+        locationInfo.city || shapData?.city || '--';
+    
+    const currentDate = new Date();
     document.getElementById('time-period-value').textContent = 
-        `${monthNames[result.input_parameters.month]} ${targetYear}`;
+        `${currentDate.toLocaleDateString()} (Month ${data.month || '--'})`;
+    
+    // Handle SHAP-specific data
+    if (isShapAnalysis && shapData) {
+        displayShapResults(shapData);
+    } else {
+        hideShapSections();
+    }
     
     // Show results
     document.getElementById('results-section').style.display = 'block';
-    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayShapResults(shapData) {
+    // Display SHAP scores
+    if (shapData.climate_score !== undefined) {
+        document.getElementById('climate-score').textContent = 
+            `${(shapData.climate_score * 100).toFixed(1)}%`;
+        document.getElementById('geographic-score').textContent = 
+            `${(shapData.geographic_score * 100).toFixed(1)}%`;
+        document.getElementById('economic-score').textContent = 
+            `${(shapData.economic_score * 100).toFixed(1)}%`;
+        document.getElementById('final-score').textContent = 
+            `${(shapData.final_score * 100).toFixed(1)}%`;
+        
+        document.getElementById('shap-score-section').style.display = 'block';
+    }
+    
+    // Display SHAP analysis
+    if (shapData.shap_analysis && !shapData.shap_analysis.error) {
+        const analysis = shapData.shap_analysis;
+        
+        document.getElementById('base-value').textContent = 
+            analysis.base_value?.toFixed(3) || 'N/A';
+        document.getElementById('prediction-value').textContent = 
+            analysis.prediction_value?.toFixed(3) || 'N/A';
+        
+        // Display feature importance
+        displayFeatureImportance(analysis.feature_importance);
+        document.getElementById('shap-analysis-section').style.display = 'block';
+    }
+    
+    // Display AI story
+    if (shapData.ai_story) {
+        displayAIStory(shapData.ai_story);
+        document.getElementById('shap-story-section').style.display = 'block';
+    }
+}
+
+function displayFeatureImportance(features) {
+    const container = document.getElementById('feature-importance');
+    container.innerHTML = '';
+    
+    if (!features) {
+        container.innerHTML = '<div style="color: #999;">Feature analysis not available</div>';
+        return;
+    }
+    
+    // Convert to array and sort
+    const featureArray = Object.entries(features)
+        .map(([name, value]) => ({name, value: Math.abs(value)}))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8); // Show top 8 features
+    
+    const maxValue = Math.max(...featureArray.map(f => f.value));
+    
+    featureArray.forEach(feature => {
+        const barDiv = document.createElement('div');
+        barDiv.className = 'feature-bar';
+        
+        const width = (feature.value / maxValue) * 100;
+        
+        barDiv.innerHTML = `
+            <div class="feature-name">${feature.name}</div>
+            <div class="feature-value-bar" style="width: ${width}%"></div>
+            <div class="feature-score">${feature.value.toFixed(3)}</div>
+        `;
+        
+        container.appendChild(barDiv);
+    });
+}
+
+function displayAIStory(story) {
+    const container = document.getElementById('story-content');
+    container.innerHTML = '';
+    
+    if (typeof story === 'string') {
+        container.innerHTML = `<div class="story-section"><div class="story-content">${story}</div></div>`;
+        return;
+    }
+    
+    // Structured story format
+    const sections = [
+        { key: 'introduction', title: 'Introduction' },
+        { key: 'main_findings', title: 'Main Findings' },
+        { key: 'feature_analysis', title: 'Feature Analysis' },
+        { key: 'risk_assessment', title: 'Risk Assessment' },
+        { key: 'conclusion', title: 'Conclusion' },
+        { key: 'summary', title: 'Summary' },
+        { key: 'insights', title: 'Key Insights' }
+    ];
+    
+    sections.forEach(section => {
+        if (story[section.key]) {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'story-section';
+            
+            const content = Array.isArray(story[section.key]) ? 
+                story[section.key].join('<br>• ') : 
+                story[section.key];
+            
+            sectionDiv.innerHTML = `
+                <div class="story-title">${section.title}</div>
+                <div class="story-content">${Array.isArray(story[section.key]) ? '• ' + content : content}</div>
+            `;
+            
+            container.appendChild(sectionDiv);
+        }
+    });
+}
+
+function hideShapSections() {
+    document.getElementById('shap-score-section').style.display = 'none';
+    document.getElementById('shap-analysis-section').style.display = 'none';
+    document.getElementById('shap-story-section').style.display = 'none';
 }
 
 function showLoading() {
     document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('error-panel').style.display = 'none';
 }
 
 function hideLoading() {
@@ -309,18 +691,18 @@ function hideLoading() {
 function showError(message) {
     document.getElementById('error-message').textContent = message;
     document.getElementById('error-panel').style.display = 'block';
-    document.getElementById('error-panel').scrollIntoView({ behavior: 'smooth' });
+    hideLoading();
 }
 
 function hideError() {
     document.getElementById('error-panel').style.display = 'none';
 }
 
-// Set current month as default
-document.getElementById('month').value = new Date().getMonth() + 1;
-
-// Auto-fill London coordinates as example
-document.getElementById('latitude').placeholder = "51.5074 (London)";
-document.getElementById('longitude').placeholder = "-0.1278 (London)";
+// Initialize form with default London coordinates
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('latitude').value = '51.5074';
+    document.getElementById('longitude').value = '-0.1278';
+    document.getElementById('month').value = '7'; // July
+});
 </script>
 {% endblock %} 

@@ -3,6 +3,7 @@ Story Generator for Environmental Change Index Framework
 
 Converts SHAP analysis results into human-readable natural language explanations,
 creating compelling narratives about environmental changes and their causes.
+Uses Deepseek LLM API for intelligent story generation.
 """
 
 import numpy as np
@@ -12,6 +13,9 @@ from dataclasses import dataclass
 import logging
 from datetime import datetime
 import json
+import requests
+import time
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -41,16 +45,104 @@ class EnvironmentalStory:
     confidence_level: str
     metadata: Dict[str, Any]
 
+class DeepseekAPIClient:
+    """Client for Deepseek LLM API."""
+    
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+        self.base_url = "https://api.deepseek.com/v1/chat/completions"
+        self.headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        self.max_retries = 3
+        self.retry_delay = 1
+    
+    def generate_story(self, prompt: str, max_tokens: int = 800, 
+                      temperature: float = 0.7) -> str:
+        """
+        Generate story using Deepseek LLM API.
+        
+        Args:
+            prompt: The prompt for story generation
+            max_tokens: Maximum tokens in response
+            temperature: Creativity level (0.0-1.0)
+            
+        Returns:
+            Generated story text
+        """
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a professional environmental scientist and technical writer. You can transform complex environmental data analysis results into clear, engaging, and accurate English narratives. Your writing style should be professional yet accessible, combining scientific rigor with readability."
+                },
+                {
+                    "role": "user", 
+                    "content": prompt
+                }
+            ],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            "stream": False
+        }
+        
+        for attempt in range(self.max_retries):
+            try:
+                response = requests.post(
+                    self.base_url,
+                    headers=self.headers,
+                    json=payload,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    return result['choices'][0]['message']['content'].strip()
+                else:
+                    logger.warning(f"API request failed with status {response.status_code}: {response.text}")
+                    if attempt < self.max_retries - 1:
+                        time.sleep(self.retry_delay * (2 ** attempt))
+                    else:
+                        raise Exception(f"API request failed: {response.status_code}")
+                        
+            except Exception as e:
+                logger.error(f"API call attempt {attempt + 1} failed: {str(e)}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.retry_delay * (2 ** attempt))
+                else:
+                    raise e
+        
+        raise Exception("All API call attempts failed")
+
 class StoryGenerator:
     """
     Natural Language Story Generator for Environmental Analysis.
     
     Converts technical SHAP analysis results into engaging, understandable
-    narratives about environmental changes and their causal factors.
+    narratives about environmental changes and their causal factors using
+    Deepseek LLM API.
     """
     
-    def __init__(self):
-        """Initialize Story Generator."""
+    def __init__(self, api_key: str = None):
+        """Initialize Story Generator with LLM API."""
+        # Try to get API key from parameter or environment variable
+        self.api_key = api_key or os.getenv('DEEPSEEK_API_KEY')
+        
+        if self.api_key:
+            try:
+                self.llm_client = DeepseekAPIClient(self.api_key)
+                self.use_llm = True
+                logger.info("StoryGenerator initialized with Deepseek LLM API")
+            except Exception as e:
+                logger.warning(f"Failed to initialize LLM client: {e}. Falling back to template mode.")
+                self.use_llm = False
+        else:
+            logger.info("No Deepseek API key found, using template mode")
+            self.use_llm = False
+        
+        # Fallback templates for when LLM is unavailable
         self.story_templates = self._initialize_templates()
         self.narrative_patterns = self._initialize_narrative_patterns()
         self.environmental_vocabulary = self._initialize_vocabulary()
@@ -60,7 +152,7 @@ class StoryGenerator:
     def generate_comprehensive_story(self, shap_result, feature_analysis_report,
                                    decomposition_report, location: str = "the analyzed region") -> EnvironmentalStory:
         """
-        Generate comprehensive environmental change story.
+        Generate comprehensive environmental change story using LLM.
         
         Args:
             shap_result: SHAPResult object
@@ -73,7 +165,107 @@ class StoryGenerator:
         """
         logger.info(f"Generating comprehensive environmental story for {location}")
         
-        # Generate story elements
+        if self.use_llm:
+            return self._generate_story_with_llm(
+                shap_result, feature_analysis_report, decomposition_report, location
+            )
+        else:
+            return self._generate_story_with_template(
+                shap_result, feature_analysis_report, decomposition_report, location
+            )
+    
+    def _generate_story_with_llm(self, shap_result, feature_analysis_report,
+                               decomposition_report, location: str) -> EnvironmentalStory:
+        """Generate story using LLM API."""
+        # Prepare data summary for LLM
+        data_summary = self._prepare_data_summary(
+            shap_result, feature_analysis_report, decomposition_report, location
+        )
+        
+        # Generate different story elements using LLM
+        story_elements = []
+        
+        # 1. Generate Introduction
+        intro_prompt = self._create_introduction_prompt(data_summary, location)
+        intro_content = self.llm_client.generate_story(intro_prompt, max_tokens=80)
+        story_elements.append(StoryElement(
+            element_type='introduction',
+            content=intro_content,
+            confidence=0.9,
+            data_source='llm_generated'
+        ))
+        
+        # 2. Generate Main Findings
+        main_findings_prompt = self._create_main_findings_prompt(data_summary, location)
+        main_findings_content = self.llm_client.generate_story(main_findings_prompt, max_tokens=120)
+        story_elements.append(StoryElement(
+            element_type='main_finding',
+            content=main_findings_content,
+            confidence=0.85,
+            data_source='llm_generated'
+        ))
+        
+        # 3. Generate Feature Analysis
+        feature_prompt = self._create_feature_analysis_prompt(data_summary, location)
+        feature_content = self.llm_client.generate_story(feature_prompt, max_tokens=80)
+        story_elements.append(StoryElement(
+            element_type='supporting_detail',
+            content=feature_content,
+            confidence=0.8,
+            data_source='llm_generated'
+        ))
+        
+        # 4. Generate Risk Analysis
+        risk_prompt = self._create_risk_analysis_prompt(data_summary, location)
+        risk_content = self.llm_client.generate_story(risk_prompt, max_tokens=80)
+        story_elements.append(StoryElement(
+            element_type='supporting_detail',
+            content=risk_content,
+            confidence=0.8,
+            data_source='llm_generated'
+        ))
+        
+        # 5. Generate Conclusion and Recommendations
+        conclusion_prompt = self._create_conclusion_prompt(data_summary, location)
+        conclusion_content = self.llm_client.generate_story(conclusion_prompt, max_tokens=80)
+        story_elements.append(StoryElement(
+            element_type='conclusion',
+            content=conclusion_content,
+            confidence=0.85,
+            data_source='llm_generated'
+        ))
+        
+        # Generate title and summary using LLM
+        title_prompt = self._create_title_prompt(data_summary, location)
+        title = self.llm_client.generate_story(title_prompt, max_tokens=30, temperature=0.5)
+        
+        summary_prompt = self._create_summary_prompt(story_elements, location)
+        summary = self.llm_client.generate_story(summary_prompt, max_tokens=100, temperature=0.5)
+        
+        # Extract key insights using LLM
+        insights_prompt = self._create_insights_prompt(data_summary, location)
+        insights_text = self.llm_client.generate_story(insights_prompt, max_tokens=80, temperature=0.5)
+        key_insights = [insight.strip() for insight in insights_text.split('\n') if insight.strip()][:3]
+        
+        # Calculate confidence and create metadata
+        confidence_level = self._calculate_story_confidence(story_elements)
+        metadata = self._create_metadata(shap_result, story_elements, location, 'llm_generated')
+        
+        return EnvironmentalStory(
+            title=title.strip().strip('"').strip("'"),
+            summary=summary,
+            story_elements=story_elements,
+            key_insights=key_insights,
+            confidence_level=confidence_level,
+            metadata=metadata
+        )
+    
+    def _generate_story_with_template(self, shap_result, feature_analysis_report,
+                                    decomposition_report, location: str) -> EnvironmentalStory:
+        """Generate story using template mode (fallback)."""
+        logger.info("Using template mode for story generation")
+        
+        # Generate story elements using original template methods
         story_elements = []
         
         # 1. Introduction
@@ -89,13 +281,14 @@ class StoryGenerator:
         story_elements.extend(feature_narrative)
         
         # 4. Causal chain stories
-        causal_stories = self._generate_causal_chain_stories(decomposition_report.causal_chains)
-        story_elements.extend(causal_stories)
+        if hasattr(decomposition_report, 'causal_chains'):
+            causal_stories = self._generate_causal_chain_stories(decomposition_report.causal_chains)
+            story_elements.extend(causal_stories)
         
         # 5. Risk and protection narrative
         risk_narrative = self._generate_risk_narrative(
-            decomposition_report.risk_factors, 
-            decomposition_report.protective_factors
+            getattr(decomposition_report, 'risk_factors', []), 
+            getattr(decomposition_report, 'protective_factors', [])
         )
         story_elements.append(risk_narrative)
         
@@ -116,20 +309,7 @@ class StoryGenerator:
         confidence_level = self._calculate_story_confidence(story_elements)
         
         # Create metadata
-        metadata = {
-            'generation_timestamp': datetime.now().isoformat(),
-            'location': location,
-            'analysis_scope': {
-                'feature_count': len(shap_result.feature_names),
-                'sample_count': len(shap_result.shap_values),
-                'model_type': shap_result.model_metadata.get('model_type', 'unknown')
-            },
-            'story_statistics': {
-                'element_count': len(story_elements),
-                'word_count': sum(len(elem.content.split()) for elem in story_elements),
-                'confidence_distribution': self._get_confidence_distribution(story_elements)
-            }
-        }
+        metadata = self._create_metadata(shap_result, story_elements, location, 'template_generated')
         
         return EnvironmentalStory(
             title=title,
@@ -139,6 +319,239 @@ class StoryGenerator:
             confidence_level=confidence_level,
             metadata=metadata
         )
+     
+    def _create_metadata(self, shap_result, story_elements: List[StoryElement], 
+                        location: str, generation_method: str) -> Dict[str, Any]:
+        """Create metadata for the story."""
+        return {
+            'generation_timestamp': datetime.now().isoformat(),
+            'generation_method': generation_method,
+            'location': location,
+            'analysis_scope': {
+                'feature_count': len(shap_result.feature_names),
+                'sample_count': len(shap_result.shap_values),
+                'model_type': getattr(shap_result, 'model_metadata', {}).get('model_type', 'unknown')
+            },
+            'story_statistics': {
+                'element_count': len(story_elements),
+                'word_count': sum(len(elem.content.split()) for elem in story_elements),
+                'confidence_distribution': self._get_confidence_distribution(story_elements)
+            },
+            'llm_info': {
+                'api_used': 'deepseek' if generation_method == 'llm_generated' else 'none',
+                'api_available': self.use_llm
+            }
+        }
+     
+    def _prepare_data_summary(self, shap_result, feature_analysis_report, 
+                            decomposition_report, location: str) -> Dict[str, Any]:
+        """Prepare structured data summary for LLM prompts."""
+        summary = {
+            'location': location,
+            'feature_count': len(shap_result.feature_names),
+            'sample_count': len(shap_result.shap_values),
+            'top_features': [],
+            'score_changes': {},
+            'risk_factors': [],
+            'protective_factors': [],
+            'causal_chains': [],
+            'primary_drivers': []
+        }
+        
+        # Top important features
+        if hasattr(feature_analysis_report, 'critical_features'):
+            summary['top_features'] = feature_analysis_report.critical_features[:5]
+        
+        # Score decompositions
+        if hasattr(decomposition_report, 'score_decompositions'):
+            for score_type, decomp in decomposition_report.score_decompositions.items():
+                summary['score_changes'][score_type] = {
+                    'change': decomp.total_change,
+                    'baseline': decomp.baseline_value,
+                    'predicted': decomp.predicted_value
+                }
+        
+        # Risk and protective factors
+        if hasattr(decomposition_report, 'risk_factors'):
+            summary['risk_factors'] = decomposition_report.risk_factors[:3]
+        if hasattr(decomposition_report, 'protective_factors'):
+            summary['protective_factors'] = decomposition_report.protective_factors[:3]
+        
+        # Primary drivers
+        if hasattr(decomposition_report, 'primary_drivers'):
+            summary['primary_drivers'] = [
+                driver.factor_name for driver in decomposition_report.primary_drivers[:3]
+            ]
+        
+        # Causal chains
+        if hasattr(decomposition_report, 'causal_chains') and decomposition_report.causal_chains:
+            summary['causal_chains'] = [
+                {
+                    'trigger': chain.trigger_factors[:2],
+                    'outcomes': chain.outcome_factors[:2],
+                    'confidence': chain.confidence
+                }
+                for chain in decomposition_report.causal_chains[:2]
+            ]
+        
+        return summary
+    
+    def _create_introduction_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for introduction section."""
+        return f"""
+Please generate a brief introduction for the following environmental analysis:
+
+Analysis Location: {location}
+Data Size: {data_summary['feature_count']} environmental indicators, {data_summary['sample_count']} data points
+Analysis Method: SHAP analysis
+
+Generate a concise opening (30-40 words):
+- Professional and clear
+- Mention SHAP analysis
+- In English
+"""
+    
+    def _create_main_findings_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for main findings section."""
+        score_info = ""
+        if 'final' in data_summary['score_changes']:
+            final_change = data_summary['score_changes']['final']['change']
+            score_info = f"Overall environmental change index: {final_change:+.2f}"
+        
+        drivers_info = ""
+        if data_summary['primary_drivers']:
+            drivers_info = f"Primary drivers: {', '.join(data_summary['primary_drivers'][:3])}"
+        
+        return f"""
+Please generate the main findings for {location}:
+
+{score_info}
+{drivers_info}
+Key features: {', '.join(data_summary['top_features'][:3]) if data_summary['top_features'] else 'Analysis in progress'}
+
+Generate concise main findings (40-60 words):
+- Summarize overall environmental situation
+- Mention key drivers
+- Professional tone
+- In English
+"""
+    
+    def _create_feature_analysis_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for feature analysis section."""
+        features_list = ', '.join(data_summary['top_features'][:3]) if data_summary['top_features'] else 'Feature analysis in progress'
+        
+        return f"""
+Please generate feature analysis for {location}:
+
+Key features: {features_list}
+Risk factors: {', '.join(data_summary['risk_factors'][:2]) if data_summary['risk_factors'] else 'Assessment in progress'}
+
+Generate brief feature analysis (30-40 words):
+- Explain key feature impacts
+- Mention risk factors
+- Concise and clear
+- In English
+"""
+    
+    def _create_risk_analysis_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for risk analysis section."""
+        risk_factors = ', '.join(data_summary['risk_factors'][:2]) if data_summary['risk_factors'] else 'No significant risks'
+        protective_factors = ', '.join(data_summary['protective_factors'][:2]) if data_summary['protective_factors'] else 'No significant protection'
+        
+        return f"""
+Please generate risk analysis for {location}:
+
+Risk factors: {risk_factors}
+Protective factors: {protective_factors}
+
+Generate brief risk assessment (30-40 words):
+- Assess risk level
+- Mention protective factors
+- Balanced analysis
+- In English
+"""
+    
+    def _create_conclusion_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for conclusion section."""
+        overall_trend = "change in progress"
+        if 'final' in data_summary['score_changes']:
+            change = data_summary['score_changes']['final']['change']
+            if change > 0.2:
+                overall_trend = "environmental pressure increasing"
+            elif change < -0.2:
+                overall_trend = "environmental conditions improving"
+            else:
+                overall_trend = "environmental conditions relatively stable"
+        
+        return f"""
+Please generate conclusion for {location}:
+
+Overall trend: {overall_trend}
+Key findings: {', '.join(data_summary['top_features'][:2]) if data_summary['top_features'] else 'Multiple factors'}
+
+Generate brief conclusion (30-40 words):
+- Summarize key results
+- Provide 1-2 recommendations
+- Forward-looking
+- In English
+"""
+    
+    def _create_title_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for title generation."""
+        return f"""
+Please generate an attractive title for the following environmental analysis report:
+
+Location: {location}
+Analysis Type: Environmental Change Index Analysis
+Main Focus: {', '.join(data_summary['top_features'][:2]) if data_summary['top_features'] else 'Environmental Change'}
+
+Requirements:
+- Title length 10-20 words
+- Highlight location and analysis topic
+- Professional and readable
+- Only return the title, no other content
+- In English
+"""
+    
+    def _create_summary_prompt(self, story_elements: List[StoryElement], location: str) -> str:
+        """Create prompt for summary generation."""
+        key_content = []
+        for element in story_elements:
+            if element.element_type in ['main_finding', 'conclusion']:
+                # Get first sentence
+                first_sentence = element.content.split('.')[0] + '.'
+                key_content.append(first_sentence)
+        
+        content_text = ' '.join(key_content[:2])
+        
+        return f"""
+Please generate a concise summary for {location}:
+
+Key Content: {content_text}
+
+Requirements:
+- Summary length 40-50 words
+- Summarize the most important findings
+- Professional tone
+- In English
+"""
+    
+    def _create_insights_prompt(self, data_summary: Dict[str, Any], location: str) -> str:
+        """Create prompt for key insights generation."""
+        return f"""
+Please extract 3 key insights for {location}:
+
+Important Features: {', '.join(data_summary['top_features'][:3]) if data_summary['top_features'] else 'Analysis in progress'}
+Primary Drivers: {', '.join(data_summary['primary_drivers'][:2]) if data_summary['primary_drivers'] else 'Identification in progress'}
+
+Requirements:
+- One insight per line
+- 10-15 words per line
+- Most important findings only
+- Concise and clear
+- In English
+- Format: One insight per line, no numbering
+"""
     
     def generate_score_explanation(self, score_decomposition, score_type: str) -> str:
         """

@@ -80,10 +80,11 @@ class ImageDetailPage {
         try {
             this.showLoading();
 
-            // 并行加载多个数据源
-            const [imageResponse, relatedResponse] = await Promise.all([
+            // 并行加载多个数据源，包括SHAP分析
+            const [imageResponse, relatedResponse, shapResponse] = await Promise.all([
                 fetch(`/api/v1/images/${this.imageId}`),
-                fetch(`/api/v1/images/${this.imageId}/related`)
+                fetch(`/api/v1/images/${this.imageId}/related`),
+                fetch(`/api/v1/images/${this.imageId}/shap-analysis`)
             ]);
 
             if (!imageResponse.ok) {
@@ -98,6 +99,16 @@ class ImageDetailPage {
             if (relatedResponse.ok) {
                 const relatedData = await relatedResponse.json();
                 this.relatedImages = relatedData.images || [];
+            }
+
+            // 加载SHAP分析数据
+            if (shapResponse.ok) {
+                const shapData = await shapResponse.json();
+                this.shapAnalysisData = shapData.data;
+                console.log('🧠 SHAP analysis data loaded successfully');
+            } else {
+                console.warn('SHAP analysis not available for this image');
+                this.shapAnalysisData = null;
             }
 
             await this.populatePageContent();
@@ -124,6 +135,9 @@ class ImageDetailPage {
 
         // 填充预测数据
         this.populatePredictionData();
+
+        // 填充SHAP分析数据
+        this.populateSHAPAnalysis();
 
         // 创建数据可视化
         await this.createDataVisualizations();
@@ -237,6 +251,211 @@ class ImageDetailPage {
     }
 
     /**
+     * 填充SHAP分析数据
+     */
+    populateSHAPAnalysis() {
+        if (!this.shapAnalysisData || !this.shapAnalysisData.shap_analysis) {
+            console.log('No SHAP analysis data available');
+            // 隐藏SHAP分析部分
+            const shapSection = document.querySelector('.shap-analysis-section');
+            if (shapSection) {
+                shapSection.style.display = 'none';
+            }
+            return;
+        }
+
+        const shapData = this.shapAnalysisData.shap_analysis;
+        
+        // 填充SHAP分数卡片
+        this.populateSHAPScores(shapData);
+        
+        // 填充特征重要性
+        this.populateFeatureImportance(shapData);
+        
+        // 填充AI故事
+        this.populateAIStory(shapData);
+        
+        // 填充技术信息
+        this.populateSHAPTechnicalInfo(shapData);
+        
+        console.log('🧠 SHAP analysis populated successfully');
+    }
+
+    /**
+     * 填充SHAP分数卡片
+     */
+    populateSHAPScores(shapData) {
+        // 气候分数
+        const climateScore = document.querySelector('#shapClimateScore');
+        const climateScoreFill = document.querySelector('#climateScoreFill');
+        if (climateScore && shapData.climate_score !== undefined) {
+            const score = (shapData.climate_score * 100).toFixed(1);
+            climateScore.textContent = `${score}%`;
+            climateScoreFill.style.width = `${score}%`;
+        }
+
+        // 地理分数
+        const geographicScore = document.querySelector('#shapGeographicScore');
+        const geographicScoreFill = document.querySelector('#geographicScoreFill');
+        if (geographicScore && shapData.geographic_score !== undefined) {
+            const score = (shapData.geographic_score * 100).toFixed(1);
+            geographicScore.textContent = `${score}%`;
+            geographicScoreFill.style.width = `${score}%`;
+        }
+
+        // 经济分数
+        const economicScore = document.querySelector('#shapEconomicScore');
+        const economicScoreFill = document.querySelector('#economicScoreFill');
+        if (economicScore && shapData.economic_score !== undefined) {
+            const score = (shapData.economic_score * 100).toFixed(1);
+            economicScore.textContent = `${score}%`;
+            economicScoreFill.style.width = `${score}%`;
+        }
+
+        // 最终分数
+        const finalScore = document.querySelector('#shapFinalScore');
+        const finalScoreFill = document.querySelector('#finalScoreFill');
+        if (finalScore && shapData.final_score !== undefined) {
+            const score = (shapData.final_score * 100).toFixed(1);
+            finalScore.textContent = `${score}%`;
+            finalScoreFill.style.width = `${score}%`;
+        }
+    }
+
+    /**
+     * 填充特征重要性
+     */
+    populateFeatureImportance(shapData) {
+        const featureBarsContainer = document.querySelector('#shapFeatureBars');
+        const featureLoading = document.querySelector('#shapFeatureLoading');
+        
+        if (!featureBarsContainer) return;
+
+        // 隐藏loading，显示内容
+        if (featureLoading) featureLoading.style.display = 'none';
+        featureBarsContainer.style.display = 'block';
+
+        // 清空容器
+        featureBarsContainer.innerHTML = '';
+
+        // 检查是否有特征重要性数据
+        const featureImportance = shapData.shap_analysis?.feature_importance || {};
+        const features = Object.entries(featureImportance).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+
+        if (features.length === 0) {
+            featureBarsContainer.innerHTML = '<p class="no-data">No feature importance data available</p>';
+            return;
+        }
+
+        // 创建特征重要性条形图
+        features.forEach(([feature, importance]) => {
+            const featureBar = document.createElement('div');
+            featureBar.className = 'feature-bar-item';
+            
+            const absoluteImportance = Math.abs(importance);
+            const maxImportance = Math.abs(features[0][1]);
+            const width = (absoluteImportance / maxImportance) * 100;
+            const isPositive = importance >= 0;
+            
+            featureBar.innerHTML = `
+                <div class="feature-label">${this.formatFeatureName(feature)}</div>
+                <div class="feature-bar-track">
+                    <div class="feature-bar-fill ${isPositive ? 'positive' : 'negative'}" 
+                         style="width: ${width}%"></div>
+                </div>
+                <div class="feature-value">${importance.toFixed(3)}</div>
+            `;
+            
+            featureBarsContainer.appendChild(featureBar);
+        });
+    }
+
+    /**
+     * 填充AI故事
+     */
+    populateAIStory(shapData) {
+        const storyContent = document.querySelector('#shapStoryContent');
+        const storyLoading = document.querySelector('#shapStoryLoading');
+        
+        if (!storyContent || !shapData.ai_story) return;
+
+        // 隐藏loading，显示内容
+        if (storyLoading) storyLoading.style.display = 'none';
+        storyContent.style.display = 'block';
+
+        const story = shapData.ai_story;
+
+        // 填充各个故事部分
+        const storyIntroduction = document.querySelector('#storyIntroduction');
+        if (storyIntroduction && story.introduction) {
+            storyIntroduction.textContent = story.introduction;
+        }
+
+        const storyFindings = document.querySelector('#storyFindings');
+        if (storyFindings && story.main_findings) {
+            storyFindings.textContent = story.main_findings;
+        }
+
+        const storyAssessment = document.querySelector('#storyAssessment');
+        if (storyAssessment && story.risk_assessment) {
+            storyAssessment.textContent = story.risk_assessment;
+        }
+
+        const storyConclusion = document.querySelector('#storyConclusion');
+        if (storyConclusion && story.conclusion) {
+            storyConclusion.textContent = story.conclusion;
+        }
+    }
+
+    /**
+     * 填充SHAP技术信息
+     */
+    populateSHAPTechnicalInfo(shapData) {
+        // 模型精度
+        const modelAccuracy = document.querySelector('#shapModelAccuracy');
+        if (modelAccuracy && shapData.model_accuracy !== undefined) {
+            modelAccuracy.textContent = `${(shapData.model_accuracy * 100).toFixed(2)}%`;
+        }
+
+        // 处理时间
+        const processingTime = document.querySelector('#shapProcessingTime');
+        if (processingTime && shapData.processing_time !== undefined) {
+            processingTime.textContent = `${shapData.processing_time.toFixed(2)}s`;
+        }
+
+        // 分析时间戳
+        const timestamp = document.querySelector('#shapTimestamp');
+        if (timestamp && this.shapAnalysisData.integration_metadata?.analysis_timestamp) {
+            const date = new Date(this.shapAnalysisData.integration_metadata.analysis_timestamp);
+            timestamp.textContent = date.toLocaleString();
+        }
+
+        // 模型版本
+        const modelVersion = document.querySelector('#shapModelVersion');
+        if (modelVersion && this.shapAnalysisData.integration_metadata?.model_version) {
+            modelVersion.textContent = this.shapAnalysisData.integration_metadata.model_version;
+        }
+    }
+
+    /**
+     * 格式化特征名称
+     */
+    formatFeatureName(feature) {
+        const featureNames = {
+            'temperature': 'Temperature',
+            'humidity': 'Humidity', 
+            'pressure': 'Pressure',
+            'location_factor': 'Location Factor',
+            'seasonal_factor': 'Seasonal Factor',
+            'climate_zone': 'Climate Zone',
+            'vegetation_index': 'Vegetation Index',
+            'urban_density': 'Urban Density'
+        };
+        
+        return featureNames[feature] || feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
      * 创建数据可视化
      */
     async createDataVisualizations() {
@@ -266,6 +485,41 @@ class ImageDetailPage {
 
         } catch (error) {
             console.error('Error creating visualizations:', error);
+        }
+    }
+
+    /**
+     * 绘制SHAP图表
+     */
+    drawSHAPCharts() {
+        if (!this.shapAnalysisData) return;
+
+        const featureImportanceData = this.shapAnalysisData.feature_importance;
+        const predictionValueData = this.shapAnalysisData.prediction_value;
+        const interactionData = this.shapAnalysisData.interaction_effects;
+
+        // 特征重要性图表
+        if (featureImportanceData && featureImportanceData.length > 0) {
+            window.dataVisualization.createFeatureImportanceChart(
+                '#shap-feature-importance-chart',
+                featureImportanceData
+            );
+        }
+
+        // 预测值图表
+        if (predictionValueData && predictionValueData.length > 0) {
+            window.dataVisualization.createPredictionValueChart(
+                '#shap-prediction-value-chart',
+                predictionValueData
+            );
+        }
+
+        // 交互作用图表
+        if (interactionData && interactionData.length > 0) {
+            window.dataVisualization.createInteractionChart(
+                '#shap-interaction-chart',
+                interactionData
+            );
         }
     }
 

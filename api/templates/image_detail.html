@@ -189,6 +189,129 @@
             </div>
         </section>
 
+        <!-- SHAP Analysis Section -->
+        <section class="shap-analysis-section" aria-labelledby="shap-section-title">
+            <div class="shap-header">
+                <h2 class="shap-title" id="shap-section-title">🧠 SHAP Explainability Analysis</h2>
+                <p class="shap-description">
+                    Advanced machine learning interpretability analysis revealing feature contributions and model reasoning
+                </p>
+            </div>
+            
+            <!-- SHAP Score Cards -->
+            <div class="shap-scores-grid" id="shapScoresGrid">
+                <div class="shap-score-card">
+                    <div class="score-header">
+                        <span class="score-icon" aria-hidden="true">🌡️</span>
+                        <h3>Climate Score</h3>
+                    </div>
+                    <div class="score-value" id="shapClimateScore">Loading...</div>
+                    <div class="score-bar">
+                        <div class="score-fill climate" id="climateScoreFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="shap-score-card">
+                    <div class="score-header">
+                        <span class="score-icon" aria-hidden="true">🗺️</span>
+                        <h3>Geographic Score</h3>
+                    </div>
+                    <div class="score-value" id="shapGeographicScore">Loading...</div>
+                    <div class="score-bar">
+                        <div class="score-fill geographic" id="geographicScoreFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="shap-score-card">
+                    <div class="score-header">
+                        <span class="score-icon" aria-hidden="true">💰</span>
+                        <h3>Economic Score</h3>
+                    </div>
+                    <div class="score-value" id="shapEconomicScore">Loading...</div>
+                    <div class="score-bar">
+                        <div class="score-fill economic" id="economicScoreFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="shap-score-card final-score">
+                    <div class="score-header">
+                        <span class="score-icon" aria-hidden="true">🎯</span>
+                        <h3>Final Score</h3>
+                    </div>
+                    <div class="score-value" id="shapFinalScore">Loading...</div>
+                    <div class="score-bar">
+                        <div class="score-fill final" id="finalScoreFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature Importance Visualization -->
+            <div class="shap-feature-importance">
+                <h3 class="feature-title">🔍 Feature Importance Analysis</h3>
+                <div class="feature-chart-container">
+                    <div class="chart-loading" id="shapFeatureLoading">
+                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
+                        <p>Analyzing feature contributions...</p>
+                    </div>
+                    <div class="feature-bars" id="shapFeatureBars" style="display: none;">
+                        <!-- Dynamic feature importance bars will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Story Section -->
+            <div class="shap-ai-story">
+                <h3 class="story-title">📖 AI-Generated Environmental Story</h3>
+                <div class="story-container">
+                    <div class="story-loading" id="shapStoryLoading">
+                        <div class="story-spinner" aria-hidden="true">✍️</div>
+                        <p>Generating environmental narrative...</p>
+                    </div>
+                    <div class="story-content" id="shapStoryContent" style="display: none;">
+                        <div class="story-section">
+                            <h4>Introduction</h4>
+                            <p id="storyIntroduction">Loading...</p>
+                        </div>
+                        <div class="story-section">
+                            <h4>Key Findings</h4>
+                            <p id="storyFindings">Loading...</p>
+                        </div>
+                        <div class="story-section">
+                            <h4>Environmental Assessment</h4>
+                            <p id="storyAssessment">Loading...</p>
+                        </div>
+                        <div class="story-section">
+                            <h4>Conclusion</h4>
+                            <p id="storyConclusion">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SHAP Technical Details -->
+            <div class="shap-technical">
+                <h3 class="shap-tech-title">⚙️ SHAP Model Information</h3>
+                <div class="shap-tech-grid">
+                    <div class="shap-tech-item">
+                        <span class="tech-label">Model Accuracy</span>
+                        <span class="tech-value" id="shapModelAccuracy">Loading...</span>
+                    </div>
+                    <div class="shap-tech-item">
+                        <span class="tech-label">Processing Time</span>
+                        <span class="tech-value" id="shapProcessingTime">Loading...</span>
+                    </div>
+                    <div class="shap-tech-item">
+                        <span class="tech-label">Analysis Timestamp</span>
+                        <span class="tech-value" id="shapTimestamp">Loading...</span>
+                    </div>
+                    <div class="shap-tech-item">
+                        <span class="tech-label">Model Version</span>
+                        <span class="tech-value" id="shapModelVersion">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Technical Details Section -->
         <section class="technical-details" aria-labelledby="tech-section-title">
             <h2 class="tech-title" id="tech-section-title">⚙️ Technical Specifications</h2>

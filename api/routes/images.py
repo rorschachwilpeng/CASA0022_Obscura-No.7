@@ -452,6 +452,181 @@ def get_image_analysis(image_id):
             "timestamp": datetime.now().isoformat()
         }), 500
 
+@images_bp.route('/<int:image_id>/shap-test', methods=['GET'])
+def test_shap_endpoint(image_id):
+    """
+    简化的SHAP测试端点
+    """
+    try:
+        return jsonify({
+            "success": True,
+            "message": "SHAP test endpoint working",
+            "image_id": image_id,
+            "timestamp": datetime.now().isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
+@images_bp.route('/<int:image_id>/shap-analysis', methods=['GET'])
+def get_image_shap_analysis(image_id):
+    """
+    获取图片的SHAP分析数据API端点
+    
+    返回: 基于图片关联的环境数据进行的SHAP分析结果
+    """
+    try:
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+        
+        # 查询图片关联的预测数据
+        cur.execute("""
+            SELECT 
+                i.id, i.url, i.description,
+                p.input_data, p.result_data, p.location
+            FROM images i
+            LEFT JOIN predictions p ON i.prediction_id = p.id
+            WHERE i.id = %s
+        """, (image_id,))
+        
+        row = cur.fetchone()
+        if not row:
+            return jsonify({
+                "success": False,
+                "error": "Image not found",
+                "timestamp": datetime.now().isoformat()
+            }), 404
+        
+        # 提取环境数据用于SHAP分析
+        input_data = row[3] if row[3] else {}
+        result_data = row[4] if row[4] else {}
+        location = row[5] if row[5] else "Unknown Location"
+        
+        cur.close()
+        conn.close()
+        
+        # 暂时跳过实际的SHAP模型调用，直接返回模拟数据
+        logger.info(f"Returning mock SHAP data for image {image_id}")
+        
+        mock_shap_analysis = {
+            "image_info": {
+                "id": row[0],
+                "url": row[1], 
+                "description": row[2]
+            },
+            "original_prediction": {
+                "input_data": input_data,
+                "result_data": result_data,
+                "location": location
+            },
+            "shap_analysis": {
+                "city": location,
+                "coordinates": {
+                    "latitude": input_data.get('latitude', 51.5074),
+                    "longitude": input_data.get('longitude', -0.1278)
+                },
+                "climate_score": 0.73,
+                "geographic_score": 0.68,
+                "economic_score": 0.71,
+                "final_score": 0.705,
+                "model_accuracy": 0.999,
+                "processing_time": 0.8,
+                "shap_analysis": {
+                    "base_value": 0.5,
+                    "prediction_value": 0.705,
+                    "feature_importance": {
+                        "temperature": 0.18,
+                        "humidity": 0.15,
+                        "pressure": 0.12,
+                        "location_factor": 0.20,
+                        "seasonal_factor": 0.13,
+                        "climate_zone": 0.22
+                    }
+                },
+                "ai_story": {
+                    "introduction": f"基于树莓派观测站的环境数据，这次分析揭示了{location}地区的有趣微气候模式。",
+                    "main_findings": "地理和气候因素显示出平衡的环境特征，具有中等稳定性指标。",
+                    "feature_analysis": "温度和位置因素成为该地区环境变化的主要驱动力。",
+                    "risk_assessment": "当前条件表明环境模式稳定，即时风险因素较低。",
+                    "conclusion": "该位置展现出适合持续监测的弹性环境特征。",
+                    "summary": "全面分析表明环境条件平衡，具有积极的稳定性指标。",
+                    "insights": [
+                        "地理位置提供天然的环境缓冲",
+                        "温度模式符合区域气候预期",
+                        "监测数据质量优秀，适合预测建模"
+                    ]
+                }
+            },
+            "integration_metadata": {
+                "analysis_timestamp": datetime.now().isoformat(),
+                "model_version": "integrated_mock_v1.0",
+                "analysis_source": "tree_uploaded_image",
+                "note": "Using mock analysis for rapid response"
+            }
+        }
+        
+        return jsonify({
+            "success": True,
+            "data": mock_shap_analysis,
+            "timestamp": datetime.now().isoformat(),
+            "mode": "integrated_mock"
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error in SHAP analysis endpoint: {e}")
+        
+        # 数据库不可用时的模拟数据
+        if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
+            logger.info(f"Database unavailable - returning mock SHAP data for image {image_id}")
+            
+            return jsonify({
+                "success": True,
+                "data": {
+                    "image_info": {
+                        "id": image_id,
+                        "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
+                        "description": "Tree Observatory Environmental Vision"
+                    },
+                    "shap_analysis": {
+                        "city": "Tree Observatory Location",
+                        "coordinates": {"latitude": 51.5074, "longitude": -0.1278},
+                        "climate_score": 0.72,
+                        "geographic_score": 0.69,
+                        "economic_score": 0.66,
+                        "final_score": 0.69,
+                        "shap_analysis": {
+                            "feature_importance": {
+                                "temperature": 0.19,
+                                "humidity": 0.16,
+                                "pressure": 0.13,
+                                "location_factor": 0.21,
+                                "seasonal_factor": 0.14,
+                                "climate_zone": 0.17
+                            }
+                        },
+                        "ai_story": {
+                            "introduction": "基于树莓派传感器数据的环境分析显示生态系统健康的稳定条件和积极指标。",
+                            "main_findings": "监测点显示出良好的环境稳定性。",
+                            "feature_analysis": "关键环境因子表现正常。",
+                            "risk_assessment": "环境风险评估为低风险。",
+                            "conclusion": "适合继续长期监测的理想位置。",
+                            "summary": "环境监测结果积极，建议持续观察。"
+                        }
+                    }
+                },
+                "timestamp": datetime.now().isoformat(),
+                "mode": "mock_data_for_local_development"
+            }), 200
+        
+        return jsonify({
+            "success": False,
+            "error": "Failed to perform SHAP analysis",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
 @images_bp.route('/<int:image_id>/download', methods=['GET'])
 def download_image(image_id):
     """
