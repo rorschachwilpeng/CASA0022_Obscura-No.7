@@ -198,10 +198,10 @@ def predict():
             # 检查模型状态
             status = model.get_model_status()
             
-            # 如果没有模型加载成功，使用降级处理
-            if not status.get('loaded_cities'):
-                logger.warning("⚠️ 没有模型加载成功，使用降级预测")
-                return _fallback_prediction_response(request, fallback_reason="models_not_loaded")
+            # 检查是否有可用的城市配置（而不是已加载的城市）
+            if not status.get('manifest_loaded') or not status.get('available_cities'):
+                logger.warning("⚠️ 模型配置不可用，使用降级预测")
+                return _fallback_prediction_response(request, fallback_reason="manifest_not_loaded")
             
         except Exception as e:
             logger.error(f"❌ 模型获取失败: {e}")
