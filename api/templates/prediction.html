@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Environmental Prediction - Obscura No.7{% endblock %}
+
+{% block og_title %}Environmental Prediction - Obscura No.7 Virtual Telescope{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/prediction.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="steampunk-container">
+    <!-- Main Title Section -->
+    <section class="hero-section" aria-labelledby="main-title">
+        <div class="brass-panel main-panel">
+            <div class="panel-header">
+                <h1 id="main-title" class="steampunk-title">🔮 ENVIRONMENTAL PREDICTION</h1>
+                <h2 class="steampunk-subtitle">Atmospheric Conditions Oracle</h2>
+                <p class="project-description">
+                    "Peer into the veils of time and witness the dance of atmospheric elements, 
+                    guided by the wisdom of mechanical learning engines."
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prediction Input Form -->
+    <section class="prediction-section" aria-labelledby="prediction-title">
+        <div class="section-header">
+            <h3 id="prediction-title" class="section-title">📍 LOCATION & TIME PARAMETERS</h3>
+            <div class="brass-line" aria-hidden="true"></div>
+        </div>
+        
+        <div class="brass-panel prediction-panel">
+            <form id="prediction-form" class="prediction-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="latitude">Latitude (纬度)</label>
+                        <input type="number" id="latitude" name="latitude" 
+                               min="-90" max="90" step="0.0001" 
+                               placeholder="51.5074" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="longitude">Longitude (经度)</label>
+                        <input type="number" id="longitude" name="longitude" 
+                               min="-180" max="180" step="0.0001" 
+                               placeholder="-0.1278" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="month">Month (月份)</label>
+                        <select id="month" name="month" required>
+                            <option value="">Select Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="future_years">Future Years (未来年份)</label>
+                        <input type="number" id="future_years" name="future_years" 
+                               min="0" max="10" step="1" 
+                               placeholder="0" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="control-button primary">
+                        <span class="button-icon">🔮</span>
+                        <span class="button-text">PREDICT ENVIRONMENT</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Prediction Results -->
+    <section class="results-section" id="results-section" style="display: none;" aria-labelledby="results-title">
+        <div class="section-header">
+            <h3 id="results-title" class="section-title">📊 PREDICTION RESULTS</h3>
+            <div class="brass-line" aria-hidden="true"></div>
+        </div>
+        
+        <div class="results-grid">
+            <!-- Temperature Card -->
+            <div class="result-card temperature-card">
+                <div class="card-header">
+                    <span class="card-icon">🌡️</span>
+                    <h4>Temperature</h4>
+                </div>
+                <div class="card-content">
+                    <div class="primary-value" id="temperature-value">--°C</div>
+                    <div class="secondary-info">
+                        <span class="info-label">Atmospheric Thermal State</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Humidity Card -->
+            <div class="result-card humidity-card">
+                <div class="card-header">
+                    <span class="card-icon">💧</span>
+                    <h4>Humidity</h4>
+                </div>
+                <div class="card-content">
+                    <div class="primary-value" id="humidity-value">--%</div>
+                    <div class="secondary-info">
+                        <span class="info-label">Atmospheric Moisture Content</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pressure Card -->
+            <div class="result-card pressure-card">
+                <div class="card-header">
+                    <span class="card-icon">🌀</span>
+                    <h4>Pressure</h4>
+                </div>
+                <div class="card-content">
+                    <div class="primary-value" id="pressure-value">-- hPa</div>
+                    <div class="secondary-info">
+                        <span class="info-label">Atmospheric Density Force</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Model Info Card -->
+            <div class="result-card model-card">
+                <div class="card-header">
+                    <span class="card-icon">🤖</span>
+                    <h4>Model Information</h4>
+                </div>
+                <div class="card-content">
+                    <div class="model-info">
+                        <div class="info-row">
+                            <span class="info-label">Confidence:</span>
+                            <span class="info-value" id="confidence-value">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Model Type:</span>
+                            <span class="info-value" id="model-type-value">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Prediction Time:</span>
+                            <span class="info-value" id="prediction-time-value">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Location Info -->
+        <div class="location-info-panel" id="location-info-panel">
+            <div class="brass-panel">
+                <h4>📍 Location Information</h4>
+                <div class="location-grid">
+                    <div class="location-item">
+                        <span class="location-label">Coordinates:</span>
+                        <span class="location-value" id="coordinates-value">--</span>
+                    </div>
+                    <div class="location-item">
+                        <span class="location-label">Nearest City:</span>
+                        <span class="location-value" id="nearest-city-value">--</span>
+                    </div>
+                    <div class="location-item">
+                        <span class="location-label">Time Period:</span>
+                        <span class="location-value" id="time-period-value">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Indicator -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="steampunk-loader">
+                <div class="gear-animation"></div>
+                <div class="gear-animation gear-2"></div>
+                <div class="gear-animation gear-3"></div>
+            </div>
+            <p class="loading-text">Consulting the atmospheric oracles...</p>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-panel" id="error-panel" style="display: none;">
+        <div class="brass-panel error-content">
+            <h4>⚠️ Prediction Error</h4>
+            <p id="error-message">The atmospheric oracles are currently unavailable. Please try again later.</p>
+            <button class="control-button secondary" onclick="hideError()">
+                <span class="button-text">DISMISS</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Prediction form handling
+document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Get form data
+    const formData = new FormData(e.target);
+    const data = {
+        latitude: parseFloat(formData.get('latitude')),
+        longitude: parseFloat(formData.get('longitude')),
+        month: parseInt(formData.get('month')),
+        future_years: parseInt(formData.get('future_years')) || 0
+    };
+    
+    // Validate data
+    if (!data.latitude || !data.longitude || !data.month) {
+        showError('Please fill in all required fields.');
+        return;
+    }
+    
+    // Show loading
+    showLoading();
+    
+    try {
+        // Call prediction API
+        const response = await fetch('/api/v1/ml/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            displayResults(result);
+        } else {
+            showError(result.error || 'Prediction failed. Please try again.');
+        }
+    } catch (error) {
+        showError('Network error. Please check your connection and try again.');
+        console.error('Prediction error:', error);
+    } finally {
+        hideLoading();
+    }
+});
+
+function displayResults(result) {
+    const prediction = result.prediction || {};
+    const modelInfo = result.model_info || {};
+    const locationInfo = result.location_info || {};
+    
+    // Update temperature
+    document.getElementById('temperature-value').textContent = 
+        prediction.temperature ? `${prediction.temperature.toFixed(1)}°C` : '--°C';
+    
+    // Update humidity
+    document.getElementById('humidity-value').textContent = 
+        prediction.humidity ? `${prediction.humidity.toFixed(1)}%` : '--%';
+    
+    // Update pressure
+    document.getElementById('pressure-value').textContent = 
+        prediction.pressure ? `${prediction.pressure.toFixed(1)} hPa` : '-- hPa';
+    
+    // Update model info
+    document.getElementById('confidence-value').textContent = 
+        modelInfo.confidence ? `${(modelInfo.confidence * 100).toFixed(1)}%` : '--';
+    document.getElementById('model-type-value').textContent = 
+        modelInfo.model_type || '--';
+    document.getElementById('prediction-time-value').textContent = 
+        result.timestamp ? new Date(result.timestamp).toLocaleString() : '--';
+    
+    // Update location info
+    document.getElementById('coordinates-value').textContent = 
+        `${result.input_parameters.latitude.toFixed(4)}, ${result.input_parameters.longitude.toFixed(4)}`;
+    document.getElementById('nearest-city-value').textContent = 
+        locationInfo.nearest_city || 'Unknown';
+    
+    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    const futureYears = result.input_parameters.future_years || 0;
+    const currentYear = new Date().getFullYear();
+    const targetYear = currentYear + futureYears;
+    document.getElementById('time-period-value').textContent = 
+        `${monthNames[result.input_parameters.month]} ${targetYear}`;
+    
+    // Show results
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showLoading() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('error-message').textContent = message;
+    document.getElementById('error-panel').style.display = 'block';
+    document.getElementById('error-panel').scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideError() {
+    document.getElementById('error-panel').style.display = 'none';
+}
+
+// Set current month as default
+document.getElementById('month').value = new Date().getMonth() + 1;
+
+// Auto-fill London coordinates as example
+document.getElementById('latitude').placeholder = "51.5074 (London)";
+document.getElementById('longitude').placeholder = "-0.1278 (London)";
+</script>
+{% endblock %} 

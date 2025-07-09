@@ -1,0 +1,66 @@
+# Render平台SHAP模型部署配置
+# 用于云端部署Obscura No.7 SHAP环境分析框架
+
+services:
+  - type: web
+    name: obscura-shap-api
+    env: python
+    region: oregon
+    plan: free  # 免费版，可升级为starter
+    branch: main
+    buildCommand: |
+      cd api && 
+      pip install -r requirements_shap.txt
+    startCommand: |
+      cd api && 
+      python app.py
+    
+    # 环境变量配置
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_APP
+        value: app.py
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: ML_MODELS_PATH
+        value: /opt/render/project/src/ML_Models/models
+      - key: SHAP_MODELS_PATH
+        value: /opt/render/project/src/ML_Models/models/model_deployment
+      - key: CACHE_TTL
+        value: "3600"  # 1小时缓存
+      - key: MAX_MEMORY_MB
+        value: "400"   # 限制内存使用
+      - key: ENABLE_SHAP_ANALYSIS
+        value: "true"
+      - key: FALLBACK_TO_BASIC
+        value: "true"  # 启用降级机制
+    
+    # 健康检查
+    healthCheckPath: /api/v1/health
+    
+    # 资源限制
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+    
+    # 文件存储
+    disk:
+      name: models-storage
+      mountPath: /opt/render/project/src/ML_Models/models
+      sizeGB: 1
+
+# 数据库配置 (如果需要)
+databases:
+  - name: obscura-postgres
+    databaseName: obscura_db
+    user: obscura_user
+    region: oregon
+    plan: free
+
+# 静态文件配置
+static:
+  - type: static
+    name: obscura-assets
+    staticPublishPath: api/static
+    buildCommand: echo "Static files ready" 

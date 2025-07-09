@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-07-08T16:38:02.499512",
+  "total_tests": 7,
+  "passed_tests": 0,
+  "failed_tests": 7,
+  "success_rate": 0.0,
+  "detailed_results": {
+    "health_check": false,
+    "model_status": false,
+    "predict_london": false,
+    "predict_manchester": false,
+    "batch_compare": false,
+    "visualization_data": false,
+    "error_handling": false
+  }
+}

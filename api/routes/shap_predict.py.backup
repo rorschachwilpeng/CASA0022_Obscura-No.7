@@ -42,15 +42,15 @@ def validate_json_input(request):
     """通用JSON输入验证函数"""
     try:
         if not request.is_json:
-            return error_response("请求必须是JSON格式", status_code=400, error_code="invalid_content_type")
+            return error_response("请求必须是JSON格式", code=400, error_type="invalid_content_type")
         
         data = request.get_json()
         if data is None:
-            return error_response("无效的JSON数据", status_code=400, error_code="invalid_json")
+            return error_response("无效的JSON数据", code=400, error_type="invalid_json")
         
         return data
     except Exception as e:
-        return error_response(f"JSON解析错误: {str(e)}", status_code=400, error_code="json_parse_error")
+        return error_response(f"JSON解析错误: {str(e)}", code=400, error_type="json_parse_error")
 
 def get_shap_model():
     """获取SHAP模型实例 (单例模式)"""
@@ -161,23 +161,23 @@ def predict():
         if latitude is None or longitude is None:
             return error_response(
                 "缺少必需参数: latitude 和 longitude", 
-                error_status_code="validation_error",
-                status_status_code=400
+                error_code="validation_error",
+                status_code=400
             )
         
         # 验证坐标范围
         if not (-90 <= latitude <= 90):
             return error_response(
                 f"latitude必须在-90到90之间: {latitude}", 
-                error_status_code="validation_error",
-                status_status_code=400
+                error_code="validation_error",
+                status_code=400
             )
         
         if not (-180 <= longitude <= 180):
             return error_response(
                 f"longitude必须在-180到180之间: {longitude}", 
-                error_status_code="validation_error",
-                status_status_code=400
+                error_code="validation_error",
+                status_code=400
             )
         
         # 可选参数
@@ -188,8 +188,8 @@ def predict():
             if not (1 <= month <= 12):
                 return error_response(
                     f"month必须在1到12之间: {month}", 
-                    error_status_code="validation_error",
-                    status_status_code=400
+                    error_code="validation_error",
+                    status_code=400
                 )
         
         # 尝试获取模型实例
@@ -233,12 +233,11 @@ def predict():
             'fallback_used': False
         }
         
-        return jsonify({
-            'success': True,
-            'message': "SHAP环境预测成功",
-            'data': result,
-            'response_time_seconds': response_time
-        })
+        return ml_prediction_response(
+            result, 
+            message="SHAP环境预测成功",
+            response_time=response_time
+        )
         
     except Exception as e:
         logger.error(f"❌ SHAP预测API错误: {e}")
@@ -311,19 +310,18 @@ def _fallback_prediction_response(request, fallback_reason="shap_unavailable"):
             }
         }
         
-        return jsonify({
-            'success': True,
-            'message': f"环境预测成功 (降级模式: {fallback_reason})",
-            'data': result,
-            'response_time_seconds': 0.01
-        })
+        return ml_prediction_response(
+            result,
+            message=f"环境预测成功 (降级模式: {fallback_reason})",
+            response_time=0.01
+        )
         
     except Exception as e:
         logger.error(f"❌ 降级预测也失败了: {e}")
         return error_response(
             f"系统暂时不可用: {str(e)}", 
-            error_status_code="system_unavailable",
-            status_status_code=503
+            error_code="system_unavailable",
+            status_code=503
         )
 
 @shap_bp.route('/analyze', methods=['POST'])
@@ -353,8 +351,8 @@ def analyze():
         if latitude is None or longitude is None:
             return error_response(
                 "缺少必需参数: latitude 和 longitude", 
-                error_status_code="validation_error",
-                status_status_code=400
+                error_code="validation_error",
+                status_code=400
             )
         
         # 获取模型实例
@@ -370,7 +368,7 @@ def analyze():
         )
         
         if 'error' in result:
-            return error_response(f"分析失败: {result['error']}", status_code=500)
+            return error_response(f"分析失败: {result['error']}", code=500)
         
         # 增强分析结果
         analysis_result = {
@@ -400,7 +398,7 @@ def analyze():
         
     except Exception as e:
         logger.error(f"❌ SHAP分析API错误: {e}")
-        return error_response(f"分析失败: {str(e)}", status_code=500)
+        return error_response(f"分析失败: {str(e)}", code=500)
 
 @shap_bp.route('/compare', methods=['POST'])
 def compare():
@@ -427,10 +425,10 @@ def compare():
         comparison_type = data.get('comparison_type', 'scores')
         
         if not locations:
-            return error_response("缺少locations参数", status_code=400)
+            return error_response("缺少locations参数", code=400)
         
         if len(locations) > 10:
-            return error_response("最多支持10个位置的对比", status_code=400)
+            return error_response("最多支持10个位置的对比", code=400)
         
         # 获取模型实例
         model = get_shap_model()
@@ -461,7 +459,7 @@ def compare():
         
     except Exception as e:
         logger.error(f"❌ SHAP对比API错误: {e}")
-        return error_response(f"对比失败: {str(e)}", status_code=500)
+        return error_response(f"对比失败: {str(e)}", code=500)
 
 @shap_bp.route('/visualize', methods=['POST'])
 def visualize():
@@ -487,7 +485,7 @@ def visualize():
         viz_type = data.get('visualization_type', 'bubble')
         
         if latitude is None or longitude is None:
-            return error_response("缺少必需参数: latitude 和 longitude", status_code=400)
+            return error_response("缺少必需参数: latitude 和 longitude", code=400)
         
         # 获取模型实例
         model = get_shap_model()
@@ -501,7 +499,7 @@ def visualize():
         )
         
         if 'error' in result:
-            return error_response(f"可视化数据生成失败: {result['error']}", status_code=500)
+            return error_response(f"可视化数据生成失败: {result['error']}", code=500)
         
         # 生成可视化数据
         viz_data = _generate_visualization_data(result, viz_type)
@@ -514,7 +512,7 @@ def visualize():
         
     except Exception as e:
         logger.error(f"❌ SHAP可视化API错误: {e}")
-        return error_response(f"可视化失败: {str(e)}", status_code=500)
+        return error_response(f"可视化失败: {str(e)}", code=500)
 
 @shap_bp.route('/model/status', methods=['GET'])
 def model_status():
@@ -531,7 +529,7 @@ def model_status():
         
     except Exception as e:
         logger.error(f"❌ 获取SHAP模型状态错误: {e}")
-        return error_response(f"状态获取失败: {str(e)}", status_code=500)
+        return error_response(f"状态获取失败: {str(e)}", code=500)
 
 @shap_bp.route('/health', methods=['GET'])
 def health_check():
@@ -662,8 +660,8 @@ def _generate_visualization_data(result, viz_type):
 # 错误处理器
 @shap_bp.errorhandler(404)
 def not_found(error):
-    return error_response("API端点不存在", status_code=404, error_code="not_found")
+    return error_response("API端点不存在", code=404, error_type="not_found")
 
 @shap_bp.errorhandler(500)
 def internal_error(error):
-    return error_response("服务器内部错误", status_code=500, error_code="internal_error") 
+    return error_response("服务器内部错误", code=500, error_type="internal_error") 

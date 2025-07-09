@@ -1,0 +1,26 @@
+{
+  "training_timestamp": "2025-07-08T14:52:35.107218",
+  "cities_trained": [],
+  "configuration": {
+    "config": {
+      "prediction_horizon": 12,
+      "confidence_threshold": 0.8,
+      "enable_shap_analysis": true,
+      "save_predictions": true,
+      "output_directory": "predictions"
+    },
+    "weights": {
+      "climate_weight": 0.4,
+      "geographic_weight": 0.35,
+      "economic_weight": 0.25
+    }
+  },
+  "training_results": {},
+  "model_summaries": {},
+  "deployment_info": {
+    "models_directory": "models/shap_deployment",
+    "ready_for_deployment": false,
+    "total_cities": 3,
+    "successful_cities": 0
+  }
+}
