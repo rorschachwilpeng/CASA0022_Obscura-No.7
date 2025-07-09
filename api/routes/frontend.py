@@ -320,6 +320,17 @@ def prediction():
         logger.error(f"环境预测页面渲染失败: {e}")
         return render_template('prediction.html'), 500
 
+@frontend_bp.route('/shap')
+def shap_prediction():
+    """SHAP环境预测分析页面"""
+    try:
+        logger.info("渲染SHAP环境预测页面")
+        return render_template('shap_prediction.html')
+    
+    except Exception as e:
+        logger.error(f"SHAP预测页面渲染失败: {e}")
+        return render_template('shap_prediction.html'), 500
+
 @frontend_bp.route('/health')
 def health_check():
     """健康检查端点"""
