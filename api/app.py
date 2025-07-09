@@ -46,7 +46,16 @@ from api.routes.images import images_bp
 from api.routes.frontend import frontend_bp
 from api.routes.environmental import environmental_bp
 from api.routes.lightweight_ml_predict import lightweight_ml_bp
-from api.routes.shap_predict import shap_bp
+# from api.routes.shap_predict import shap_bp
+
+# # 条件导入SHAP预测蓝图
+# try:
+#     from api.routes.shap_predict import shap_bp
+#     SHAP_BP_AVAILABLE = True
+# except ImportError as e:
+#     logger.warning(f"⚠️ SHAP预测模块不可用: {e}")
+#     SHAP_BP_AVAILABLE = False
+#     shap_bp = None
 
 # 配置日志
 logging.basicConfig(
@@ -107,7 +116,7 @@ def register_blueprints(app):
     app.register_blueprint(lightweight_ml_bp)
     
     # SHAP预测API蓝图（环境变化指数框架）
-    app.register_blueprint(shap_bp)
+    # app.register_blueprint(shap_bp)
     
     # 前端蓝图（注册到根路径）
     app.register_blueprint(frontend_bp)
