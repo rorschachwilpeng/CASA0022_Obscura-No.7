@@ -46,6 +46,7 @@ from api.routes.images import images_bp
 from api.routes.frontend import frontend_bp
 from api.routes.environmental import environmental_bp
 from api.routes.lightweight_ml_predict import lightweight_ml_bp
+from api.routes.shap_predict import shap_bp
 
 # 条件导入SHAP预测蓝图
 SHAP_BP_AVAILABLE = False
@@ -303,7 +304,10 @@ def startup_check(app):
         except Exception as e:
             logger.error(f"❌ 启动检查失败: {e}")
 
-# Legacy route for compatibility
+# 创建应用实例
+app = create_app()
+
+# Legacy route for compatibility (在app创建后添加)
 @app.route('/predict', methods=['POST'])
 def legacy_predict():
     """保持向后兼容的预测端点"""
@@ -312,9 +316,6 @@ def legacy_predict():
         "message": "Please use /api/v1/ml/predict or /api/v1/lightweight/predict",
         "redirect": "/api/v1/ml/predict"
     }), 301
-
-# 创建应用实例
-app = create_app()
 
 if __name__ == '__main__':
     # 开发模式启动
