@@ -361,7 +361,16 @@ class SHAPModelWrapper:
             # Climate Model预测
             if 'climate' in city_models:
                 try:
-                    climate_score = float(city_models['climate'].predict(features_2d)[0])
+                    # 🔧 处理简化模型的字典结构
+                    climate_model = city_models['climate']
+                    if isinstance(climate_model, dict) and 'model' in climate_model:
+                        # 简化模型：从字典中提取真正的scikit-learn模型
+                        actual_model = climate_model['model']
+                    else:
+                        # 复杂模型：直接使用
+                        actual_model = climate_model
+                    
+                    climate_score = float(actual_model.predict(features_2d)[0])
                     result['climate_score'] = max(0.0, min(1.0, climate_score))  # 限制在[0,1]范围
                     result['climate_confidence'] = 0.95
                     logger.info(f"✅ {city} Climate预测成功: {climate_score:.3f}")
@@ -373,7 +382,16 @@ class SHAPModelWrapper:
             # Geographic Model预测  
             if 'geographic' in city_models:
                 try:
-                    geographic_score = float(city_models['geographic'].predict(features_2d)[0])
+                    # 🔧 处理简化模型的字典结构
+                    geographic_model = city_models['geographic']
+                    if isinstance(geographic_model, dict) and 'model' in geographic_model:
+                        # 简化模型：从字典中提取真正的scikit-learn模型
+                        actual_model = geographic_model['model']
+                    else:
+                        # 复杂模型：直接使用
+                        actual_model = geographic_model
+                    
+                    geographic_score = float(actual_model.predict(features_2d)[0])
                     result['geographic_score'] = max(0.0, min(1.0, geographic_score))  # 限制在[0,1]范围
                     result['geographic_confidence'] = 0.97
                     logger.info(f"✅ {city} Geographic预测成功: {geographic_score:.3f}")
