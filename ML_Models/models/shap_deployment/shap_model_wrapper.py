@@ -16,6 +16,29 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 
+# 🔧 修复路径：让云端能找到shap_framework包
+def _fix_python_path():
+    """修复Python路径，确保shap_framework包可访问"""
+    current_dir = Path(__file__).parent  # models/shap_deployment
+    ml_models_dir = current_dir.parent.parent  # ML_Models
+    project_root = ml_models_dir.parent  # 项目根目录
+    
+    # 添加路径到sys.path
+    paths_to_add = [
+        str(project_root),
+        str(ml_models_dir),
+        str(ml_models_dir / 'shap_framework')
+    ]
+    
+    for path in paths_to_add:
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    
+    logging.getLogger(__name__).info(f"✅ Python路径修复完成，添加了 {len(paths_to_add)} 个路径")
+
+# 立即执行路径修复
+_fix_python_path()
+
 # 条件导入pandas
 try:
     import pandas as pd
@@ -76,6 +99,30 @@ class SHAPModelWrapper:
             city_config = self.deployment_manifest['models'][city]
             city_models = {}
             
+            # 🔧 在加载模型前再次确保路径正确
+            _fix_python_path()
+            
+            # 🔧 预加载必要的shap_framework模块
+            try:
+                import importlib
+                required_modules = [
+                    'shap_framework.core_models.climate_model',
+                    'shap_framework.core_models.geographic_model',
+                    'shap_framework.data_infrastructure.data_pipeline.data_loader',
+                    'shap_framework.data_infrastructure.data_pipeline.data_preprocessor',
+                    'shap_framework.data_infrastructure.data_pipeline.feature_engineer'
+                ]
+                
+                for module_name in required_modules:
+                    try:
+                        importlib.import_module(module_name)
+                        logger.info(f"✅ {module_name} 导入成功")
+                    except ImportError as import_err:
+                        logger.warning(f"⚠️ 无法导入 {module_name}: {import_err}")
+                        
+            except Exception as e:
+                logger.warning(f"⚠️ 模块预加载失败: {e}")
+            
             # 尝试加载Climate Model
             try:
                 climate_path = self.models_dir / city_config['climate_model']
@@ -85,7 +132,7 @@ class SHAPModelWrapper:
                 else:
                     logger.warning(f"⚠️ {city} Climate Model 文件不存在: {climate_path}")
             except Exception as e:
-                logger.warning(f"⚠️ {city} Climate Model 加载失败，可能存在依赖问题: {e}")
+                logger.warning(f"⚠️ {city} Climate Model 加载失败，使用Mock模型: {e}")
                 # 创建一个简单的Mock模型
                 city_models['climate'] = self._create_mock_model('climate')
             
@@ -98,7 +145,7 @@ class SHAPModelWrapper:
                 else:
                     logger.warning(f"⚠️ {city} Geographic Model 文件不存在: {geo_path}")
             except Exception as e:
-                logger.warning(f"⚠️ {city} Geographic Model 加载失败，可能存在依赖问题: {e}")
+                logger.warning(f"⚠️ {city} Geographic Model 加载失败，使用Mock模型: {e}")
                 # 创建一个简单的Mock模型
                 city_models['geographic'] = self._create_mock_model('geographic')
             
