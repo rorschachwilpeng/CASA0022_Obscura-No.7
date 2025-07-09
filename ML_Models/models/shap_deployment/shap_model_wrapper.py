@@ -103,34 +103,24 @@ class SHAPModelWrapper:
             _fix_python_path()
             
             # 🔧 预加载必要的shap_framework模块
-            try:
-                import importlib
-                required_modules = [
-                    'shap_framework.core_models.climate_model',
-                    'shap_framework.core_models.geographic_model',
-                    'shap_framework.data_infrastructure.data_pipeline.data_loader',
-                    'shap_framework.data_infrastructure.data_pipeline.data_preprocessor',
-                    'shap_framework.data_infrastructure.data_pipeline.feature_engineer'
-                ]
-                
-                for module_name in required_modules:
-                    try:
-                        importlib.import_module(module_name)
-                        logger.info(f"✅ {module_name} 导入成功")
-                    except ImportError as import_err:
-                        logger.warning(f"⚠️ 无法导入 {module_name}: {import_err}")
-                        
-            except Exception as e:
-                logger.warning(f"⚠️ 模块预加载失败: {e}")
+            # 注意：跳过预加载，直接尝试加载模型，因为joblib可以处理反序列化
+            logger.info("⚡ 跳过模块预加载，直接尝试模型加载（joblib反序列化）")
             
             # 尝试加载Climate Model
             try:
                 climate_path = self.models_dir / city_config['climate_model']
                 if climate_path.exists():
-                    city_models['climate'] = joblib.load(climate_path)
+                    # 🔧 添加警告过滤，忽略scikit-learn版本不匹配警告
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=UserWarning)
+                        warnings.filterwarnings("ignore", message=".*InconsistentVersionWarning.*")
+                        
+                        city_models['climate'] = joblib.load(climate_path)
                     logger.info(f"✅ {city} Climate Model 加载成功")
                 else:
                     logger.warning(f"⚠️ {city} Climate Model 文件不存在: {climate_path}")
+                    city_models['climate'] = self._create_mock_model('climate')
             except Exception as e:
                 logger.warning(f"⚠️ {city} Climate Model 加载失败，使用Mock模型: {e}")
                 # 创建一个简单的Mock模型
@@ -140,10 +130,17 @@ class SHAPModelWrapper:
             try:
                 geo_path = self.models_dir / city_config['geographic_model']
                 if geo_path.exists():
-                    city_models['geographic'] = joblib.load(geo_path)
+                    # 🔧 添加警告过滤，忽略scikit-learn版本不匹配警告
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", category=UserWarning)
+                        warnings.filterwarnings("ignore", message=".*InconsistentVersionWarning.*")
+                        
+                        city_models['geographic'] = joblib.load(geo_path)
                     logger.info(f"✅ {city} Geographic Model 加载成功")
                 else:
                     logger.warning(f"⚠️ {city} Geographic Model 文件不存在: {geo_path}")
+                    city_models['geographic'] = self._create_mock_model('geographic')
             except Exception as e:
                 logger.warning(f"⚠️ {city} Geographic Model 加载失败，使用Mock模型: {e}")
                 # 创建一个简单的Mock模型
