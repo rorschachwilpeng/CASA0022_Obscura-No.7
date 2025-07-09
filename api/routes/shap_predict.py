@@ -19,8 +19,15 @@ import numpy as np
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
-# 导入SHAP模型包装器
-from ML_Models.models.shap_deployment.shap_model_wrapper import SHAPModelWrapper
+# 条件导入SHAP模型包装器
+try:
+    from ML_Models.models.shap_deployment.shap_model_wrapper import SHAPModelWrapper
+    SHAP_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"⚠️ SHAP模型不可用: {e}")
+    SHAP_AVAILABLE = False
+    SHAPModelWrapper = None
+
 from api.utils import ml_prediction_response, error_response
 
 logger = logging.getLogger(__name__)
@@ -49,6 +56,9 @@ def get_shap_model():
     """获取SHAP模型实例 (单例模式)"""
     global _shap_model
     
+    if not SHAP_AVAILABLE:
+        raise RuntimeError("SHAP模型不可用，可能缺少依赖包")
+    
     if _shap_model is None:
         try:
             # 构建模型路径
@@ -67,32 +77,78 @@ def get_shap_model():
     
     return _shap_model
 
+@shap_bp.route('/debug/files', methods=['GET'])
+def debug_files():
+    """调试端点：检查云端文件系统状态"""
+    try:
+        import os
+        from pathlib import Path
+        
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        models_path = os.path.join(project_root, "ML_Models", "models", "shap_deployment")
+        
+        debug_info = {
+            'project_root': project_root,
+            'models_path': models_path,
+            'models_path_exists': os.path.exists(models_path),
+            'files_in_models_dir': [],
+            'file_sizes': {},
+            'city_directories': {},
+            'python_version': sys.version,
+            'available_memory': 'unknown'
+        }
+        
+        if os.path.exists(models_path):
+            # 列出模型目录中的所有文件
+            for root, dirs, files in os.walk(models_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    relative_path = os.path.relpath(file_path, models_path)
+                    debug_info['files_in_models_dir'].append(relative_path)
+                    try:
+                        debug_info['file_sizes'][relative_path] = os.path.getsize(file_path)
+                    except:
+                        debug_info['file_sizes'][relative_path] = 'unknown'
+            
+            # 检查各城市目录
+            for city in ['london', 'manchester', 'edinburgh']:
+                city_path = os.path.join(models_path, city)
+                debug_info['city_directories'][city] = {
+                    'exists': os.path.exists(city_path),
+                    'files': []
+                }
+                if os.path.exists(city_path):
+                    debug_info['city_directories'][city]['files'] = os.listdir(city_path)
+        
+        # 尝试检查内存
+        try:
+            import psutil
+            debug_info['available_memory'] = f"{psutil.virtual_memory().available / (1024**3):.2f} GB"
+        except:
+            pass
+        
+        return jsonify({
+            'success': True,
+            'debug_info': debug_info
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        })
+
 @shap_bp.route('/predict', methods=['POST'])
 def predict():
     """
-    SHAP环境预测API
-    
-    输入:
-    {
-        "latitude": float,
-        "longitude": float,
-        "month": int (可选),
-        "analyze_shap": bool (可选, 默认true)
-    }
-    
-    输出:
-    {
-        "city": str,
-        "coordinates": {"latitude": float, "longitude": float},
-        "climate_score": float,
-        "geographic_score": float,
-        "economic_score": float,
-        "final_score": float,
-        "confidence": float,
-        "shap_analysis": {...} (如果analyze_shap=true)
-    }
+    SHAP环境预测API - 带降级处理
     """
     try:
+        # 检查SHAP可用性
+        if not SHAP_AVAILABLE:
+            return _fallback_prediction_response(request)
+        
         # 验证输入数据
         data = validate_json_input(request)
         if isinstance(data, tuple):  # 验证失败
@@ -136,8 +192,20 @@ def predict():
                     error_type="validation_error"
                 )
         
-        # 获取模型实例
-        model = get_shap_model()
+        # 尝试获取模型实例
+        try:
+            model = get_shap_model()
+            # 检查模型状态
+            status = model.get_model_status()
+            
+            # 如果没有模型加载成功，使用降级处理
+            if not status.get('loaded_cities'):
+                logger.warning("⚠️ 没有模型加载成功，使用降级预测")
+                return _fallback_prediction_response(request, fallback_reason="models_not_loaded")
+            
+        except Exception as e:
+            logger.error(f"❌ 模型获取失败: {e}")
+            return _fallback_prediction_response(request, fallback_reason=f"model_error: {str(e)}")
         
         # 进行预测
         start_time = datetime.now()
@@ -153,19 +221,16 @@ def predict():
         
         # 检查预测是否成功
         if 'error' in result:
-            return error_response(
-                f"预测失败: {result['error']}", 
-                code=500,
-                error_type="prediction_error",
-                details=result
-            )
+            logger.warning(f"⚠️ 预测返回错误，使用降级处理: {result['error']}")
+            return _fallback_prediction_response(request, fallback_reason=f"prediction_error: {result['error']}")
         
         # 添加API元信息
         result['api_info'] = {
             'endpoint': '/api/v1/shap/predict',
             'version': 'v1.0.0',
             'response_time_seconds': response_time,
-            'model_type': 'SHAP Environmental Framework'
+            'model_type': 'SHAP Environmental Framework',
+            'fallback_used': False
         }
         
         return ml_prediction_response(
@@ -176,11 +241,87 @@ def predict():
         
     except Exception as e:
         logger.error(f"❌ SHAP预测API错误: {e}")
-        logger.error(traceback.format_exc())
+        # 最终降级处理
+        return _fallback_prediction_response(request, fallback_reason=f"api_error: {str(e)}")
+
+def _fallback_prediction_response(request, fallback_reason="shap_unavailable"):
+    """降级预测响应 - 当SHAP模型不可用时使用简化算法"""
+    try:
+        data = request.get_json() if request.is_json else {}
+        latitude = data.get('latitude', 51.5074)  # 默认伦敦
+        longitude = data.get('longitude', -0.1278)
+        month = data.get('month', datetime.now().month)
+        
+        # 简化的环境评分算法
+        city_centers = {
+            'London': {'lat': 51.5074, 'lon': -0.1278, 'base_climate': 0.75, 'base_geo': 0.70},
+            'Manchester': {'lat': 53.4808, 'lon': -2.2426, 'base_climate': 0.68, 'base_geo': 0.65},
+            'Edinburgh': {'lat': 55.9533, 'lon': -3.1883, 'base_climate': 0.72, 'base_geo': 0.68}
+        }
+        
+        # 找到最近城市
+        min_distance = float('inf')
+        closest_city = "London"
+        closest_info = city_centers['London']
+        
+        for city, info in city_centers.items():
+            distance = np.sqrt((latitude - info['lat'])**2 + (longitude - info['lon'])**2)
+            if distance < min_distance:
+                min_distance = distance
+                closest_city = city
+                closest_info = info
+        
+        # 基于距离和季节的简化评分
+        distance_factor = max(0.5, 1.0 - min_distance * 0.1)
+        seasonal_factor = 1.0 + 0.1 * np.sin(2 * np.pi * month / 12)  # 季节性变化
+        
+        climate_score = max(0.0, min(1.0, closest_info['base_climate'] * distance_factor * seasonal_factor))
+        geographic_score = max(0.0, min(1.0, closest_info['base_geo'] * distance_factor))
+        economic_score = max(0.2, min(1.0, 0.8 * distance_factor))
+        
+        final_score = climate_score * 0.4 + geographic_score * 0.35 + economic_score * 0.25
+        
+        result = {
+            'city': closest_city,
+            'coordinates': {'latitude': latitude, 'longitude': longitude},
+            'climate_score': round(climate_score, 3),
+            'geographic_score': round(geographic_score, 3),
+            'economic_score': round(economic_score, 3),
+            'final_score': round(final_score, 3),
+            'confidence': 0.6,  # 降级模式置信度较低
+            'prediction_timestamp': datetime.now().isoformat(),
+            'month': month,
+            'model_status': 'fallback',
+            'api_info': {
+                'endpoint': '/api/v1/shap/predict',
+                'version': 'v1.0.0-fallback',
+                'model_type': 'Simplified Environmental Algorithm',
+                'fallback_used': True,
+                'fallback_reason': fallback_reason
+            },
+            'shap_analysis': {
+                'error': 'SHAP分析在降级模式下不可用',
+                'fallback_feature_importance': {
+                    'distance_to_city_center': 0.4,
+                    'seasonal_factor': 0.3,
+                    'base_climate_rating': 0.2,
+                    'geographic_proximity': 0.1
+                }
+            }
+        }
+        
+        return ml_prediction_response(
+            result,
+            message=f"环境预测成功 (降级模式: {fallback_reason})",
+            response_time=0.01
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ 降级预测也失败了: {e}")
         return error_response(
-            f"服务器内部错误: {str(e)}", 
-            code=500,
-            error_type="internal_error"
+            f"系统暂时不可用: {str(e)}", 
+            code=503,
+            error_type="system_unavailable"
         )
 
 @shap_bp.route('/analyze', methods=['POST'])
