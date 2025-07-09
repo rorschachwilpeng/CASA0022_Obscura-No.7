@@ -1,0 +1,49 @@
+{
+  "extraction_timestamp": "2025-07-09T16:14:52.271518",
+  "extracted_models": {
+    "london": {
+      "climate": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/london/London_climate_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/london/London_climate_model_simple.joblib",
+        "status": "success",
+        "feature_count": 375
+      },
+      "geographic": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/london/London_geographic_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/london/London_geographic_model_simple.joblib",
+        "status": "success",
+        "feature_count": 376
+      }
+    },
+    "manchester": {
+      "climate": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/manchester/Manchester_climate_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/manchester/Manchester_climate_model_simple.joblib",
+        "status": "success",
+        "feature_count": 375
+      },
+      "geographic": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/manchester/Manchester_geographic_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/manchester/Manchester_geographic_model_simple.joblib",
+        "status": "success",
+        "feature_count": 376
+      }
+    },
+    "edinburgh": {
+      "climate": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/edinburgh/Edinburgh_climate_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/edinburgh/Edinburgh_climate_model_simple.joblib",
+        "status": "success",
+        "feature_count": 375
+      },
+      "geographic": {
+        "original_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/edinburgh/Edinburgh_geographic_model.joblib",
+        "simple_file": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/edinburgh/Edinburgh_geographic_model_simple.joblib",
+        "status": "success",
+        "feature_count": 376
+      }
+    }
+  },
+  "summary": {},
+  "manifest_updated": "/Users/pengyoutian/Desktop/\u5f6d\u7950\u5929\u7684Github/CASA0022_Obscura-No.7/ML_Models/models/shap_deployment/deployment_manifest_simple.json"
+}

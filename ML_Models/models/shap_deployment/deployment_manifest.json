@@ -3,18 +3,18 @@
   "deployment_date": "2025-07-08T15:53:47.623857",
   "models": {
     "London": {
-      "climate_model": "london/London_climate_model.joblib",
-      "geographic_model": "london/London_geographic_model.joblib",
+      "climate_model": "london/London_climate_model_simple.joblib",
+      "geographic_model": "london/London_geographic_model_simple.joblib",
       "metadata": "london/London_predictor_metadata.json"
     },
     "Manchester": {
-      "climate_model": "manchester/Manchester_climate_model.joblib",
-      "geographic_model": "manchester/Manchester_geographic_model.joblib",
+      "climate_model": "manchester/Manchester_climate_model_simple.joblib",
+      "geographic_model": "manchester/Manchester_geographic_model_simple.joblib",
       "metadata": "manchester/Manchester_predictor_metadata.json"
     },
     "Edinburgh": {
-      "climate_model": "edinburgh/Edinburgh_climate_model.joblib",
-      "geographic_model": "edinburgh/Edinburgh_geographic_model.joblib",
+      "climate_model": "edinburgh/Edinburgh_climate_model_simple.joblib",
+      "geographic_model": "edinburgh/Edinburgh_geographic_model_simple.joblib",
       "metadata": "edinburgh/Edinburgh_predictor_metadata.json"
     }
   },

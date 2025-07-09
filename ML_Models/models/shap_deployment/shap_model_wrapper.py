@@ -65,11 +65,16 @@ class SHAPModelWrapper:
     
     def load_manifest(self):
         """加载部署清单"""
+        # 🔧 优先尝试简化版清单
+        simple_manifest_file = self.models_dir / 'deployment_manifest_simple.json'
         manifest_file = self.models_dir / 'deployment_manifest.json'
-        if manifest_file.exists():
-            with open(manifest_file, 'r') as f:
+        
+        target_file = simple_manifest_file if simple_manifest_file.exists() else manifest_file
+        
+        if target_file.exists():
+            with open(target_file, 'r') as f:
                 self.deployment_manifest = json.load(f)
-            logger.info("✅ 部署清单加载成功")
+            logger.info(f"✅ 部署清单加载成功: {target_file.name}")
         else:
             logger.warning("⚠️ 部署清单不存在")
     
