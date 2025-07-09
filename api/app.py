@@ -46,14 +46,17 @@ from api.routes.images import images_bp
 from api.routes.frontend import frontend_bp
 from api.routes.environmental import environmental_bp
 from api.routes.lightweight_ml_predict import lightweight_ml_bp
-from api.routes.shap_predict import shap_bp
 
 # 条件导入SHAP预测蓝图
+SHAP_BP_AVAILABLE = False
+shap_bp = None
+
 try:
     from api.routes.shap_predict import shap_bp
     SHAP_BP_AVAILABLE = True
+    print("✅ SHAP预测模块导入成功")
 except ImportError as e:
-    logger.warning(f"⚠️ SHAP预测模块不可用: {e}")
+    print(f"⚠️ SHAP预测模块不可用: {e}")
     SHAP_BP_AVAILABLE = False
     shap_bp = None
 
@@ -116,7 +119,11 @@ def register_blueprints(app):
     app.register_blueprint(lightweight_ml_bp)
     
     # SHAP预测API蓝图（环境变化指数框架）
-    app.register_blueprint(shap_bp)
+    if SHAP_BP_AVAILABLE and shap_bp is not None:
+        app.register_blueprint(shap_bp)
+        logger.info("✅ SHAP蓝图注册成功")
+    else:
+        logger.warning("⚠️ SHAP蓝图跳过注册")
     
     # 前端蓝图（注册到根路径）
     app.register_blueprint(frontend_bp)
@@ -266,53 +273,53 @@ def setup_error_handlers(app):
             </body>
             </html>
             ''', 503
-    
-    logger.info("✅ 错误处理器设置完成")
 
 def startup_check(app):
-    """应用启动时的检查（替代before_first_request）"""
-    logger.info("🚀 Obscura No.7 Virtual Telescope System Starting...")
-    
-    # 检查关键环境变量
-    required_vars = ['DATABASE_URL', 'CLOUDINARY_URL']
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
-    
-    if missing_vars:
-        logger.warning(f"⚠️ 缺少环境变量: {missing_vars}")
-    
-    # 输出系统信息
-    logger.info(f"📊 系统信息:")
-    logger.info(f"   - Python版本: {sys.version}")
-    logger.info(f"   - 平台: {sys.platform}")
-    logger.info(f"   - 工作目录: {os.getcwd()}")
-    logger.info(f"   - 数据库: {'✅' if app.config.get('DATABASE_INITIALIZED') else '❌'}")
-    logger.info(f"   - 图片存储: {'✅' if app.config.get('CLOUDINARY_CONFIGURED') else '❌'}")
-    logger.info(f"   - ML工作流: {'✅' if app.config.get('WORKFLOW_AVAILABLE') else '❌'}")
-    
-    logger.info("🔭 Virtual Telescope System Ready!")
+    """启动检查"""
+    with app.app_context():
+        try:
+            logger.info("🔍 执行启动检查...")
+            
+            # 输出环境信息
+            logger.info(f"Python版本: {sys.version}")
+            logger.info(f"项目根目录: {project_root}")
+            logger.info(f"Flask调试模式: {app.debug}")
+            
+            # 检查关键目录
+            critical_dirs = [
+                'api/templates',
+                'api/static',
+                'api/routes'
+            ]
+            
+            for dir_path in critical_dirs:
+                full_path = os.path.join(project_root, dir_path)
+                if os.path.exists(full_path):
+                    logger.info(f"✅ 目录存在: {dir_path}")
+                else:
+                    logger.warning(f"⚠️ 目录缺失: {dir_path}")
+            
+            logger.info("✅ 启动检查完成")
+        except Exception as e:
+            logger.error(f"❌ 启动检查失败: {e}")
+
+# Legacy route for compatibility
+@app.route('/predict', methods=['POST'])
+def legacy_predict():
+    """保持向后兼容的预测端点"""
+    from flask import jsonify
+    return jsonify({
+        "message": "Please use /api/v1/ml/predict or /api/v1/lightweight/predict",
+        "redirect": "/api/v1/ml/predict"
+    }), 301
 
 # 创建应用实例
 app = create_app()
 
-# 向后兼容的路由（如果需要）
-@app.route('/predict', methods=['POST'])
-def legacy_predict():
-    """遗留的预测端点（向后兼容）"""
-    from flask import jsonify
-    return jsonify({
-        "message": "This endpoint has been moved. Please use the new API endpoints.",
-        "new_endpoints": {
-            "ml_prediction": "/api/v1/ml/predict",
-            "image_upload": "/api/v1/images",
-            "system_status": "/api/status"
-        },
-        "documentation": "/",
-        "timestamp": datetime.now().isoformat()
-    }), 301
-
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    debug_mode = os.environ.get('FLASK_ENV') == 'development'
+    # 开发模式启动
+    port = int(os.environ.get('PORT', 5000))
+    debug = not os.environ.get('RENDER')  # 在Render环境中禁用调试模式
     
-    logger.info(f"🌐 启动服务器 - 端口: {port}, 调试模式: {debug_mode}")
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    logger.info(f"🚀 启动应用 - 端口: {port}, 调试模式: {debug}")
+    app.run(host='0.0.0.0', port=port, debug=debug) 
