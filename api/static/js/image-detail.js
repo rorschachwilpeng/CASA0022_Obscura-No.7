@@ -234,10 +234,10 @@ class ImageDetailPage {
     }
 
     /**
-     * 填充SHAP分析数据
+     * 填充SHAP分析数据（Task 5.1: 更新为层次化数据处理）
      */
     populateSHAPAnalysis() {
-        if (!this.shapAnalysisData || !this.shapAnalysisData.shap_analysis) {
+        if (!this.shapAnalysisData) {
             console.log('No SHAP analysis data available');
             // 隐藏SHAP分析部分
             const shapSection = document.querySelector('.shap-analysis-section');
@@ -247,84 +247,186 @@ class ImageDetailPage {
             return;
         }
 
-        const shapData = this.shapAnalysisData.shap_analysis;
+        // 新的数据结构：shapAnalysisData直接包含所有字段
+        const shapData = this.shapAnalysisData;
         
-        // 填充三个维度评分（简化版）
+        // 检查数据验证结果
+        if (shapData.data_validation && !shapData.data_validation.is_valid) {
+            console.warn('⚠️ SHAP data validation failed:', shapData.data_validation.errors);
+        }
+        
+        // 填充三个维度评分
         this.populateSimplifiedScores(shapData);
         
-        // 填充AI故事（新格式）
+        // 填充AI故事
         this.populateAIStory(shapData);
         
-        // 准备圆形打包图数据（稍后实现）
-        this.preparePackChartData(shapData);
+        // 使用新的层次化数据准备圆形打包图 
+        this.prepareHierarchicalPackChart(shapData);
         
-        // 🎯 存储SHAP数据供bubble chart使用
-        window.currentShapData = {
-            final_score: shapData.final_score || 0.69,
-            climate_score: shapData.climate_score || 0.72,
-            geographic_score: shapData.geographic_score || 0.69,
-            economic_score: shapData.economic_score || 0.66,
-            city: shapData.city || "Unknown Location",
-            coordinates: shapData.coordinates || { latitude: 51.5074, longitude: -0.1278 },
-            shap_analysis: {
-                feature_importance: shapData.shap_analysis?.feature_importance || {}
-            },
-            ai_story: shapData.ai_story || {}
-        };
+        // 填充技术信息
+        this.populateSHAPTechnicalInfo(shapData);
         
-        // 🎯 触发bubble chart渲染
-        this.renderBubbleChart();
-        
-        console.log('🧠 SHAP analysis populated successfully');
+        console.log('🧠 Enhanced SHAP analysis populated successfully');
+        console.log('📊 Data validation:', shapData.data_validation);
     }
     
+    // Task 5.2: Bubble chart code removed - replaced with hierarchical pack chart
+
     /**
-     * 渲染SHAP Bubble Chart
+     * Task 5.3: 准备层次化圆形打包图数据（增强加载状态和错误处理）
      */
-    renderBubbleChart() {
+    prepareHierarchicalPackChart(shapData) {
+        // 显示加载状态
+        this.showPackChartLoading('Processing hierarchical SHAP data...');
+        
+        // 显示数据验证结果
+        if (shapData.data_validation) {
+            this.showDataValidation(shapData.data_validation);
+        }
+        
+        if (!shapData.shap_analysis) {
+            console.log('No SHAP analysis data for hierarchical pack chart');
+            this.showPackChartError('Missing SHAP analysis data');
+            return;
+        }
+
+        const shap_analysis = shapData.shap_analysis;
+        
         try {
-            console.log('🎯 Attempting to render bubble chart...');
-            
-            // 检查bubble chart是否可用
-            if (typeof window.shapBubbleChart === 'undefined') {
-                console.log('⏳ Bubble chart not yet initialized, waiting...');
-                // 延迟重试
-                setTimeout(() => this.renderBubbleChart(), 500);
+            // 优先使用API返回的pack_chart_data
+            if (shap_analysis.pack_chart_data) {
+                console.log('✅ Using API-provided pack chart data');
+                this.showPackChartLoading('Rendering pack chart visualization...');
+                this.initializeHierarchicalPackChart(shap_analysis.pack_chart_data);
                 return;
             }
             
-            // 检查数据是否可用
-            if (!window.currentShapData) {
-                console.warn('⚠️ No SHAP data available for bubble chart');
+            // 如果没有pack_chart_data，使用hierarchical_features构建
+            if (shap_analysis.hierarchical_features) {
+                console.log('✅ Building pack chart from hierarchical features');
+                this.showPackChartLoading('Building visualization from features...');
+                const packData = this.buildPackDataFromHierarchical(shap_analysis.hierarchical_features, shapData.final_score);
+                this.initializeHierarchicalPackChart(packData);
                 return;
             }
             
-            console.log('🎯 Rendering bubble chart with data:', window.currentShapData);
-            
-            // 隐藏loading，显示图表
-            const loading = document.getElementById('bubbleChartLoading');
-            const chart = document.getElementById('shapBubbleChart');
-            
-            if (loading) {
-                loading.style.display = 'none';
-            }
-            if (chart) {
-                chart.style.display = 'block';
-            }
-            
-            // 渲染bubble chart
-            window.shapBubbleChart.render(window.currentShapData);
-            console.log('✅ Bubble chart rendered successfully');
+            // 降级处理：使用旧的flat feature_importance
+            console.warn('⚠️ Falling back to flat feature importance data');
+            this.showPackChartLoading('Using fallback visualization...');
+            this.preparePackChartData(shapData);
             
         } catch (error) {
-            console.error('❌ Error rendering bubble chart:', error);
-            
-            // 显示错误消息
-            const loading = document.getElementById('bubbleChartLoading');
-            if (loading) {
-                loading.innerHTML = '<div class="shap-bubble-error">Visualization temporarily unavailable</div>';
-            }
+            console.error('❌ Error in prepareHierarchicalPackChart:', error);
+            this.showPackChartError(`Visualization error: ${error.message}`);
         }
+    }
+
+    /**
+     * 从层次化特征数据构建圆形打包图数据
+     */
+    buildPackDataFromHierarchical(hierarchicalFeatures, finalScore) {
+        const packData = {
+            name: "Environmental Impact",
+            value: finalScore || 0.7,
+            children: []
+        };
+
+        // 维度颜色映射（蒸汽朋克主题）
+        const dimensionColors = {
+            'climate': '#d4af37',      // 金色
+            'geographic': '#cd853f',    // 秘鲁色  
+            'economic': '#8b4513'       // 马鞍棕色
+        };
+
+        // 构建三个维度的数据
+        ['climate', 'geographic', 'economic'].forEach(dimension => {
+            const dimData = hierarchicalFeatures[dimension];
+            if (dimData && dimData.features && Object.keys(dimData.features).length > 0) {
+                const dimensionNode = {
+                    name: dimension.charAt(0).toUpperCase() + dimension.slice(1),
+                    value: dimData.total_importance || 0,
+                    itemStyle: { color: dimensionColors[dimension] },
+                    children: []
+                };
+
+                // 添加特征节点
+                Object.entries(dimData.features).forEach(([feature, importance]) => {
+                    if (importance > 0) {
+                        dimensionNode.children.push({
+                            name: this.formatFeatureName(feature),
+                            value: importance,
+                            itemStyle: { color: dimensionColors[dimension] },
+                            tooltip: {
+                                formatter: `${this.formatFeatureName(feature)}: ${importance.toFixed(3)}`
+                            }
+                        });
+                    }
+                });
+
+                packData.children.push(dimensionNode);
+            }
+        });
+
+        return packData;
+    }
+
+    /**
+     * 初始化并渲染层次化圆形打包图
+     */
+    initializeHierarchicalPackChart(data) {
+        try {
+            // 检查pack-chart.js是否已加载
+            if (typeof PackChart === 'undefined') {
+                console.warn('⚠️ PackChart component not loaded, attempting to load...');
+                this.loadPackChartScript(() => this.initializeHierarchicalPackChart(data));
+                return;
+            }
+
+            // 存储数据供后续使用
+            window.currentHierarchicalPackData = data;
+
+            // 创建或更新圆形打包图实例
+            if (!window.hierarchicalPackChartInstance) {
+                const container = document.getElementById('packChart');
+                if (!container) {
+                    console.error('❌ Pack chart container not found');
+                    this.showPackChartError();
+                    return;
+                }
+
+                window.hierarchicalPackChartInstance = new PackChart('packChart', {
+                    width: 600,
+                    height: 500,
+                    colorScheme: 'steampunk' // 蒸汽朋克主题
+                });
+            }
+
+            // 渲染数据
+            window.hierarchicalPackChartInstance.render(data);
+            console.log('✅ Hierarchical pack chart rendered successfully');
+
+            // 显示控制按钮和图表
+            this.showPackChartControls();
+
+        } catch (error) {
+            console.error('❌ Error initializing hierarchical pack chart:', error);
+            this.showPackChartError();
+        }
+    }
+
+    /**
+     * 动态加载PackChart脚本
+     */
+    loadPackChartScript(callback) {
+        const script = document.createElement('script');
+        script.src = '/static/js/pack-chart.js';
+        script.onload = callback;
+        script.onerror = () => {
+            console.error('❌ Failed to load pack-chart.js');
+            this.showPackChartError();
+        };
+        document.head.appendChild(script);
     }
 
     /**
@@ -548,18 +650,100 @@ class ImageDetailPage {
     }
 
     /**
-     * 显示圆形打包图错误
+     * 显示圆形打包图错误（Task 6.3: 增强错误处理）
      */
-    showPackChartError() {
+    showPackChartError(errorMessage = 'Visualization loading failed') {
         const loading = document.querySelector('#packChartLoading');
+        const container = document.querySelector('.pack-chart-container');
+        
         if (loading) {
             loading.innerHTML = `
-                <div class="chart-error">
-                    <span aria-hidden="true">❌</span>
-                    <p>Visualization loading failed</p>
+                <div class="chart-error steampunk-error">
+                    <div class="error-icon">⚙️</div>
+                    <h4 class="error-title">Visualization Malfunction</h4>
+                    <p class="error-message">${errorMessage}</p>
+                    <button class="retry-button" onclick="window.location.reload()">
+                        <span>🔄</span> Retry Analysis
+                    </button>
                 </div>
             `;
         }
+        
+        // 添加数据验证失败指示器
+        if (container && !container.querySelector('.data-validation-indicator')) {
+            const indicator = document.createElement('div');
+            indicator.className = 'data-validation-indicator';
+            indicator.innerHTML = `
+                <span class="validation-icon invalid">❌</span>
+                <span class="validation-text">Error</span>
+            `;
+            container.appendChild(indicator);
+        }
+        
+        console.error('🔧 Pack chart error:', errorMessage);
+    }
+
+    /**
+     * 显示加载状态（Task 6.3: 增强加载体验）
+     */
+    showPackChartLoading(message = 'Analyzing environmental data...') {
+        const loading = document.querySelector('#packChartLoading');
+        if (loading) {
+            loading.style.display = 'flex';
+            loading.innerHTML = `
+                <div class="chart-loading steampunk-loading">
+                    <div class="loading-gears">
+                        <span class="gear gear-1">⚙️</span>
+                        <span class="gear gear-2">⚙️</span>
+                        <span class="gear gear-3">⚙️</span>
+                    </div>
+                    <p class="loading-message">${message}</p>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * 显示数据验证结果（Task 6.3: 新增）
+     */
+    showDataValidation(validationResult) {
+        const container = document.querySelector('.pack-chart-container');
+        if (!container || !validationResult) return;
+
+        // 移除现有指示器
+        const existingIndicator = container.querySelector('.data-validation-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+
+        // 创建新的验证指示器
+        const indicator = document.createElement('div');
+        indicator.className = 'data-validation-indicator';
+        
+        const isValid = validationResult.is_valid;
+        const featureCount = validationResult.completeness_report?.total_features || 0;
+        
+        indicator.innerHTML = `
+            <span class="validation-icon ${isValid ? 'valid' : 'invalid'}">
+                ${isValid ? '✅' : '⚠️'}
+            </span>
+            <span class="validation-text">
+                ${featureCount} features
+            </span>
+        `;
+        
+        // 添加工具提示
+        if (validationResult.errors?.length > 0 || validationResult.warnings?.length > 0) {
+            indicator.title = [
+                ...validationResult.errors.map(e => `Error: ${e}`),
+                ...validationResult.warnings.map(w => `Warning: ${w}`)
+            ].join('\n');
+        }
+        
+        container.appendChild(indicator);
     }
 
     /**

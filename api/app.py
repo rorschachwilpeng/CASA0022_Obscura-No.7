@@ -319,7 +319,7 @@ def legacy_predict():
 
 if __name__ == '__main__':
     # 开发模式启动
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))  # 更改默认端口为8080
     debug = not os.environ.get('RENDER')  # 在Render环境中禁用调试模式
     
     logger.info(f"🚀 启动应用 - 端口: {port}, 调试模式: {debug}")

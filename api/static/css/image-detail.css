@@ -357,15 +357,53 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* 圆形打包图容器 */
+/* 圆形打包图容器 - 蒸汽朋克风格增强 */
 .pack-chart-container {
-    background: rgba(28, 28, 28, 0.2);
-    border: 2px solid var(--coal);
+    background: linear-gradient(145deg, 
+        rgba(41, 35, 25, 0.3), 
+        rgba(28, 28, 28, 0.4),
+        rgba(20, 18, 15, 0.5)
+    );
+    border: 3px solid var(--copper);
     border-radius: 15px;
     padding: 20px;
     min-height: 500px;
     position: relative;
     margin-bottom: 20px;
+    box-shadow: 
+        0 8px 25px rgba(205, 127, 50, 0.2),
+        inset 0 2px 10px rgba(212, 175, 55, 0.1);
+    overflow: hidden;
+}
+
+.pack-chart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent,
+        var(--copper), 
+        var(--brass-light), 
+        var(--amber),
+        var(--brass-light), 
+        var(--copper),
+        transparent
+    );
+    animation: packChartGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes packChartGlow {
+    from { 
+        opacity: 0.6;
+        transform: scaleX(0.8);
+    }
+    to { 
+        opacity: 1;
+        transform: scaleX(1);
+    }
 }
 
 .chart-loading {
@@ -392,6 +430,465 @@
 .pack-chart {
     width: 100%;
     height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* 层次化圆形打包图SVG样式 */
+.pack-chart svg {
+    background: radial-gradient(
+        ellipse at center,
+        rgba(41, 35, 25, 0.9) 0%,
+        rgba(20, 18, 15, 0.95) 70%,
+        rgba(10, 9, 8, 1) 100%
+    );
+    border: 2px solid var(--brass-dark);
+    border-radius: 8px;
+    box-shadow: inset 0 0 20px rgba(205, 127, 50, 0.15);
+}
+
+/* 层次化节点样式 */
+.pack-chart .dimension-node {
+    stroke: var(--brass-dark);
+    stroke-width: 2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.pack-chart .dimension-node:hover {
+    stroke: var(--amber);
+    stroke-width: 3;
+    filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.4));
+}
+
+.pack-chart .feature-node {
+    stroke: var(--bronze);
+    stroke-width: 1;
+    opacity: 0.9;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.pack-chart .feature-node:hover {
+    stroke: var(--copper);
+    stroke-width: 2;
+    opacity: 1;
+    filter: drop-shadow(0 2px 6px rgba(205, 127, 50, 0.5));
+}
+
+/* 层次化标签样式 */
+.pack-chart .dimension-label {
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    font-weight: bold;
+    fill: var(--amber);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+.pack-chart .feature-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    fill: var(--brass-light);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+
+/* 工具提示的蒸汽朋克样式 */
+.pack-chart-tooltip {
+    background: linear-gradient(145deg, var(--coal), var(--bg-dark));
+    border: 2px solid var(--brass);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--amber);
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.8),
+        0 0 15px rgba(212, 175, 55, 0.3);
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+}
+
+.pack-chart-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--brass);
+}
+
+/* 数据验证状态指示器 */
+.data-validation-indicator {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(41, 35, 25, 0.9);
+    border: 1px solid var(--copper);
+    border-radius: 20px;
+    font-size: 11px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+}
+
+.validation-icon.valid {
+    color: #4ade80;
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+
+.validation-icon.invalid {
+    color: #f87171;
+    text-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
+}
+
+.validation-text {
+    color: var(--brass-light);
+    font-weight: 500;
+}
+
+/* Task 6.3: 增强的加载状态和错误处理样式 */
+.steampunk-loading {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.loading-gears {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.gear {
+    font-size: 2rem;
+    color: var(--brass);
+    animation: gearRotate 3s linear infinite;
+}
+
+.gear-2 {
+    animation-delay: -1s;
+    animation-direction: reverse;
+}
+
+.gear-3 {
+    animation-delay: -2s;
+}
+
+@keyframes gearRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-message {
+    color: var(--amber);
+    font-family: 'Crimson Text', serif;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: rgba(41, 35, 25, 0.5);
+    border-radius: 2px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--copper), var(--brass), var(--amber));
+    border-radius: 2px;
+    animation: progressFlow 2s ease-in-out infinite;
+}
+
+@keyframes progressFlow {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+.steampunk-error {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(145deg, 
+        rgba(139, 69, 19, 0.1), 
+        rgba(160, 82, 45, 0.1)
+    );
+    border: 2px solid var(--copper);
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.error-icon {
+    font-size: 3rem;
+    color: var(--copper);
+    margin-bottom: 15px;
+    animation: errorPulse 2s ease-in-out infinite;
+}
+
+@keyframes errorPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.error-title {
+    color: var(--amber);
+    font-family: 'Crimson Text', serif;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.error-message {
+    color: var(--brass-light);
+    font-size: 1rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.retry-button {
+    padding: 10px 20px;
+    background: var(--brass-gradient);
+    border: 2px solid var(--copper);
+    border-radius: 20px;
+    color: var(--coal);
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(205, 127, 50, 0.3);
+}
+
+.retry-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(205, 127, 50, 0.5);
+    background: var(--brass-light);
+}
+
+.retry-button:active {
+    transform: translateY(0);
+}
+
+/* 响应式优化 */
+@media (max-width: 480px) {
+    .loading-gears .gear {
+        font-size: 1.5rem;
+    }
+    
+    .loading-message {
+        font-size: 1rem;
+    }
+    
+    .loading-progress {
+        width: 150px;
+    }
+    
+    .error-icon {
+        font-size: 2.5rem;
+    }
+    
+    .error-title {
+        font-size: 1.2rem;
+    }
+    
+    .retry-button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+/* 可访问性增强 */
+@media (prefers-reduced-motion: reduce) {
+    .gear,
+    .progress-bar,
+    .error-icon {
+        animation: none;
+    }
+}
+
+/* Task 6.4: 移动端显示效果优化 */
+
+/* 触摸友好的交互区域 */
+@media (hover: none) and (pointer: coarse) {
+    /* 移动设备特定样式 */
+    .download-button,
+    .viz-control-btn,
+    .retry-button {
+        min-height: 44px; /* iOS 推荐的最小触摸目标 */
+        min-width: 44px;
+        padding: 12px 20px;
+    }
+    
+    .pack-chart .dimension-node,
+    .pack-chart .feature-node {
+        stroke-width: 3; /* 增加触摸目标的可见性 */
+    }
+    
+    /* 移除hover效果，因为移动端没有真正的hover */
+    .cinema-image:hover,
+    .download-button:hover,
+    .score-card:hover,
+    .viz-control-btn:hover,
+    .pack-chart .dimension-node:hover,
+    .pack-chart .feature-node:hover {
+        transform: none;
+        filter: none;
+        background: none;
+    }
+}
+
+/* 移动端横屏优化 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .cinema-container {
+        grid-template-columns: 1.2fr 1fr;
+        gap: 20px;
+    }
+    
+    .cinema-screen {
+        min-height: 300px;
+    }
+    
+    .cinema-story {
+        min-height: 200px;
+    }
+    
+    .pack-chart {
+        height: 350px;
+    }
+    
+    .narrative-text {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+}
+
+/* 超小屏幕优化（< 375px） */
+@media (max-width: 374px) {
+    .detail-container {
+        padding: 0 10px;
+    }
+    
+    .cinema-container {
+        gap: 15px;
+    }
+    
+    .cinema-screen,
+    .cinema-story {
+        padding: 12px;
+    }
+    
+    .detail-title {
+        font-size: 1.3rem;
+    }
+    
+    .narrative-text {
+        font-size: 0.95rem;
+        padding: 12px;
+    }
+    
+    .pack-chart-container {
+        padding: 12px;
+        min-height: 350px;
+    }
+    
+    .pack-chart {
+        height: 350px;
+    }
+    
+    .viz-controls {
+        gap: 8px;
+    }
+    
+    .viz-control-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .data-validation-indicator {
+        top: 8px;
+        right: 8px;
+        padding: 3px 6px;
+        font-size: 9px;
+    }
+}
+
+/* 高DPI屏幕优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .pack-chart svg {
+        border-width: 1px; /* 高DPI屏幕上减少边框粗细 */
+    }
+    
+    .pack-chart .dimension-node,
+    .pack-chart .feature-node {
+        stroke-width: 1.5; /* 高DPI屏幕上微调描边 */
+    }
+}
+
+/* 黑暗模式下的移动端优化 */
+@media (prefers-color-scheme: dark) {
+    .pack-chart svg {
+        background: radial-gradient(
+            ellipse at center,
+            rgba(10, 8, 6, 0.95) 0%,
+            rgba(5, 4, 3, 0.98) 70%,
+            rgba(0, 0, 0, 1) 100%
+        );
+    }
+    
+    .steampunk-loading,
+    .steampunk-error {
+        background: linear-gradient(145deg, 
+            rgba(20, 15, 10, 0.8), 
+            rgba(15, 12, 8, 0.9)
+        );
+    }
+}
+
+/* iOS Safari 特定优化 */
+@supports (-webkit-touch-callout: none) {
+    .cinema-image,
+    .pack-chart svg {
+        -webkit-touch-callout: none; /* 禁用iOS的图片保存弹窗 */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    .pack-chart-container {
+        -webkit-overflow-scrolling: touch; /* 平滑滚动 */
+    }
+}
+
+/* 焦点可见性增强（键盘导航） */
+.download-button:focus-visible,
+.viz-control-btn:focus-visible,
+.retry-button:focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(255, 191, 0, 0.2);
+}
+
+/* 减少动画对电池的影响 */
+@media (prefers-reduced-motion: reduce), (update: slow) {
+    .packChartGlow,
+    .gearRotate,
+    .progressFlow,
+    .errorPulse {
+        animation: none;
+    }
 }
 
 /* 可视化控制按钮 */
@@ -587,6 +1084,29 @@
         padding: 8px 15px;
         font-size: 0.8rem;
     }
+    
+    /* 平板端层次化圆形打包图优化 */
+    .pack-chart-container {
+        padding: 18px;
+        min-height: 450px;
+    }
+    
+    .pack-chart {
+        height: 450px;
+    }
+    
+    .pack-chart .dimension-label {
+        font-size: 13px;
+    }
+    
+    .pack-chart .feature-label {
+        font-size: 10px;
+    }
+    
+    .data-validation-indicator {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -623,6 +1143,36 @@
     .pack-chart {
         height: 400px;
     }
+    
+    /* 移动端层次化圆形打包图优化 */
+    .pack-chart-container {
+        padding: 15px;
+        min-height: 400px;
+    }
+    
+    .pack-chart svg {
+        border-width: 1px;
+    }
+    
+    .pack-chart .dimension-label {
+        font-size: 12px;
+    }
+    
+    .pack-chart .feature-label {
+        font-size: 9px;
+    }
+    
+    .data-validation-indicator {
+        top: 10px;
+        right: 10px;
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+    
+    .pack-chart-tooltip {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
 }
 
 /* ===========================================
@@ -632,6 +1182,7 @@
 @media (prefers-reduced-motion: reduce) {
     .cinema-screen::before,
     .visualization-section::before,
+    .pack-chart-container::before,
     .gear-spinner,
     .chart-spinner,
     .story-spinner {
@@ -641,8 +1192,11 @@
     .cinema-image:hover,
     .download-button:hover,
     .score-card:hover,
-    .viz-control-btn:hover {
+    .viz-control-btn:hover,
+    .pack-chart .dimension-node:hover,
+    .pack-chart .feature-node:hover {
         transform: none;
+        filter: none;
     }
 }
 
