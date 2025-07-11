@@ -13,10 +13,130 @@ from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import io
 
+# 添加OpenAI导入
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 # 创建蓝图
 images_bp = Blueprint('images', __name__, url_prefix='/api/v1/images')
+
+def generate_ai_environmental_story(shap_data):
+    """
+    使用DeepSeek生成环境故事（约100词英文，戏剧性描述）
+    
+    Args:
+        shap_data: SHAP分析数据，包含三个维度得分和特征重要性
+        
+    Returns:
+        str: 生成的英文环境故事
+    """
+    # 获取DeepSeek API密钥
+    deepseek_key = os.getenv('DEEPSEEK_API_KEY')
+    if not deepseek_key:
+        logger.warning("DeepSeek API key not found, using fallback story")
+        return generate_fallback_story(shap_data)
+    
+    try:
+        import requests
+        
+        # 构建用于故事生成的prompt
+        climate_score = shap_data.get('climate_score', 0.5) * 100
+        geographic_score = shap_data.get('geographic_score', 0.5) * 100  
+        economic_score = shap_data.get('economic_score', 0.5) * 100
+        city = shap_data.get('city', 'Unknown Location')
+        
+        # 获取主要特征影响
+        feature_importance = shap_data.get('shap_analysis', {}).get('feature_importance', {})
+        top_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)[:3]
+        
+        prompt = f"""Write a dramatic environmental narrative in exactly 100 words. 
+
+Location: {city}
+Climate Impact: {climate_score:.1f}%
+Geographic Impact: {geographic_score:.1f}% 
+Economic Impact: {economic_score:.1f}%
+Key factors: {', '.join([f[0] for f in top_features[:3]])}
+
+Create a compelling story that dramatically describes the environmental conditions and future predictions for this location. Use vivid imagery and emotional language. Focus on the interplay between climate, geography, and economics. Make it sound like a scene from a climate science thriller.
+
+Write EXACTLY 100 words. Be dramatic and engaging."""
+
+        # 调用DeepSeek API
+        headers = {
+            'Authorization': f'Bearer {deepseek_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            "model": "deepseek-chat",
+            "messages": [
+                {"role": "system", "content": "You are an environmental storyteller who creates dramatic narratives based on scientific data."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 150,
+            "temperature": 0.8
+        }
+        
+        response = requests.post(
+            'https://api.deepseek.com/v1/chat/completions',
+            headers=headers,
+            json=data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            story = result['choices'][0]['message']['content'].strip()
+            logger.info(f"✅ DeepSeek AI story generated successfully for {city}")
+            return story
+        else:
+            logger.error(f"❌ DeepSeek API error: {response.status_code} - {response.text}")
+            return generate_fallback_story(shap_data)
+        
+    except Exception as e:
+        logger.error(f"❌ DeepSeek story generation failed: {e}")
+        return generate_fallback_story(shap_data)
+
+def generate_fallback_story(shap_data):
+    """
+    生成备用故事（当OpenAI不可用时）
+    """
+    climate_score = shap_data.get('climate_score', 0.5) * 100
+    geographic_score = shap_data.get('geographic_score', 0.5) * 100
+    economic_score = shap_data.get('economic_score', 0.5) * 100
+    city = shap_data.get('city', 'Unknown Location')
+    
+    # 基于得分生成不同的故事模板
+    if climate_score > 70:
+        climate_desc = "thriving under stable atmospheric conditions"
+    elif climate_score > 50:
+        climate_desc = "adapting to moderate environmental pressures"
+    else:
+        climate_desc = "struggling against challenging climatic forces"
+        
+    if geographic_score > 70:
+        geo_desc = "blessed with favorable topographical features"
+    elif geographic_score > 50:
+        geo_desc = "shaped by diverse geographical influences"
+    else:
+        geo_desc = "constrained by complex terrain challenges"
+        
+    if economic_score > 70:
+        econ_desc = "supported by robust economic foundations"
+    elif economic_score > 50:
+        econ_desc = "balanced between growth and sustainability"
+    else:
+        econ_desc = "facing economic transformation pressures"
+    
+    story = f"""In {city}, an intricate environmental drama unfolds. The ecosystem stands {climate_desc}, while being {geo_desc}. The region remains {econ_desc}. Through SHAP analysis, we witness nature's delicate balance - where climate forces ({climate_score:.1f}%), geographic patterns ({geographic_score:.1f}%), and economic dynamics ({economic_score:.1f}%) converge to shape tomorrow's environmental narrative. This location tells a story of resilience, adaptation, and the profound interconnectedness of our planet's complex systems."""
+    
+    logger.info(f"✅ Fallback story generated for {city}")
+    return story
 
 @images_bp.route('', methods=['POST'])
 def upload_image():
@@ -650,19 +770,22 @@ def get_image_shap_analysis(image_id):
                         "climate_zone": 0.22
                     }
                 },
-                "ai_story": {
-                    "introduction": f"基于树莓派观测站的环境数据，这次分析揭示了{location}地区的有趣微气候模式。",
-                    "main_findings": "地理和气候因素显示出平衡的环境特征，具有中等稳定性指标。",
-                    "feature_analysis": "温度和位置因素成为该地区环境变化的主要驱动力。",
-                    "risk_assessment": "当前条件表明环境模式稳定，即时风险因素较低。",
-                    "conclusion": "该位置展现出适合持续监测的弹性环境特征。",
-                    "summary": "全面分析表明环境条件平衡，具有积极的稳定性指标。",
-                    "insights": [
-                        "地理位置提供天然的环境缓冲",
-                        "温度模式符合区域气候预期",
-                        "监测数据质量优秀，适合预测建模"
-                    ]
-                }
+                "ai_story": generate_ai_environmental_story({
+                    'climate_score': 0.73,
+                    'geographic_score': 0.68,
+                    'economic_score': 0.71,
+                    'city': location,
+                    'shap_analysis': {
+                        'feature_importance': {
+                            "temperature": 0.18,
+                            "humidity": 0.15,
+                            "pressure": 0.12,
+                            "location_factor": 0.20,
+                            "seasonal_factor": 0.13,
+                            "climate_zone": 0.22
+                        }
+                    }
+                })
             },
             "integration_metadata": {
                 "analysis_timestamp": datetime.now().isoformat(),
@@ -711,14 +834,22 @@ def get_image_shap_analysis(image_id):
                                 "climate_zone": 0.17
                             }
                         },
-                        "ai_story": {
-                            "introduction": "基于树莓派传感器数据的环境分析显示生态系统健康的稳定条件和积极指标。",
-                            "main_findings": "监测点显示出良好的环境稳定性。",
-                            "feature_analysis": "关键环境因子表现正常。",
-                            "risk_assessment": "环境风险评估为低风险。",
-                            "conclusion": "适合继续长期监测的理想位置。",
-                            "summary": "环境监测结果积极，建议持续观察。"
-                        }
+                        "ai_story": generate_ai_environmental_story({
+                            'climate_score': 0.72,
+                            'geographic_score': 0.69,
+                            'economic_score': 0.66,
+                            'city': "Tree Observatory Location",
+                            'shap_analysis': {
+                                'feature_importance': {
+                                    "temperature": 0.19,
+                                    "humidity": 0.16,
+                                    "pressure": 0.13,
+                                    "location_factor": 0.21,
+                                    "seasonal_factor": 0.14,
+                                    "climate_zone": 0.17
+                                }
+                            }
+                        })
                     }
                 },
                 "timestamp": datetime.now().isoformat(),

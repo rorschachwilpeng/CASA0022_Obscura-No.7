@@ -12,11 +12,11 @@
 
 {% block content %}
 <div class="detail-page">
-    <div class="detail-container">
+    <div class="detail-container" data-image-id="{% if image_id %}{{ image_id }}{% endif %}">
         <!-- Page Header -->
         <header class="detail-header">
-            <h1 class="detail-title" id="imageTitle">Temporal Vision Analysis</h1>
-            <p class="detail-subtitle" id="imageSubtitle">Environmental Prediction Report</p>
+            <h1 class="detail-title" id="imageTitle">Environmental Vision Analysis</h1>
+            <p class="detail-subtitle" id="imageSubtitle">AI-Generated Environmental Art with SHAP Interpretability</p>
             
             <!-- Breadcrumb Navigation -->
             <nav class="breadcrumb" aria-label="Breadcrumb navigation">
@@ -28,372 +28,151 @@
             </nav>
         </header>
 
-        <!-- Main Content Grid -->
-        <div class="detail-content">
-            <!-- Image Panel -->
-            <section class="image-panel" aria-labelledby="image-section-title">
-                <h2 id="image-section-title" class="sr-only">Image Display</h2>
-                
-                <div class="image-display">
-                    <img class="main-image" 
-                         id="mainImage" 
-                         alt=""
-                         tabindex="0"
-                         role="img">
-                    
-                    <!-- Image Overlay Controls -->
-                    <div class="image-overlay">
-                        <button class="overlay-button" 
-                                id="fullscreenBtn" 
-                                type="button"
-                                title="Fullscreen View (Ctrl+F)"
-                                aria-label="View image in fullscreen">
-                            ⛶
-                        </button>
-                        <button class="overlay-button" 
-                                id="shareBtn" 
-                                type="button"
-                                title="Share Image (Ctrl+S)"
-                                aria-label="Share this image">
-                            📤
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Image Metadata -->
-                <div class="image-metadata">
-                    <div class="metadata-item">
-                        <div class="metadata-label">Resolution</div>
-                        <div class="metadata-value" id="imageResolution">Loading...</div>
-                    </div>
-                    <div class="metadata-item">
-                        <div class="metadata-label">File Size</div>
-                        <div class="metadata-value" id="imageFileSize">Loading...</div>
-                    </div>
-                    <div class="metadata-item">
-                        <div class="metadata-label">Generation Time</div>
-                        <div class="metadata-value" id="imageGenTime">Loading...</div>
-                    </div>
-                    <div class="metadata-item">
-                        <div class="metadata-label">Prediction ID</div>
-                        <div class="metadata-value" id="imagePredictionId">Loading...</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Analysis Panel -->
-            <section class="analysis-panel" aria-labelledby="analysis-section-title">
-                <h2 class="analysis-title" id="analysis-section-title">
-                    <span class="analysis-icon" aria-hidden="true">🔬</span>
-                    Prediction Analysis
-                </h2>
-                
-                <!-- Prediction Results Grid -->
-                <div class="prediction-results" id="predictionResults">
-                    <!-- Dynamic content will be populated here -->
-                    <div class="result-card">
-                        <div class="result-label">Environment Type</div>
-                        <div class="result-value" id="environmentType">Loading...</div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" id="envConfidence" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <div class="result-label">Climate Prediction</div>
-                        <div class="result-value" id="climatePrediction">Loading...</div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" id="climateConfidence" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <div class="result-label">Vegetation Index</div>
-                        <div class="result-value" id="vegetationIndex">Loading...</div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" id="vegConfidence" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="result-card">
-                        <div class="result-label">Urban Development</div>
-                        <div class="result-value" id="urbanDevelopment">Loading...</div>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" id="urbanConfidence" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Detailed Description -->
-                <div class="description-section">
-                    <h3>Analytical Report</h3>
-                    <div class="image-description" id="detailedDescription">
-                        Loading comprehensive analysis...
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Data Visualization Section -->
-        <section class="visualization-section" aria-labelledby="viz-section-title">
-            <div class="viz-header">
-                <h2 class="viz-title" id="viz-section-title">📊 Temporal Data Analysis</h2>
-                <p class="viz-description">
-                    Interactive visualization of environmental predictions and confidence metrics
-                </p>
-            </div>
+        <!-- 模块1: 图片显示 -->
+        <section class="image-panel" aria-labelledby="image-section-title">
+            <h2 id="image-section-title" class="sr-only">Generated Image</h2>
             
-            <!-- Chart Container -->
-            <div class="chart-container">
-                <!-- Environment Trend Chart -->
-                <div class="chart-panel">
-                    <h3 class="chart-title">Environmental Trends</h3>
-                    <div class="chart-loading" id="trendChartLoading">
-                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
-                        <p>Analyzing temporal patterns...</p>
-                    </div>
-                    <canvas class="chart-canvas" 
-                            id="trendChart" 
-                            aria-label="Environmental trend data chart"
-                            style="display: none;">
-                    </canvas>
-                </div>
+            <div class="image-display">
+                <img class="main-image" 
+                     id="mainImage" 
+                     alt=""
+                     tabindex="0"
+                     role="img">
                 
-                <!-- Confidence Analysis Chart -->
-                <div class="chart-panel">
-                    <h3 class="chart-title">Confidence Analysis</h3>
-                    <div class="chart-loading" id="confidenceChartLoading">
-                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
-                        <p>Processing confidence metrics...</p>
-                    </div>
-                    <canvas class="chart-canvas" 
-                            id="confidenceChart" 
-                            aria-label="Prediction confidence chart"
-                            style="display: none;">
-                    </canvas>
+                <!-- Image Overlay Controls -->
+                <div class="image-overlay">
+                    <button class="overlay-button" 
+                            id="fullscreenBtn" 
+                            type="button"
+                            title="Fullscreen View (Ctrl+F)"
+                            aria-label="View image in fullscreen">
+                        ⛶
+                    </button>
+                    <button class="overlay-button" 
+                            id="shareBtn" 
+                            type="button"
+                            title="Share Image (Ctrl+S)"
+                            aria-label="Share this image">
+                        📤
+                    </button>
                 </div>
             </div>
             
-            <!-- Process Flow Diagram -->
-            <div class="process-flow">
-                <h3 class="flow-title">🔄 Analysis Pipeline</h3>
-                <div class="flow-diagram">
-                    <svg class="flow-svg" 
-                         id="processFlow" 
-                         aria-labelledby="flow-desc"
-                         role="img">
-                        <desc id="flow-desc">Flowchart showing the AI prediction analysis process</desc>
-                        <!-- SVG content will be generated dynamically -->
-                    </svg>
+            <!-- Image Metadata -->
+            <div class="image-metadata">
+                <div class="metadata-item">
+                    <div class="metadata-label">Resolution</div>
+                    <div class="metadata-value" id="imageResolution">Loading...</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">File Size</div>
+                    <div class="metadata-value" id="imageFileSize">Loading...</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Generation Time</div>
+                    <div class="metadata-value" id="imageGenTime">Loading...</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">Prediction ID</div>
+                    <div class="metadata-value" id="imagePredictionId">Loading...</div>
                 </div>
             </div>
         </section>
 
-        <!-- SHAP Analysis Section -->
-        <section class="shap-analysis-section" aria-labelledby="shap-section-title">
-            <div class="shap-header">
-                <h2 class="shap-title" id="shap-section-title">🧠 SHAP Explainability Analysis</h2>
-                <p class="shap-description">
-                    Advanced machine learning interpretability analysis revealing feature contributions and model reasoning
+        <!-- 模块2: AI生成故事 -->
+        <section class="ai-story-section" aria-labelledby="story-section-title">
+            <div class="story-header">
+                <h2 class="story-title" id="story-section-title">
+                    <span class="story-icon" aria-hidden="true">📖</span>
+                    Environmental Narrative
+                </h2>
+                <p class="story-description">
+                    AI-generated environmental story based on SHAP analysis findings
                 </p>
             </div>
             
-            <!-- SHAP Score Cards -->
-            <div class="shap-scores-grid" id="shapScoresGrid">
-                <div class="shap-score-card">
+            <div class="story-container">
+                <div class="story-loading" id="storyLoading">
+                    <div class="story-spinner" aria-hidden="true">✍️</div>
+                    <p>Generating environmental narrative...</p>
+                </div>
+                <div class="story-content" id="storyContent" style="display: none;">
+                    <!-- AI故事内容将在这里动态加载 -->
+                    <div class="narrative-text" id="narrativeText">
+                        Loading story...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模块3: SHAP可视化分析 -->
+        <section class="shap-visualization-section" aria-labelledby="shap-viz-section-title">
+            <div class="shap-viz-header">
+                <h2 class="shap-viz-title" id="shap-viz-section-title">
+                    <span class="shap-viz-icon" aria-hidden="true">🎯</span>
+                    Feature Impact Analysis
+                </h2>
+                <p class="shap-viz-description">
+                    Interactive visualization of climate, geographic, and economic factors
+                </p>
+            </div>
+            
+            <!-- SHAP三维度评分 -->
+            <div class="shap-scores-overview" id="shapScoresOverview">
+                <div class="score-card climate">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">🌡️</span>
-                        <h3>Climate Score</h3>
+                        <h3>Climate</h3>
                     </div>
-                    <div class="score-value" id="shapClimateScore">Loading...</div>
-                    <div class="score-bar">
-                        <div class="score-fill climate" id="climateScoreFill" style="width: 0%"></div>
-                    </div>
+                    <div class="score-value" id="climateScore">Loading...</div>
                 </div>
                 
-                <div class="shap-score-card">
+                <div class="score-card geographic">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">🗺️</span>
-                        <h3>Geographic Score</h3>
+                        <h3>Geographic</h3>
                     </div>
-                    <div class="score-value" id="shapGeographicScore">Loading...</div>
-                    <div class="score-bar">
-                        <div class="score-fill geographic" id="geographicScoreFill" style="width: 0%"></div>
-                    </div>
+                    <div class="score-value" id="geographicScore">Loading...</div>
                 </div>
                 
-                <div class="shap-score-card">
+                <div class="score-card economic">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">💰</span>
-                        <h3>Economic Score</h3>
+                        <h3>Economic</h3>
                     </div>
-                    <div class="score-value" id="shapEconomicScore">Loading...</div>
-                    <div class="score-bar">
-                        <div class="score-fill economic" id="economicScoreFill" style="width: 0%"></div>
-                    </div>
-                </div>
-                
-                <div class="shap-score-card final-score">
-                    <div class="score-header">
-                        <span class="score-icon" aria-hidden="true">🎯</span>
-                        <h3>Final Score</h3>
-                    </div>
-                    <div class="score-value" id="shapFinalScore">Loading...</div>
-                    <div class="score-bar">
-                        <div class="score-fill final" id="finalScoreFill" style="width: 0%"></div>
-                    </div>
+                    <div class="score-value" id="economicScore">Loading...</div>
                 </div>
             </div>
             
-            <!-- Feature Importance Visualization -->
-            <div class="shap-feature-importance">
-                <h3 class="feature-title">🔍 Feature Importance Analysis</h3>
-                <div class="feature-chart-container">
-                    <div class="chart-loading" id="shapFeatureLoading">
-                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
-                        <p>Analyzing feature contributions...</p>
-                    </div>
-                    <div class="feature-bars" id="shapFeatureBars" style="display: none;">
-                        <!-- Dynamic feature importance bars will be populated here -->
-                    </div>
+            <!-- 圆形打包图可视化容器 -->
+            <div class="pack-chart-container">
+                <div class="chart-loading" id="packChartLoading">
+                    <div class="chart-spinner" aria-hidden="true">⚙️</div>
+                    <p>Loading feature impact visualization...</p>
+                </div>
+                <div id="packChart" class="pack-chart" style="display: none;">
+                    <!-- 圆形打包图将在这里渲染 -->
                 </div>
             </div>
             
-            <!-- AI Story Section -->
-            <div class="shap-ai-story">
-                <h3 class="story-title">📖 AI-Generated Environmental Story</h3>
-                <div class="story-container">
-                    <div class="story-loading" id="shapStoryLoading">
-                        <div class="story-spinner" aria-hidden="true">✍️</div>
-                        <p>Generating environmental narrative...</p>
-                    </div>
-                    <div class="story-content" id="shapStoryContent" style="display: none;">
-                        <div class="story-section">
-                            <h4>Introduction</h4>
-                            <p id="storyIntroduction">Loading...</p>
-                        </div>
-                        <div class="story-section">
-                            <h4>Key Findings</h4>
-                            <p id="storyFindings">Loading...</p>
-                        </div>
-                        <div class="story-section">
-                            <h4>Environmental Assessment</h4>
-                            <p id="storyAssessment">Loading...</p>
-                        </div>
-                        <div class="story-section">
-                            <h4>Conclusion</h4>
-                            <p id="storyConclusion">Loading...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- SHAP Technical Details -->
-            <div class="shap-technical">
-                <h3 class="shap-tech-title">⚙️ SHAP Model Information</h3>
-                <div class="shap-tech-grid">
-                    <div class="shap-tech-item">
-                        <span class="tech-label">Model Accuracy</span>
-                        <span class="tech-value" id="shapModelAccuracy">Loading...</span>
-                    </div>
-                    <div class="shap-tech-item">
-                        <span class="tech-label">Processing Time</span>
-                        <span class="tech-value" id="shapProcessingTime">Loading...</span>
-                    </div>
-                    <div class="shap-tech-item">
-                        <span class="tech-label">Analysis Timestamp</span>
-                        <span class="tech-value" id="shapTimestamp">Loading...</span>
-                    </div>
-                    <div class="shap-tech-item">
-                        <span class="tech-label">Model Version</span>
-                        <span class="tech-value" id="shapModelVersion">Loading...</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Technical Details Section -->
-        <section class="technical-details" aria-labelledby="tech-section-title">
-            <h2 class="tech-title" id="tech-section-title">⚙️ Technical Specifications</h2>
-            
-            <div class="tech-grid">
-                <!-- Model Information -->
-                <div class="tech-section">
-                    <h3>
-                        <span aria-hidden="true">🤖</span>
-                        Model Details
-                    </h3>
-                    <ul class="tech-list" id="modelDetails">
-                        <li>
-                            <span class="tech-label">Architecture</span>
-                            <span class="tech-value" id="modelArch">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Version</span>
-                            <span class="tech-value" id="modelVersion">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Training Data</span>
-                            <span class="tech-value" id="trainingData">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Accuracy</span>
-                            <span class="tech-value" id="modelAccuracy">Loading...</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- Processing Information -->
-                <div class="tech-section">
-                    <h3>
-                        <span aria-hidden="true">⚡</span>
-                        Processing Stats
-                    </h3>
-                    <ul class="tech-list" id="processingStats">
-                        <li>
-                            <span class="tech-label">Processing Time</span>
-                            <span class="tech-value" id="processTime">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Memory Usage</span>
-                            <span class="tech-value" id="memoryUsage">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">GPU Utilization</span>
-                            <span class="tech-value" id="gpuUsage">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Batch Size</span>
-                            <span class="tech-value" id="batchSize">Loading...</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- Environmental Parameters -->
-                <div class="tech-section">
-                    <h3>
-                        <span aria-hidden="true">🌍</span>
-                        Environmental Data
-                    </h3>
-                    <ul class="tech-list" id="environmentalData">
-                        <li>
-                            <span class="tech-label">Location</span>
-                            <span class="tech-value" id="location">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Time Period</span>
-                            <span class="tech-value" id="timePeriod">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Climate Zone</span>
-                            <span class="tech-value" id="climateZone">Loading...</span>
-                        </li>
-                        <li>
-                            <span class="tech-label">Data Sources</span>
-                            <span class="tech-value" id="dataSources">Loading...</span>
-                        </li>
-                    </ul>
-                </div>
+            <!-- 可视化控制 -->
+            <div class="viz-controls" id="vizControls" style="display: none;">
+                <button class="viz-control-btn active" data-dimension="overview">
+                    <span aria-hidden="true">🎯</span>
+                    Overview
+                </button>
+                <button class="viz-control-btn" data-dimension="climate">
+                    <span aria-hidden="true">🌡️</span>
+                    Climate
+                </button>
+                <button class="viz-control-btn" data-dimension="geographic">
+                    <span aria-hidden="true">🗺️</span>
+                    Geographic
+                </button>
+                <button class="viz-control-btn" data-dimension="economic">
+                    <span aria-hidden="true">💰</span>
+                    Economic
+                </button>
             </div>
         </section>
 
@@ -457,7 +236,7 @@
         <div class="brass-spinner">
             <div class="gear-spinner" aria-hidden="true">⚙️</div>
         </div>
-        <p>Loading temporal analysis...</p>
+        <p>Processing through temporal mechanisms...</p>
     </div>
 </div>
 
@@ -472,6 +251,52 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- D3.js库用于圆形打包图可视化 -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-hierarchy@3/dist/d3-hierarchy.min.js"></script>
+
+<!-- ECharts库用于自定义渲染 -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+<!-- 页面特定的JavaScript -->
+<script src="{{ url_for('static', filename='js/pack-chart.js') }}"></script>
 <script src="{{ url_for('static', filename='js/image-detail.js') }}"></script>
-<script src="{{ url_for('static', filename='js/data-visualization.js') }}"></script>
+
+<script>
+// 初始化页面功能
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 Initializing simplified image detail page...');
+    
+         // 初始化图片详情页面
+     if (typeof ImageDetailPage !== 'undefined') {
+         const container = document.querySelector('.detail-container');
+         const imageId = container ? parseInt(container.getAttribute('data-image-id')) : null;
+         if (imageId) {
+             const detailPage = new ImageDetailPage(imageId);
+             detailPage.initialize();
+         }
+     }
+    
+    // 可视化控制按钮事件
+    const vizControlButtons = document.querySelectorAll('.viz-control-btn');
+    vizControlButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // 移除所有active类
+            vizControlButtons.forEach(btn => btn.classList.remove('active'));
+            // 添加active类到当前按钮
+            this.classList.add('active');
+            
+            const dimension = this.getAttribute('data-dimension');
+            console.log(`🎯 Switching to ${dimension} dimension view`);
+            
+                         // 实现维度切换逻辑
+             if (window.packChartInstance) {
+                 window.packChartInstance.focusDimension(dimension);
+             } else {
+                 console.warn('Pack chart instance not available');
+             }
+        });
+    });
+});
+</script>
 {% endblock %}

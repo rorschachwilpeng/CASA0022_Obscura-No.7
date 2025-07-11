@@ -266,19 +266,82 @@ class ImageDetailPage {
 
         const shapData = this.shapAnalysisData.shap_analysis;
         
-        // 填充SHAP分数卡片
-        this.populateSHAPScores(shapData);
+        // 填充三个维度评分（简化版）
+        this.populateSimplifiedScores(shapData);
         
-        // 填充特征重要性
-        this.populateFeatureImportance(shapData);
-        
-        // 填充AI故事
+        // 填充AI故事（新格式）
         this.populateAIStory(shapData);
         
-        // 填充技术信息
-        this.populateSHAPTechnicalInfo(shapData);
+        // 准备圆形打包图数据（稍后实现）
+        this.preparePackChartData(shapData);
+        
+        // 🎯 存储SHAP数据供bubble chart使用
+        window.currentShapData = {
+            final_score: shapData.final_score || 0.69,
+            climate_score: shapData.climate_score || 0.72,
+            geographic_score: shapData.geographic_score || 0.69,
+            economic_score: shapData.economic_score || 0.66,
+            city: shapData.city || "Unknown Location",
+            coordinates: shapData.coordinates || { latitude: 51.5074, longitude: -0.1278 },
+            shap_analysis: {
+                feature_importance: shapData.shap_analysis?.feature_importance || {}
+            },
+            ai_story: shapData.ai_story || {}
+        };
+        
+        // 🎯 触发bubble chart渲染
+        this.renderBubbleChart();
         
         console.log('🧠 SHAP analysis populated successfully');
+    }
+    
+    /**
+     * 渲染SHAP Bubble Chart
+     */
+    renderBubbleChart() {
+        try {
+            console.log('🎯 Attempting to render bubble chart...');
+            
+            // 检查bubble chart是否可用
+            if (typeof window.shapBubbleChart === 'undefined') {
+                console.log('⏳ Bubble chart not yet initialized, waiting...');
+                // 延迟重试
+                setTimeout(() => this.renderBubbleChart(), 500);
+                return;
+            }
+            
+            // 检查数据是否可用
+            if (!window.currentShapData) {
+                console.warn('⚠️ No SHAP data available for bubble chart');
+                return;
+            }
+            
+            console.log('🎯 Rendering bubble chart with data:', window.currentShapData);
+            
+            // 隐藏loading，显示图表
+            const loading = document.getElementById('bubbleChartLoading');
+            const chart = document.getElementById('shapBubbleChart');
+            
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            if (chart) {
+                chart.style.display = 'block';
+            }
+            
+            // 渲染bubble chart
+            window.shapBubbleChart.render(window.currentShapData);
+            console.log('✅ Bubble chart rendered successfully');
+            
+        } catch (error) {
+            console.error('❌ Error rendering bubble chart:', error);
+            
+            // 显示错误消息
+            const loading = document.getElementById('bubbleChartLoading');
+            if (loading) {
+                loading.innerHTML = '<div class="shap-bubble-error">Visualization temporarily unavailable</div>';
+            }
+        }
     }
 
     /**
@@ -371,39 +434,194 @@ class ImageDetailPage {
     }
 
     /**
-     * 填充AI故事
+     * 填充简化的三维度评分
+     */
+    populateSimplifiedScores(shapData) {
+        // 气候评分
+        const climateScore = document.querySelector('#climateScore');
+        if (climateScore && shapData.climate_score !== undefined) {
+            climateScore.textContent = `${(shapData.climate_score * 100).toFixed(1)}%`;
+        }
+
+        // 地理评分
+        const geographicScore = document.querySelector('#geographicScore');
+        if (geographicScore && shapData.geographic_score !== undefined) {
+            geographicScore.textContent = `${(shapData.geographic_score * 100).toFixed(1)}%`;
+        }
+
+        // 经济评分
+        const economicScore = document.querySelector('#economicScore');
+        if (economicScore && shapData.economic_score !== undefined) {
+            economicScore.textContent = `${(shapData.economic_score * 100).toFixed(1)}%`;
+        }
+
+        console.log('✅ Simplified scores populated');
+    }
+
+    /**
+     * 准备圆形打包图数据
+     */
+    preparePackChartData(shapData) {
+        if (!shapData.shap_analysis || !shapData.shap_analysis.feature_importance) {
+            console.log('No feature importance data for pack chart');
+            return;
+        }
+
+        const features = shapData.shap_analysis.feature_importance;
+        
+        // 构建层次化数据结构
+        const packData = {
+            name: "Environmental Impact",
+            value: shapData.final_score || 0.7,
+            children: [
+                {
+                    name: "Climate",
+                    value: shapData.climate_score || 0.7,
+                    children: []
+                },
+                {
+                    name: "Geographic", 
+                    value: shapData.geographic_score || 0.7,
+                    children: []
+                },
+                {
+                    name: "Economic",
+                    value: shapData.economic_score || 0.7,
+                    children: []
+                }
+            ]
+        };
+
+        // 将特征分配到相应的维度
+        for (const [feature, importance] of Object.entries(features)) {
+            const featureNode = {
+                name: this.formatFeatureName(feature),
+                value: Math.abs(importance),
+                impact: importance
+            };
+
+            // 简单的特征分类逻辑
+            if (feature.includes('temperature') || feature.includes('humidity') || feature.includes('climate')) {
+                packData.children[0].children.push(featureNode);
+            } else if (feature.includes('location') || feature.includes('pressure') || feature.includes('geographic')) {
+                packData.children[1].children.push(featureNode);
+            } else {
+                packData.children[2].children.push(featureNode);
+            }
+        }
+
+        // 存储数据供后续可视化使用
+        window.currentPackData = packData;
+        console.log('✅ Pack chart data prepared:', packData);
+
+        // 初始化并渲染圆形打包图
+        this.initializePackChart(packData);
+
+        // 隐藏loading，显示控制按钮
+        this.showPackChartControls();
+    }
+
+    /**
+     * 初始化并渲染圆形打包图
+     */
+    initializePackChart(data) {
+        if (typeof PackChart === 'undefined') {
+            console.error('❌ PackChart component not loaded');
+            return;
+        }
+
+        try {
+            // 创建圆形打包图实例
+            if (!window.packChartInstance) {
+                window.packChartInstance = new PackChart('packChart', {
+                    width: 600,
+                    height: 500
+                });
+            }
+
+            // 渲染数据
+            window.packChartInstance.render(data);
+            console.log('✅ Pack chart rendered with SHAP data');
+
+        } catch (error) {
+            console.error('❌ Error initializing pack chart:', error);
+            this.showPackChartError();
+        }
+    }
+
+    /**
+     * 显示圆形打包图控制按钮
+     */
+    showPackChartControls() {
+        const loading = document.querySelector('#packChartLoading');
+        const chart = document.querySelector('#packChart');
+        const controls = document.querySelector('#vizControls');
+
+        if (loading) loading.style.display = 'none';
+        if (chart) chart.style.display = 'block';
+        if (controls) controls.style.display = 'flex';
+
+        console.log('✅ Pack chart UI updated');
+    }
+
+    /**
+     * 显示圆形打包图错误
+     */
+    showPackChartError() {
+        const loading = document.querySelector('#packChartLoading');
+        if (loading) {
+            loading.innerHTML = `
+                <div class="chart-error">
+                    <span aria-hidden="true">❌</span>
+                    <p>Visualization loading failed</p>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * 填充AI故事（新格式：单一英文故事）
      */
     populateAIStory(shapData) {
-        const storyContent = document.querySelector('#shapStoryContent');
-        const storyLoading = document.querySelector('#shapStoryLoading');
+        const storyContent = document.querySelector('#storyContent');
+        const storyLoading = document.querySelector('#storyLoading');
+        const narrativeText = document.querySelector('#narrativeText');
         
-        if (!storyContent || !shapData.ai_story) return;
+        if (!shapData.ai_story) {
+            console.log('No AI story data available');
+            return;
+        }
 
         // 隐藏loading，显示内容
         if (storyLoading) storyLoading.style.display = 'none';
-        storyContent.style.display = 'block';
+        if (storyContent) storyContent.style.display = 'block';
 
         const story = shapData.ai_story;
 
-        // 填充各个故事部分
-        const storyIntroduction = document.querySelector('#storyIntroduction');
-        if (storyIntroduction && story.introduction) {
-            storyIntroduction.textContent = story.introduction;
+        // 新格式：故事是简单字符串
+        if (typeof story === 'string') {
+            if (narrativeText) {
+                narrativeText.textContent = story;
+            }
+            console.log('✅ AI story populated (string format)');
+            return;
         }
 
-        const storyFindings = document.querySelector('#storyFindings');
-        if (storyFindings && story.main_findings) {
-            storyFindings.textContent = story.main_findings;
-        }
-
-        const storyAssessment = document.querySelector('#storyAssessment');
-        if (storyAssessment && story.risk_assessment) {
-            storyAssessment.textContent = story.risk_assessment;
-        }
-
-        const storyConclusion = document.querySelector('#storyConclusion');
-        if (storyConclusion && story.conclusion) {
-            storyConclusion.textContent = story.conclusion;
+        // 兼容旧格式：故事是对象（用于向后兼容）
+        if (typeof story === 'object') {
+            let combinedStory = '';
+            
+            if (story.introduction) combinedStory += story.introduction + ' ';
+            if (story.main_findings) combinedStory += story.main_findings + ' ';
+            if (story.feature_analysis) combinedStory += story.feature_analysis + ' ';
+            if (story.risk_assessment) combinedStory += story.risk_assessment + ' ';
+            if (story.conclusion) combinedStory += story.conclusion + ' ';
+            if (story.summary) combinedStory += story.summary;
+            
+            if (narrativeText && combinedStory.trim()) {
+                narrativeText.textContent = combinedStory.trim();
+            }
+            console.log('✅ AI story populated (object format - legacy)');
         }
     }
 
