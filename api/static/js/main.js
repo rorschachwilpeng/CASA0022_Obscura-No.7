@@ -2,15 +2,11 @@
 
 /**
  * Main application JavaScript for Obscura No.7 Virtual Telescope
- * Handles navigation, system status monitoring, and shared functionality
+ * Handles navigation, steampunk effects, and shared functionality
  */
 
 class ObscuraApp {
     constructor() {
-        this.systemStatus = {
-            online: false,
-            services: {}
-        };
         this.init();
     }
 
@@ -19,9 +15,8 @@ class ObscuraApp {
      */
     init() {
         this.setupEventListeners();
-        this.initializeStatusMonitor();
         this.setupSteampunkEffects();
-        console.log('🔭 Obscura No.7 - Virtual Telescope System Initialized');
+        console.log('🔭 Obscura No.7 - Virtual Telescope Gallery Initialized');
     }
 
     /**
@@ -30,12 +25,6 @@ class ObscuraApp {
     setupEventListeners() {
         // Navigation active state management
         this.updateNavActiveState();
-        
-        // System status refresh
-        const refreshButton = document.getElementById('refresh-status');
-        if (refreshButton) {
-            refreshButton.addEventListener('click', () => this.refreshSystemStatus());
-        }
 
         // Smooth scrolling for anchor links
         this.setupSmoothScrolling();
@@ -56,104 +45,13 @@ class ObscuraApp {
         
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            if (href === currentPath || (currentPath === '/' && href === '/')) {
+            if (href === currentPath || (currentPath === '/' && href === '/') || 
+                (currentPath === '/gallery' && href === '/')) {
                 link.classList.add('active');
             } else {
                 link.classList.remove('active');
             }
         });
-    }
-
-    /**
-     * Initialize system status monitoring
-     */
-    initializeStatusMonitor() {
-        this.refreshSystemStatus();
-        
-        // Auto-refresh status every 30 seconds
-        setInterval(() => {
-            this.refreshSystemStatus();
-        }, 30000);
-    }
-
-    /**
-     * Refresh system status from API
-     */
-    async refreshSystemStatus() {
-        try {
-            const response = await fetch('/api/status');
-            const data = await response.json();
-            
-            this.systemStatus = data;
-            this.updateStatusDisplay(data);
-            this.updateStatusIndicator(data.status === 'online');
-            
-        } catch (error) {
-            console.error('Failed to fetch system status:', error);
-            this.updateStatusIndicator(false);
-        }
-    }
-
-    /**
-     * Update status display on the page
-     */
-    updateStatusDisplay(statusData) {
-        const services = statusData.services || {};
-        
-        // Update individual service status cards
-        this.updateServiceCard('openweather', services.openweather);
-        this.updateServiceCard('openai', services.openai);
-        this.updateServiceCard('google_maps', services.google_maps);
-        this.updateServiceCard('cloudinary', services.cloudinary);
-        this.updateServiceCard('database', services.database);
-        this.updateServiceCard('ml_workflow', services.ml_workflow);
-
-        // Update timestamp if present
-        const timestampElement = document.querySelector('.info-value[data-timestamp]');
-        if (timestampElement && statusData.timestamp) {
-            const date = new Date(statusData.timestamp);
-            timestampElement.textContent = date.toLocaleString();
-        }
-    }
-
-    /**
-     * Update individual service status card
-     */
-    updateServiceCard(serviceName, isOnline) {
-        const card = document.querySelector(`[data-service="${serviceName}"]`);
-        if (!card) return;
-
-        const statusLight = card.querySelector('.status-light');
-        const statusText = card.querySelector('.status-text');
-
-        if (isOnline) {
-            card.classList.add('operational');
-            card.classList.remove('malfunction');
-            if (statusText) statusText.textContent = 'OPERATIONAL';
-        } else {
-            card.classList.add('malfunction');
-            card.classList.remove('operational');
-            if (statusText) statusText.textContent = 'DISCONNECTED';
-        }
-    }
-
-    /**
-     * Update main status indicator in navigation
-     */
-    updateStatusIndicator(isOnline) {
-        const statusIndicator = document.getElementById('system-status');
-        const statusLight = statusIndicator?.querySelector('.status-light');
-        const statusText = statusIndicator?.querySelector('.status-text');
-
-        if (isOnline) {
-            statusIndicator?.classList.add('online');
-            statusIndicator?.classList.remove('offline');
-            if (statusText) statusText.textContent = 'ONLINE';
-        } else {
-            statusIndicator?.classList.add('offline');
-            statusIndicator?.classList.remove('online');
-            if (statusText) statusText.textContent = 'OFFLINE';
-        }
     }
 
     /**
@@ -203,36 +101,33 @@ class ObscuraApp {
      * Create steam particles for steampunk effect
      */
     createSteamParticles(container) {
-        const particleCount = 5;
-        
-        for (let i = 0; i < particleCount; i++) {
+        for (let i = 0; i < 5; i++) {
             const particle = document.createElement('div');
             particle.className = 'steam-particle';
-            particle.style.cssText = `
-                position: absolute;
-                width: ${4 + Math.random() * 8}px;
-                height: ${4 + Math.random() * 8}px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 50%;
-                animation: steam-rise ${3 + Math.random() * 4}s ease-out infinite;
-                animation-delay: ${Math.random() * 2}s;
-                left: ${Math.random() * 100}%;
-                bottom: 0;
-            `;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            particle.style.animationDuration = (3 + Math.random() * 2) + 's';
             
             container.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 5000);
         }
     }
 
     /**
-     * Setup brass shine effects
+     * Setup brass shine effects on hover
      */
     setupBrassShineEffects() {
-        const brassElements = document.querySelectorAll('.brass-panel, .brass-plate, .control-button');
+        const brassElements = document.querySelectorAll('.brass-panel, .nav-button, .action-button');
         
         brassElements.forEach(element => {
-            element.addEventListener('mouseenter', this.addBrassShine);
-            element.addEventListener('mouseleave', this.removeBrassShine);
+            element.addEventListener('mouseenter', this.addBrassShine.bind(this));
+            element.addEventListener('mouseleave', this.removeBrassShine.bind(this));
         });
     }
 
@@ -240,7 +135,9 @@ class ObscuraApp {
      * Add brass shine effect
      */
     addBrassShine(event) {
-        const element = event.target;
+        const element = event.target.closest('.brass-panel, .nav-button, .action-button');
+        if (!element) return;
+
         const shine = document.createElement('div');
         shine.className = 'brass-shine';
         shine.style.cssText = `
@@ -249,38 +146,38 @@ class ObscuraApp {
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: shine-sweep 0.8s ease-out;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: brassShine 0.6s ease-out;
             pointer-events: none;
             z-index: 1;
         `;
         
         element.style.position = 'relative';
+        element.style.overflow = 'hidden';
         element.appendChild(shine);
         
         setTimeout(() => {
             if (shine.parentNode) {
                 shine.parentNode.removeChild(shine);
             }
-        }, 800);
+        }, 600);
     }
 
     /**
      * Remove brass shine effect
      */
     removeBrassShine(event) {
-        // Cleanup is handled in addBrassShine timeout
+        // Shine removal is handled by timeout in addBrassShine
     }
 
     /**
-     * Setup sound effects (optional)
+     * Setup mechanical sound effects (optional)
      */
     setupSoundEffects() {
-        // Mechanical click sounds for buttons
-        const buttons = document.querySelectorAll('.control-button, .filter-button, .nav-button');
+        const clickableElements = document.querySelectorAll('button, .nav-link, .action-button');
         
-        buttons.forEach(button => {
-            button.addEventListener('click', this.playMechanicalClick);
+        clickableElements.forEach(element => {
+            element.addEventListener('click', this.playMechanicalClick.bind(this));
         });
     }
 
@@ -288,9 +185,9 @@ class ObscuraApp {
      * Play mechanical click sound
      */
     playMechanicalClick() {
-        // Placeholder for sound effect
-        // Can be implemented with Web Audio API or audio elements
-        console.log('🔧 Mechanical click sound');
+        // Audio could be implemented here for better UX
+        // For now, just a console log for debugging
+        console.log('🔧 Mechanical click');
     }
 
     /**
@@ -301,12 +198,13 @@ class ObscuraApp {
         
         anchorLinks.forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
+                const href = link.getAttribute('href');
+                if (href === '#') return;
                 
-                if (targetElement) {
-                    targetElement.scrollIntoView({
+                const target = document.querySelector(href);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
@@ -320,94 +218,94 @@ class ObscuraApp {
      */
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            // Alt + H: Home
-            if (e.altKey && e.key === 'h') {
+            // Gallery shortcut: Alt + G
+            if (e.altKey && (e.key === 'g' || e.key === 'G')) {
                 e.preventDefault();
                 window.location.href = '/';
             }
             
-            // Alt + G: Gallery
-            if (e.altKey && e.key === 'g') {
-                e.preventDefault();
-                window.location.href = '/gallery';
-            }
-            
-            // Alt + R: Refresh status
-            if (e.altKey && e.key === 'r') {
-                e.preventDefault();
-                this.refreshSystemStatus();
+            // Refresh shortcut: F5 or Ctrl + R
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                // Allow default browser refresh
+                return;
             }
         });
     }
 
     /**
-     * Handle window resize
+     * Handle window resize events
      */
     handleResize() {
-        // Recalculate layout if needed
         this.updateLayout();
     }
 
     /**
-     * Update layout on resize
+     * Update layout based on screen size
      */
     updateLayout() {
-        // Update masonry layout if on gallery page
-        if (window.location.pathname === '/gallery' && window.galleryApp) {
-            window.galleryApp.updateMasonryLayout();
+        // Add responsive layout adjustments here
+        const isMobile = window.innerWidth <= 768;
+        document.body.classList.toggle('mobile-layout', isMobile);
+    }
+
+    /**
+     * Format timestamp for display
+     */
+    formatTimestamp(timestamp) {
+        try {
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        } catch (error) {
+            return 'Invalid Date';
         }
     }
 
     /**
-     * Utility: Format timestamp for display
-     */
-    formatTimestamp(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-    }
-
-    /**
-     * Utility: Show notification
+     * Show notification to user
      */
     showNotification(message, type = 'info') {
+        const container = document.getElementById('notification-container');
+        if (!container) return;
+
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--brass-gradient);
-            color: var(--coal);
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            border: 2px solid var(--brass-dark);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            animation: slide-in 0.3s ease-out;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" aria-label="Close notification">✕</button>
+            </div>
         `;
-        
-        document.body.appendChild(notification);
-        
+
+        container.appendChild(notification);
+
+        // Add event listener for close button
+        const closeBtn = notification.querySelector('.notification-close');
+        closeBtn.addEventListener('click', () => {
+            notification.remove();
+        });
+
+        // Auto-remove after 5 seconds
         setTimeout(() => {
-            notification.style.animation = 'slide-out 0.3s ease-out';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+
+        // Animate in
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
     }
 
     /**
-     * Utility: API request helper
+     * Make API requests with proper error handling
      */
     async apiRequest(endpoint, options = {}) {
         try {
@@ -420,91 +318,145 @@ class ObscuraApp {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(`API request failed: ${response.status}`);
             }
 
             return await response.json();
         } catch (error) {
-            console.error(`API request failed: ${endpoint}`, error);
+            console.error('API request error:', error);
+            this.showNotification('Network error occurred', 'error');
             throw error;
         }
     }
+
+    /**
+     * Utility method to format file sizes
+     */
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    /**
+     * Check if user prefers reduced motion
+     */
+    prefersReducedMotion() {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    /**
+     * Utility method to debounce function calls
+     */
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 }
 
-// CSS Animations (to be added via JavaScript)
-const additionalStyles = `
-    @keyframes shine-sweep {
-        0% { left: -100%; }
-        100% { left: 100%; }
+// CSS for steampunk effects
+const steampunkStyles = `
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes brassShine {
+    from { left: -100%; }
+    to { left: 100%; }
+}
+
+@keyframes steamRise {
+    from {
+        opacity: 0.8;
+        transform: translateY(0) scale(0.5);
     }
-    
-    @keyframes steam-rise {
-        0% {
-            opacity: 0;
-            transform: translateY(0) scale(1);
-        }
-        10% {
-            opacity: 1;
-        }
-        90% {
-            opacity: 1;
-        }
-        100% {
-            opacity: 0;
-            transform: translateY(-100px) scale(1.5);
-        }
+    to {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.5);
     }
-    
-    @keyframes slide-in {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+}
+
+.steam-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    animation: steamRise 3s linear infinite;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--brass-gradient);
+    border: 2px solid var(--bronze);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-message {
+    color: var(--coal);
+    font-weight: bold;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--coal);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0;
+}
+
+.mobile-layout .nav-menu {
+    flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gear-spinner,
+    .steam-particle,
+    .brass-shine {
+        animation: none !important;
     }
-    
-    @keyframes slide-out {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-    
-    .status-indicator.online .status-light {
-        background: #44cc44;
-        box-shadow: 0 0 12px #44cc44;
-    }
-    
-    .status-indicator.offline .status-light {
-        background: #cc4444;
-        box-shadow: 0 0 12px #cc4444;
-        animation: pulse-warning 1s infinite;
-    }
-    
-    @keyframes pulse-warning {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-    }
+}
 `;
 
-// Inject additional styles
+// Inject steampunk styles
 const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalStyles;
+styleSheet.textContent = steampunkStyles;
 document.head.appendChild(styleSheet);
 
-// Initialize application when DOM is loaded
+// Initialize the application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.obscuraApp = new ObscuraApp();
 });
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ObscuraApp;
-}
+// Make the app globally accessible
+window.ObscuraApp = ObscuraApp;

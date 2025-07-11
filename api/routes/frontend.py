@@ -89,36 +89,24 @@ def get_system_status():
 
 @frontend_bp.route('/')
 def home():
-    """主页 - 系统状态页面"""
+    """主页 - Gallery图片展示页面"""
     try:
-        status_data = get_system_status()
-        
-        logger.info("渲染主页，系统状态已更新")
-        
-        return render_template('home.html', **status_data)
-    
-    except Exception as e:
-        logger.error(f"主页渲染失败: {e}")
-        # 返回错误页面或基础页面
-        return render_template('home.html', 
-            openweather_status=False,
-            openai_status=False,
-            google_maps_status=False,
-            cloudinary_status=False,
-            database_status=False,
-            workflow_status=False,
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
-        ), 500
-
-@frontend_bp.route('/gallery')
-def gallery():
-    """图片展示页面"""
-    try:
-        logger.info("渲染图库页面")
+        logger.info("渲染Gallery主页")
         return render_template('gallery.html')
     
     except Exception as e:
-        logger.error(f"图库页面渲染失败: {e}")
+        logger.error(f"Gallery主页渲染失败: {e}")
+        return render_template('gallery.html'), 500
+
+@frontend_bp.route('/gallery')
+def gallery():
+    """Gallery别名路由 - 重定向到主页"""
+    try:
+        logger.info("Gallery别名路由 - 重定向到主页")
+        return render_template('gallery.html')
+    
+    except Exception as e:
+        logger.error(f"Gallery页面渲染失败: {e}")
         return render_template('gallery.html'), 500
 
 @frontend_bp.route('/image/<int:image_id>')
@@ -162,57 +150,7 @@ def image_detail(image_id):
         logger.error(f"图片详情页面渲染失败: {e}")
         return render_template('image_detail.html', error=str(e)), 500
 
-@frontend_bp.route('/api/status')
-def api_status():
-    """API状态检查端点"""
-    try:
-        status_data = get_system_status()
-        
-        # 计算总体系统状态
-        all_services = [
-            status_data['openweather_status'],
-            status_data['openai_status'],
-            status_data['google_maps_status'],
-            status_data['cloudinary_status'],
-            status_data['database_status'],
-            status_data['workflow_status']
-        ]
-        
-        system_online = any(all_services)  # 至少一个服务在线
-        critical_services_online = status_data['database_status'] and status_data['workflow_status']
-        
-        response = {
-            "status": "online" if critical_services_online else "degraded" if system_online else "offline",
-            "services": {
-                "openweather": status_data['openweather_status'],
-                "openai": status_data['openai_status'],
-                "google_maps": status_data['google_maps_status'],
-                "cloudinary": status_data['cloudinary_status'],
-                "database": status_data['database_status'],
-                "ml_workflow": status_data['workflow_status']
-            },
-            "health_check": {
-                "critical_services": critical_services_online,
-                "total_services": len(all_services),
-                "online_services": sum(all_services),
-                "uptime_percentage": (sum(all_services) / len(all_services)) * 100
-            },
-            "timestamp": datetime.now().isoformat(),
-            "version": "1.4.0"
-        }
-        
-        status_code = 200 if critical_services_online else 206 if system_online else 503
-        
-        logger.info(f"系统状态检查完成: {response['status']}")
-        return jsonify(response), status_code
-    
-    except Exception as e:
-        logger.error(f"API状态检查失败: {e}")
-        return jsonify({
-            "status": "error",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+# System Status API endpoint removed - no longer needed
 
 @frontend_bp.route('/api/gallery/stats')
 def gallery_stats():

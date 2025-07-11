@@ -194,12 +194,9 @@ kbd {
 <div class="steampunk-container">
     <!-- Gallery Header -->
     <section class="gallery-header" aria-labelledby="gallery-main-title">
-        <div class="brass-panel header-panel">
-            <h1 id="gallery-main-title" class="gallery-title">🖼️ VIRTUAL TELESCOPE GALLERY</h1>
-            <p class="gallery-subtitle">AI-Generated Environmental Visions Through Time</p>
-            <div class="header-quote">
-                <em>"Each image a glimpse through the gears of time, revealing what our world might become..."</em>
-            </div>
+        <div class="brass-panel header-panel compact-header">
+            <h1 id="gallery-main-title" class="gallery-title">🔭 OBSCURA NO.7</h1>
+            <p class="gallery-subtitle">Obscura No.7 transforms complex climate data into visual stories through an AI-powered steampunk telescope, making environmental science tangible and emotionally engaging for communities.</p>
         </div>
     </section>
 
@@ -306,9 +303,6 @@ kbd {
                         Images will appear here once the ML prediction system generates environmental visions.
                     </p>
                     <div class="empty-actions">
-                        <a href="{{ url_for('frontend.home') }}" class="empty-button">
-                            Return to System Status
-                        </a>
                         <button class="refresh-button" onclick="window.galleryApp?.refresh()">
                             🔄 Refresh Gallery
                         </button>
@@ -318,39 +312,7 @@ kbd {
         </div>
     </section>
 
-    <!-- Gallery Help Section -->
-    <section class="gallery-help" aria-labelledby="help-title">
-        <div class="brass-panel help-panel">
-            <div class="panel-content">
-                <h3 id="help-title" class="help-title">🔧 GALLERY OPERATIONS</h3>
-                <div class="help-grid">
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">🖱️</div>
-                        <div class="help-content">
-                            <h4>Image Interaction</h4>
-                            <p>Click on any image to view detailed information about the environmental prediction that generated it.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">⌨️</div>
-                        <div class="help-content">
-                            <h4>Keyboard Shortcuts</h4>
-                            <p><kbd>Alt + G</kbd> - Gallery • <kbd>Alt + H</kbd> - Home • <kbd>Alt + R</kbd> - Refresh</p>
-                        </div>
-                    </div>
-                    
-                    <div class="help-item">
-                        <div class="help-icon" aria-hidden="true">📱</div>
-                        <div class="help-content">
-                            <h4>Mobile Friendly</h4>
-                            <p>The gallery is optimized for all devices. Swipe and tap to explore the temporal visions.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Gallery Operations section removed for cleaner interface -->
 </div>
 
 <!-- Image Modal will be created dynamically by ImageModal class -->

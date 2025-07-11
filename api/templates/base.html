@@ -50,18 +50,9 @@
             <!-- Navigation Menu -->
             <div class="nav-menu" role="menubar">
                 <a href="{{ url_for('frontend.home') }}" 
-                   class="nav-link {% if request.endpoint == 'frontend.home' %}active{% endif %}" 
+                   class="nav-link {% if request.endpoint == 'frontend.home' or request.endpoint == 'frontend.gallery' %}active{% endif %}" 
                    role="menuitem"
-                   aria-label="System Status Page">
-                    <div class="nav-button">
-                        <span class="gear-icon" aria-hidden="true">⚙️</span>
-                        <span>System Status</span>
-                    </div>
-                </a>
-                <a href="{{ url_for('frontend.gallery') }}" 
-                   class="nav-link {% if request.endpoint == 'frontend.gallery' %}active{% endif %}" 
-                   role="menuitem"
-                   aria-label="Image Gallery">
+                   aria-label="Gallery Home">
                     <div class="nav-button">
                         <span class="gallery-icon" aria-hidden="true">🖼️</span>
                         <span>Gallery</span>
@@ -69,13 +60,7 @@
                 </a>
             </div>
             
-            <!-- System Status Indicator -->
-            <div class="nav-status">
-                <div class="status-indicator" id="system-status" title="System Status">
-                    <span class="status-light" aria-hidden="true"></span>
-                    <span class="status-text">CHECKING...</span>
-                </div>
-            </div>
+            <!-- System Status Indicator removed for cleaner interface -->
         </div>
     </nav>
 
