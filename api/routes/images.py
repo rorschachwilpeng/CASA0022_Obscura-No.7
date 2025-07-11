@@ -173,6 +173,110 @@ def upload_image():
             "timestamp": datetime.now().isoformat()
         }), 500
 
+@images_bp.route('/register', methods=['POST'])
+def register_image():
+    """
+    图片URL注册API端点 - 专门用于注册已上传到Cloudinary的图片
+    
+    接收: JSON格式的图片URL和元数据
+    返回: 图片信息JSON
+    """
+    try:
+        # 验证请求格式
+        if not request.is_json:
+            return jsonify({
+                "success": False,
+                "error": "Request must be JSON format",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No JSON data provided",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # 验证必要参数
+        if 'url' not in data:
+            return jsonify({
+                "success": False,
+                "error": "Missing required parameter: url",
+                "timestamp": datetime.now().isoformat()
+            }), 400
+        
+        # 提取参数
+        image_url = data['url']
+        description = data.get('description', 'Telescope generated artwork')
+        source = data.get('source', 'cloudinary_telescope')
+        metadata = data.get('metadata', {})
+        
+        # 默认prediction_id - 可以从metadata中提取或使用默认值
+        prediction_id = 1  # 默认预测ID
+        if metadata and 'style' in metadata and 'prediction_id' in metadata['style']:
+            try:
+                prediction_id = int(metadata['style']['prediction_id'])
+            except (ValueError, TypeError):
+                prediction_id = 1
+        
+        # 生成缩略图URL（Cloudinary自动生成）
+        thumbnail_url = image_url
+        
+        logger.info(f"Registering Cloudinary image: {image_url}")
+        
+        # 保存图片信息到数据库
+        try:
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            cur = conn.cursor()
+            
+            cur.execute("""
+                INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
+                VALUES (%s, %s, %s, %s, %s) 
+                RETURNING id, created_at
+            """, (image_url, thumbnail_url, description, prediction_id, datetime.now()))
+            
+            result = cur.fetchone()
+            image_id, created_at = result
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            logger.info(f"Image registered in database with ID: {image_id}")
+            
+        except Exception as e:
+            logger.error(f"Database insert failed: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Database save failed: {str(e)}",
+                "timestamp": datetime.now().isoformat()
+            }), 500
+        
+        # 返回成功响应
+        return jsonify({
+            "success": True,
+            "image": {
+                "id": image_id,
+                "url": image_url,
+                "thumbnail_url": thumbnail_url,
+                "description": description,
+                "prediction_id": prediction_id,
+                "created_at": created_at.isoformat(),
+                "source": source
+            },
+            "message": "Image registered successfully",
+            "timestamp": datetime.now().isoformat()
+        }), 201
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in register_image: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Internal server error",
+            "timestamp": datetime.now().isoformat()
+        }), 500
+
 @images_bp.route('', methods=['GET'])
 def get_images():
     """
