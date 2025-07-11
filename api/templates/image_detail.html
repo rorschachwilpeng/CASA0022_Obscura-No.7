@@ -13,109 +13,68 @@
 {% block content %}
 <div class="detail-page">
     <div class="detail-container" data-image-id="{% if image_id %}{{ image_id }}{% endif %}">
-        <!-- Page Header -->
+        <!-- 简化的页面标题 -->
         <header class="detail-header">
             <h1 class="detail-title" id="imageTitle">Environmental Vision Analysis</h1>
             <p class="detail-subtitle" id="imageSubtitle">AI-Generated Environmental Art with SHAP Interpretability</p>
-            
-            <!-- Breadcrumb Navigation -->
-            <nav class="breadcrumb" aria-label="Breadcrumb navigation">
-                <a href="{{ url_for('frontend.home') }}" aria-label="Home">🏠 Observatory</a>
-                <span class="breadcrumb-separator" aria-hidden="true">⚙️</span>
-                <a href="{{ url_for('frontend.gallery') }}" aria-label="Gallery">📸 Gallery</a>
-                <span class="breadcrumb-separator" aria-hidden="true">⚙️</span>
-                <span aria-current="page">🔍 Analysis</span>
-            </nav>
         </header>
 
-        <!-- 模块1: 图片显示 -->
-        <section class="image-panel" aria-labelledby="image-section-title">
-            <h2 id="image-section-title" class="sr-only">Generated Image</h2>
+        <!-- 电影风格的图片和故事模块 -->
+        <section class="cinema-section" aria-labelledby="cinema-section-title">
+            <h2 id="cinema-section-title" class="sr-only">Environmental Vision Theater</h2>
             
-            <div class="image-display">
-                <img class="main-image" 
-                     id="mainImage" 
-                     alt=""
-                     tabindex="0"
-                     role="img">
+            <div class="cinema-container">
+                <!-- 图片显示（左侧，电影屏幕风格） -->
+                <div class="cinema-screen">
+                    <div class="screen-frame">
+                        <img class="cinema-image" 
+                             id="mainImage" 
+                             alt=""
+                             tabindex="0"
+                             role="img">
+                        
+                        <!-- 下载按钮（屏幕下方） -->
+                        <div class="screen-controls">
+                            <button class="download-button" 
+                                    id="downloadBtn" 
+                                    type="button"
+                                    title="Download Image (Ctrl+D)">
+                                <span aria-hidden="true">💾</span>
+                                <span>Download Image</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 
-                <!-- Image Overlay Controls -->
-                <div class="image-overlay">
-                    <button class="overlay-button" 
-                            id="fullscreenBtn" 
-                            type="button"
-                            title="Fullscreen View (Ctrl+F)"
-                            aria-label="View image in fullscreen">
-                        ⛶
-                    </button>
-                    <button class="overlay-button" 
-                            id="shareBtn" 
-                            type="button"
-                            title="Share Image (Ctrl+S)"
-                            aria-label="Share this image">
-                        📤
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Image Metadata -->
-            <div class="image-metadata">
-                <div class="metadata-item">
-                    <div class="metadata-label">Resolution</div>
-                    <div class="metadata-value" id="imageResolution">Loading...</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">File Size</div>
-                    <div class="metadata-value" id="imageFileSize">Loading...</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">Generation Time</div>
-                    <div class="metadata-value" id="imageGenTime">Loading...</div>
-                </div>
-                <div class="metadata-item">
-                    <div class="metadata-label">Prediction ID</div>
-                    <div class="metadata-value" id="imagePredictionId">Loading...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 模块2: AI生成故事 -->
-        <section class="ai-story-section" aria-labelledby="story-section-title">
-            <div class="story-header">
-                <h2 class="story-title" id="story-section-title">
-                    <span class="story-icon" aria-hidden="true">📖</span>
-                    Environmental Narrative
-                </h2>
-                <p class="story-description">
-                    AI-generated environmental story based on SHAP analysis findings
-                </p>
-            </div>
-            
-            <div class="story-container">
-                <div class="story-loading" id="storyLoading">
-                    <div class="story-spinner" aria-hidden="true">✍️</div>
-                    <p>Generating environmental narrative...</p>
-                </div>
-                <div class="story-content" id="storyContent" style="display: none;">
-                    <!-- AI故事内容将在这里动态加载 -->
-                    <div class="narrative-text" id="narrativeText">
-                        Loading story...
+                <!-- AI故事（右侧，剧本风格） -->
+                <div class="cinema-story">
+                    <div class="story-panel">
+                        <div class="story-header">
+                            <h3 class="story-title">
+                                <span class="story-icon" aria-hidden="true">📖</span>
+                                Environmental Narrative
+                            </h3>
+                        </div>
+                        
+                        <div class="story-container">
+                            <div class="story-loading" id="storyLoading">
+                                <div class="story-spinner" aria-hidden="true">✍️</div>
+                                <p>Generating environmental narrative...</p>
+                            </div>
+                            <div class="story-content" id="storyContent" style="display: none;">
+                                <div class="narrative-text" id="narrativeText">
+                                    Loading story...
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 模块3: SHAP可视化分析 -->
-        <section class="shap-visualization-section" aria-labelledby="shap-viz-section-title">
-            <div class="shap-viz-header">
-                <h2 class="shap-viz-title" id="shap-viz-section-title">
-                    <span class="shap-viz-icon" aria-hidden="true">🎯</span>
-                    Feature Impact Analysis
-                </h2>
-                <p class="shap-viz-description">
-                    Interactive visualization of climate, geographic, and economic factors
-                </p>
-            </div>
+        <!-- 环形打包图可视化模块 -->
+        <section class="visualization-section" aria-labelledby="viz-section-title">
+            <h2 id="viz-section-title" class="sr-only">Feature Impact Visualization</h2>
             
             <!-- SHAP三维度评分 -->
             <div class="shap-scores-overview" id="shapScoresOverview">
@@ -175,43 +134,6 @@
                 </button>
             </div>
         </section>
-
-        <!-- Action Bar -->
-        <section class="action-bar" aria-labelledby="actions-title">
-            <h2 id="actions-title" class="sr-only">Available Actions</h2>
-            
-            <div class="action-buttons">
-                <button class="action-button" 
-                        id="downloadBtn" 
-                        type="button"
-                        title="Download Image (Ctrl+D)">
-                    <span aria-hidden="true">💾</span>
-                    <span>Download Image</span>
-                </button>
-                
-                <button class="action-button" 
-                        id="shareImageBtn" 
-                        type="button"
-                        title="Share Analysis (Ctrl+S)">
-                    <span aria-hidden="true">📤</span>
-                    <span>Share Analysis</span>
-                </button>
-                
-                <a href="{{ url_for('frontend.gallery') }}" 
-                   class="action-button secondary"
-                   title="Return to Gallery">
-                    <span aria-hidden="true">🖼️</span>
-                    <span>Back to Gallery</span>
-                </a>
-                
-                <a href="{{ url_for('frontend.home') }}" 
-                   class="action-button secondary"
-                   title="Return to Home">
-                    <span aria-hidden="true">🏠</span>
-                    <span>Observatory Home</span>
-                </a>
-            </div>
-        </section>
     </div>
 </div>
 
@@ -246,7 +168,7 @@
 <!-- Hidden Elements for Screen Readers -->
 <div class="sr-only">
     <h2>Page Navigation Help</h2>
-    <p>This page displays detailed analysis of an AI-generated environmental prediction image. Use keyboard shortcuts: Ctrl+F for fullscreen, Ctrl+D to download, Ctrl+S to share, ESC to close overlays.</p>
+    <p>This page displays detailed analysis of an AI-generated environmental prediction image. Use keyboard shortcuts: Ctrl+F for fullscreen, Ctrl+D to download, ESC to close overlays.</p>
 </div>
 {% endblock %}
 
@@ -265,17 +187,17 @@
 <script>
 // 初始化页面功能
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 Initializing simplified image detail page...');
+    console.log('🎬 Initializing cinema-style image detail page...');
     
-         // 初始化图片详情页面
-     if (typeof ImageDetailPage !== 'undefined') {
-         const container = document.querySelector('.detail-container');
-         const imageId = container ? parseInt(container.getAttribute('data-image-id')) : null;
-         if (imageId) {
-             const detailPage = new ImageDetailPage(imageId);
-             detailPage.initialize();
-         }
-     }
+    // 初始化图片详情页面
+    if (typeof ImageDetailPage !== 'undefined') {
+        const container = document.querySelector('.detail-container');
+        const imageId = container ? parseInt(container.getAttribute('data-image-id')) : null;
+        if (imageId) {
+            const detailPage = new ImageDetailPage(imageId);
+            detailPage.initialize();
+        }
+    }
     
     // 可视化控制按钮事件
     const vizControlButtons = document.querySelectorAll('.viz-control-btn');
@@ -289,12 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const dimension = this.getAttribute('data-dimension');
             console.log(`🎯 Switching to ${dimension} dimension view`);
             
-                         // 实现维度切换逻辑
-             if (window.packChartInstance) {
-                 window.packChartInstance.focusDimension(dimension);
-             } else {
-                 console.warn('Pack chart instance not available');
-             }
+            // 实现维度切换逻辑
+            if (window.packChartInstance) {
+                window.packChartInstance.focusDimension(dimension);
+            } else {
+                console.warn('Pack chart instance not available');
+            }
         });
     });
 });
