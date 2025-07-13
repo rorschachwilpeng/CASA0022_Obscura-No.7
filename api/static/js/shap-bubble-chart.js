@@ -905,7 +905,7 @@ class SHAPBubbleChart {
             this.chart.resize();
         }
     }
-
+    
     /**
      * 销毁图表
      */

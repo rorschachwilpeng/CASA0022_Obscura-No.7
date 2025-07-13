@@ -663,7 +663,7 @@
     background: rgba(26, 26, 46, 0.95);
     border: 2px solid var(--bronze);
     border-radius: 15px;
-    padding: 20px;
+        padding: 20px;
     box-shadow: 0 4px 20px rgba(205, 133, 63, 0.2);
     backdrop-filter: blur(10px);
     position: relative;
@@ -881,7 +881,7 @@
     }
     
     .error-title {
-        font-size: 1.2rem;
+    font-size: 1.2rem;
     }
     
     .retry-button {
@@ -962,7 +962,7 @@
     }
     
     .cinema-container {
-        gap: 15px;
+    gap: 15px;
     }
     
     .cinema-screen,
@@ -1175,7 +1175,7 @@
 }
 
 .loading-content {
-    text-align: center;
+        text-align: center;
     color: var(--amber);
 }
 
@@ -1233,11 +1233,11 @@
     }
     
     .detail-title {
-        font-size: 1.8rem;
+    font-size: 1.8rem;
     }
     
     .detail-subtitle {
-        font-size: 1rem;
+    font-size: 1rem;
     }
     
     .cinema-screen,
@@ -1247,7 +1247,7 @@
     }
     
     .narrative-text {
-        font-size: 1.1rem;
+    font-size: 1.1rem;
         padding: 15px;
     }
     
@@ -1298,7 +1298,7 @@
     }
     
     .detail-subtitle {
-        font-size: 0.9rem;
+    font-size: 0.9rem;
     }
     
     .cinema-screen,

@@ -1,0 +1,22 @@
+{
+  "coordinates": {
+    "latitude": 51.5,
+    "longitude": -0.1
+  },
+  "weather": {
+    "temperature": 20.5,
+    "description": "sunny"
+  },
+  "timestamp": "2025-07-11T19:07:09.143124",
+  "binary_data": {
+    "_type": "bytes",
+    "_data": "c29tZSBiaW5hcnkgY29udGVudA=="
+  },
+  "nested": {
+    "more_bytes": {
+      "_type": "bytes",
+      "_data": "bmVzdGVkIGJpbmFyeSBkYXRh"
+    },
+    "normal_data": "normal content"
+  }
+}

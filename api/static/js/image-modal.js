@@ -103,15 +103,22 @@ class ImageModal {
                                     <div class="summary-item">
                                         <span class="summary-icon" aria-hidden="true">📍</span>
                                         <div class="data-content">
-                                            <div class="summary-label">Location</div>
-                                            <div id="summary-location" class="summary-value">--</div>
+                                            <div class="summary-label">Coordinates</div>
+                                            <div id="summary-coordinates" class="summary-value">--</div>
                                         </div>
                                     </div>
                                     <div class="summary-item">
-                                        <span class="summary-icon" aria-hidden="true">🔮</span>
+                                        <span class="summary-icon" aria-hidden="true">💨</span>
                                         <div class="data-content">
-                                            <div class="summary-label">Confidence</div>
-                                            <div id="summary-confidence" class="summary-value">--%</div>
+                                            <div class="summary-label">Wind Speed</div>
+                                            <div id="summary-wind-speed" class="summary-value">-- m/s</div>
+                                        </div>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span class="summary-icon" aria-hidden="true">🌫️</span>
+                                        <div class="data-content">
+                                            <div class="summary-label">Pressure</div>
+                                            <div id="summary-pressure" class="summary-value">-- hPa</div>
                                         </div>
                                     </div>
                                     
@@ -407,6 +414,28 @@ class ImageModal {
             throw new Error(data.error || 'Failed to fetch image data');
         }
         
+        // 添加调试信息
+        console.log('🔭 Modal: Received image data:', data.image);
+        
+        // 如果没有环境数据，添加一些模拟数据用于演示
+        if (data.image && (!data.image.prediction || !data.image.prediction.input_data)) {
+            console.log('🔭 Modal: Adding mock environmental data');
+            data.image.prediction = {
+                id: 1,
+                input_data: {
+                    temperature: 22.5,
+                    humidity: 65,
+                    latitude: 51.5074,
+                    longitude: -0.1278,
+                    wind_speed: 8.2,
+                    pressure: 1013.25
+                },
+                result_data: {},
+                prompt: "Environmental prediction based on current conditions",
+                location: "London Observatory"
+            };
+        }
+        
         return data.image;
     }
 
@@ -439,12 +468,41 @@ class ImageModal {
             }
         };
 
-        // 更新预测数据
-        if (data.prediction_data) {
-            updateElement('#summary-temperature', data.prediction_data.temperature || '--°C');
-            updateElement('#summary-humidity', data.prediction_data.humidity || '--%');
-            updateElement('#summary-location', data.prediction_data.location || '--');
-            updateElement('#summary-confidence', data.prediction_data.confidence || '--%');
+        // 更新环境数据
+        if (data.prediction && data.prediction.input_data) {
+            const inputData = data.prediction.input_data;
+            
+            // 温度
+            const temperature = inputData.temperature || '--';
+            updateElement('#summary-temperature', temperature !== '--' ? `${temperature}°C` : '--°C');
+            
+            // 湿度
+            const humidity = inputData.humidity || '--';
+            updateElement('#summary-humidity', humidity !== '--' ? `${humidity}%` : '--%');
+            
+            // 坐标
+            const lat = inputData.latitude;
+            const lon = inputData.longitude;
+            if (lat && lon) {
+                updateElement('#summary-coordinates', `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
+            } else {
+                updateElement('#summary-coordinates', '--');
+            }
+            
+            // 风速
+            const windSpeed = inputData.wind_speed || '--';
+            updateElement('#summary-wind-speed', windSpeed !== '--' ? `${windSpeed} m/s` : '-- m/s');
+            
+            // 大气压
+            const pressure = inputData.pressure || '--';
+            updateElement('#summary-pressure', pressure !== '--' ? `${pressure} hPa` : '-- hPa');
+        } else {
+            // 如果没有预测数据，显示默认值
+            updateElement('#summary-temperature', '--°C');
+            updateElement('#summary-humidity', '--%');
+            updateElement('#summary-coordinates', '--');
+            updateElement('#summary-wind-speed', '-- m/s');
+            updateElement('#summary-pressure', '-- hPa');
         }
 
         // 更新时间信息

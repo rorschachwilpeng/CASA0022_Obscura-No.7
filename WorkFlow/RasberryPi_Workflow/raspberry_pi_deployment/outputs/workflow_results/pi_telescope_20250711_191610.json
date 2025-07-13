@@ -1,0 +1,438 @@
+{
+  "workflow_id": "pi_telescope_20250711_191610",
+  "timestamp": "2025-07-11T19:16:17.541324",
+  "device_type": "raspberry_pi",
+  "hardware_status": {
+    "hardware_available": false,
+    "encoder_available": false,
+    "compass_available": false,
+    "button_available": false
+  },
+  "success": true,
+  "execution_time": 6.601895,
+  "data": {
+    "hardware_input": {
+      "distance_km": 5.0,
+      "direction_degrees": 90.0,
+      "time_offset_years": 0
+    },
+    "coordinates": {
+      "latitude": 51.50737781153561,
+      "longitude": -0.05555532377954364,
+      "distance_km": 5.0,
+      "direction_degrees": 90.0,
+      "formatted_coords": "51.507378, -0.055555"
+    },
+    "weather_data": {
+      "coordinates": {
+        "latitude": 51.50737781153561,
+        "longitude": -0.05555532377954364
+      },
+      "timestamp": "2025-07-04T19:16:12.943913",
+      "data_source": "open_meteo_official",
+      "current_weather": {
+        "temperature": 20.96500015258789,
+        "humidity": 53.854331970214844,
+        "wind_speed": 14.652045249938965,
+        "pressure": 1019.6779174804688,
+        "solar_radiation": 0.0,
+        "precipitation": 0.0,
+        "sealevel_pressure": 1021.0999755859375,
+        "soil_temperature_0_to_7cm": 25.114999771118164,
+        "soil_moisture_7_to_28cm": 0.14100000262260437,
+        "weather_description": "clear, warm",
+        "timestamp": "2025-07-04T19:16:12.943913"
+      },
+      "meteorological_climate_factors": {
+        "temperature": 20.96500015258789,
+        "humidity": 53.854331970214844,
+        "wind_speed": 14.652045249938965,
+        "atmospheric_pressure": 1019.6779174804688,
+        "solar_radiation": 0.0,
+        "precipitation": 0.0,
+        "sealevel_pressure": 1021.0999755859375
+      },
+      "geospatial_topographic_factors": {
+        "hydrological_network": {
+          "evapotranspiration": 6.272695541381836
+        },
+        "geology_soil": {
+          "soil_temperature_0_to_7cm": 25.114999771118164
+        },
+        "vegetation_water_health": {
+          "soil_moisture_7_to_28cm": 0.14100000262260437
+        },
+        "urban_flood_risk": {
+          "river_discharge_max": 12.520727157592773
+        }
+      },
+      "_raw_data": {
+        "weather_api_response": {
+          "latitude": 51.49384689331055,
+          "longitude": 0.0,
+          "elevation": 12.0,
+          "timezone": "b'Europe/LondonGMT+1'",
+          "utc_offset": 3600,
+          "hourly": {
+            "temperature_2m": [
+              19.01500129699707,
+              17.96500015258789,
+              16.614999771118164,
+              15.914999961853027,
+              15.3149995803833,
+              14.764999389648438,
+              14.914999961853027,
+              15.8149995803833,
+              17.114999771118164,
+              19.165000915527344,
+              21.165000915527344,
+              22.665000915527344,
+              23.415000915527344,
+              24.864999771118164,
+              25.864999771118164,
+              26.415000915527344,
+              26.71500015258789,
+              26.614999771118164,
+              26.364999771118164,
+              26.165000915527344,
+              25.065000534057617,
+              23.114999771118164,
+              21.76500129699707,
+              20.96500015258789
+            ],
+            "relative_humidity_2m": [
+              43.49472427368164,
+              46.29127883911133,
+              52.17863082885742,
+              55.6920051574707,
+              58.2706298828125,
+              60.57551956176758,
+              59.99306869506836,
+              56.04902648925781,
+              52.85063552856445,
+              46.466766357421875,
+              37.42657470703125,
+              32.65065002441406,
+              31.419334411621094,
+              29.202943801879883,
+              28.879465103149414,
+              29.432178497314453,
+              29.01548957824707,
+              28.01055335998535,
+              27.749958038330078,
+              26.84640121459961,
+              28.856691360473633,
+              37.85489273071289,
+              47.34228515625,
+              53.854331970214844
+            ],
+            "wind_speed_10m": [
+              8.258450508117676,
+              8.528656959533691,
+              6.7205352783203125,
+              6.130578994750977,
+              5.043213367462158,
+              5.091168403625488,
+              5.652114391326904,
+              4.9785542488098145,
+              5.068846225738525,
+              4.829906940460205,
+              6.544676780700684,
+              7.848082542419434,
+              9.236297607421875,
+              11.109076499938965,
+              13.159709930419922,
+              14.333470344543457,
+              14.749019622802734,
+              16.17197608947754,
+              16.213993072509766,
+              16.940095901489258,
+              15.717823028564453,
+              11.952054023742676,
+              12.855831146240234,
+              14.652045249938965
+            ],
+            "surface_pressure": [
+              1026.75830078125,
+              1027.1527099609375,
+              1027.2457275390625,
+              1027.0426025390625,
+              1026.9398193359375,
+              1027.036865234375,
+              1027.0374755859375,
+              1027.2418212890625,
+              1027.248291015625,
+              1027.0587158203125,
+              1026.5693359375,
+              1026.1768798828125,
+              1025.6815185546875,
+              1024.9892578125,
+              1024.0953369140625,
+              1023.0992431640625,
+              1022.3015747070312,
+              1021.802001953125,
+              1020.9019165039062,
+              1020.2018432617188,
+              1019.8971557617188,
+              1019.9878540039062,
+              1020.0812377929688,
+              1019.6779174804688
+            ],
+            "shortwave_radiation": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              38.0,
+              156.0,
+              275.0,
+              461.0,
+              613.0,
+              709.0,
+              611.0,
+              783.0,
+              871.0,
+              831.0,
+              742.0,
+              624.0,
+              483.0,
+              324.0,
+              168.0,
+              52.0,
+              1.0,
+              0.0
+            ],
+            "precipitation": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "pressure_msl": [
+              1028.199951171875,
+              1028.5999755859375,
+              1028.699951171875,
+              1028.5,
+              1028.4000244140625,
+              1028.5,
+              1028.5,
+              1028.699951171875,
+              1028.699951171875,
+              1028.5,
+              1028.0,
+              1027.5999755859375,
+              1027.0999755859375,
+              1026.4000244140625,
+              1025.5,
+              1024.5,
+              1023.7000122070312,
+              1023.2000122070312,
+              1022.2999877929688,
+              1021.5999755859375,
+              1021.2999877929688,
+              1021.4000244140625,
+              1021.5,
+              1021.0999755859375
+            ],
+            "soil_temperature_0_to_7cm": [
+              21.165000915527344,
+              20.21500015258789,
+              19.165000915527344,
+              18.364999771118164,
+              17.665000915527344,
+              17.01500129699707,
+              16.665000915527344,
+              17.065000534057617,
+              18.114999771118164,
+              19.915000915527344,
+              22.21500015258789,
+              24.46500015258789,
+              26.065000534057617,
+              28.065000534057617,
+              29.71500015258789,
+              31.114999771118164,
+              31.864999771118164,
+              32.11499786376953,
+              31.76500129699707,
+              30.96500015258789,
+              29.71500015258789,
+              28.114999771118164,
+              26.46500015258789,
+              25.114999771118164
+            ],
+            "soil_moisture_7_to_28cm": [
+              0.13899999856948853,
+              0.13899999856948853,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14000000059604645,
+              0.14100000262260437,
+              0.14100000262260437,
+              0.14100000262260437
+            ]
+          },
+          "hourly_times": [
+            "2025-07-03T23:00:00+00:00",
+            "2025-07-04T00:00:00+00:00",
+            "2025-07-04T01:00:00+00:00",
+            "2025-07-04T02:00:00+00:00",
+            "2025-07-04T03:00:00+00:00",
+            "2025-07-04T04:00:00+00:00",
+            "2025-07-04T05:00:00+00:00",
+            "2025-07-04T06:00:00+00:00",
+            "2025-07-04T07:00:00+00:00",
+            "2025-07-04T08:00:00+00:00",
+            "2025-07-04T09:00:00+00:00",
+            "2025-07-04T10:00:00+00:00",
+            "2025-07-04T11:00:00+00:00",
+            "2025-07-04T12:00:00+00:00",
+            "2025-07-04T13:00:00+00:00",
+            "2025-07-04T14:00:00+00:00",
+            "2025-07-04T15:00:00+00:00",
+            "2025-07-04T16:00:00+00:00",
+            "2025-07-04T17:00:00+00:00",
+            "2025-07-04T18:00:00+00:00",
+            "2025-07-04T19:00:00+00:00",
+            "2025-07-04T20:00:00+00:00",
+            "2025-07-04T21:00:00+00:00",
+            "2025-07-04T22:00:00+00:00"
+          ],
+          "daily": {
+            "et0_fao_evapotranspiration": [
+              6.272695541381836
+            ]
+          },
+          "daily_times": [
+            "2025-07-03T23:00:00+00:00"
+          ]
+        },
+        "flood_api_response": {
+          "latitude": 51.5,
+          "longitude": -0.0500030517578125,
+          "elevation": NaN,
+          "daily": {
+            "river_discharge_max": [
+              12.520727157592773
+            ]
+          },
+          "daily_times": [
+            "2025-07-04T00:00:00+00:00"
+          ]
+        }
+      },
+      "data_quality": {
+        "score": 110,
+        "level": "excellent",
+        "issues": [],
+        "data_source": "open_meteo_official",
+        "completeness": "11/11"
+      }
+    },
+    "style_prediction": {
+      "prediction_type": "Impressionist Landscape",
+      "confidence": 0.85,
+      "style_recommendation": "impressionist",
+      "raw_prediction": "Based on the clear weather and moderate humidity of the location at 51.507378, -0.055555, I would suggest an Impressionist style for the landscape painting. Impressionism is known for capturing the effects of light and atmosphere, which would be perfect for depicting the clear conditions of this location.\n\nFor the color palette, I would recommend using soft, pastel tones to reflect the gentle sunlight and clear skies. Shades of light blue for the sky, soft greens for the foliage, and warm yellows and oranges for any sunlight filtering through the scene would work well in capturing the essence of the environment at this specific location. Incorporating subtle hints of pinks and purples could also add a touch of warmth and depth to",
+      "weather_influence": "moderate conditions"
+    },
+    "map_info": {
+      "success": true,
+      "coordinates": {
+        "latitude": 51.50737781153561,
+        "longitude": -0.05555532377954364
+      },
+      "location_info": "7 Wine Cl, London E1W 3RQ英国",
+      "location_details": {
+        "formatted_address": "7 Wine Cl, London E1W 3RQ英国",
+        "country": "英国",
+        "administrative_area_level_1": "England",
+        "locality": "",
+        "sublocality": "",
+        "route": "Wine Close",
+        "street_number": "7",
+        "postal_code": "E1W 3RQ",
+        "location_type": "ROOFTOP",
+        "place_id": "ChIJN9fV_i4DdkgRbwkPA9ZmfCY"
+      },
+      "map_image_path": "outputs/images/telescope_map_5.0km_正东_20250711_191615.png",
+      "distance_meters": 5000.0,
+      "direction_degrees": 90.0,
+      "direction_name": "正东"
+    },
+    "generated_image": "/var/folders/gg/zz9_z1_91w71lhcl0vgzr6vm0000gn/T/tmpeivqcjkb.png",
+    "sync_result": {
+      "environmental_data": {
+        "input_parameters": {
+          "future_years": 0,
+          "latitude": 51.50737781153561,
+          "longitude": -0.05555532377954364,
+          "month": 7
+        },
+        "location_info": {
+          "closest_city": "London",
+          "coordinates": "51.507378, -0.055555",
+          "prediction_type": "current"
+        },
+        "prediction": {
+          "closest_city": "London",
+          "humidity": 54.9,
+          "model_type": "trained_sklearn",
+          "model_version": "1.0.0-local",
+          "predicted_at": "2025-07-11T18:16:16.586522",
+          "prediction_confidence": 0.95,
+          "pressure": 1012.9,
+          "temperature": 17.56
+        },
+        "success": true,
+        "timestamp": "2025-07-11T18:16:16.586541"
+      },
+      "image_data": null,
+      "backup_data": {
+        "backup_directory": "outputs/backups/20250711_191617",
+        "image_path": "outputs/backups/20250711_191617/tmpeivqcjkb.png",
+        "metadata_path": "outputs/backups/20250711_191617/metadata.json",
+        "success": true
+      },
+      "success": true,
+      "message": "云端上传失败，已保存本地备份"
+    }
+  }
+}

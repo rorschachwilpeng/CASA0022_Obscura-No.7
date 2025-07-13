@@ -47,6 +47,8 @@ from api.routes.frontend import frontend_bp
 from api.routes.environmental import environmental_bp
 from api.routes.lightweight_ml_predict import lightweight_ml_bp
 from api.routes.shap_predict import shap_bp
+from api.routes.admin import admin_bp
+from api.routes.simple_clear import simple_clear_bp
 
 # 条件导入SHAP预测蓝图
 SHAP_BP_AVAILABLE = False
@@ -125,6 +127,14 @@ def register_blueprints(app):
         logger.info("✅ SHAP蓝图注册成功")
     else:
         logger.warning("⚠️ SHAP蓝图跳过注册")
+    
+    # 管理员蓝图
+    app.register_blueprint(admin_bp)
+    logger.info("✅ 管理员蓝图注册成功")
+    
+    # 简单清理蓝图
+    app.register_blueprint(simple_clear_bp)
+    logger.info("✅ 简单清理蓝图注册成功")
     
     # 前端蓝图（注册到根路径）
     app.register_blueprint(frontend_bp)
