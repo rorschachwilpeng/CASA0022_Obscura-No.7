@@ -52,31 +52,62 @@ def clear_gallery_now():
                 conn = psycopg2.connect(database_url)
                 cur = conn.cursor()
                 
-                # 获取删除前的数量
-                cur.execute("SELECT COUNT(*) FROM images")
-                images_count = cur.fetchone()[0]
+                # 检查表是否存在并获取删除前的数量
+                images_count = 0
+                analysis_count = 0
+                predictions_count = 0
+                cleared_tables = []
                 
-                cur.execute("SELECT COUNT(*) FROM image_analysis")
-                analysis_count = cur.fetchone()[0]
+                # 检查并清理images表
+                try:
+                    cur.execute("SELECT COUNT(*) FROM images")
+                    images_count = cur.fetchone()[0]
+                    if images_count > 0:
+                        cur.execute("DELETE FROM images")
+                    try:
+                        cur.execute("ALTER SEQUENCE images_id_seq RESTART WITH 1")
+                    except:
+                        pass  # 序列可能不存在
+                    cleared_tables.append(f"images({images_count})")
+                except psycopg2.ProgrammingError:
+                    conn.rollback()  # 重置连接状态
+                    cleared_tables.append("images(表不存在)")
                 
-                cur.execute("SELECT COUNT(*) FROM predictions")
-                predictions_count = cur.fetchone()[0]
+                # 检查并清理image_analysis表
+                try:
+                    cur.execute("SELECT COUNT(*) FROM image_analysis")
+                    analysis_count = cur.fetchone()[0]
+                    if analysis_count > 0:
+                        cur.execute("DELETE FROM image_analysis")
+                    try:
+                        cur.execute("ALTER SEQUENCE image_analysis_id_seq RESTART WITH 1")
+                    except:
+                        pass  # 序列可能不存在
+                    cleared_tables.append(f"image_analysis({analysis_count})")
+                except psycopg2.ProgrammingError:
+                    conn.rollback()  # 重置连接状态
+                    cleared_tables.append("image_analysis(表不存在)")
                 
-                # 删除数据
-                cur.execute("DELETE FROM image_analysis")
-                cur.execute("DELETE FROM images")
-                cur.execute("DELETE FROM predictions")
-                
-                # 重置序列
-                cur.execute("ALTER SEQUENCE images_id_seq RESTART WITH 1")
-                cur.execute("ALTER SEQUENCE image_analysis_id_seq RESTART WITH 1")
-                cur.execute("ALTER SEQUENCE predictions_id_seq RESTART WITH 1")
+                # 检查并清理predictions表
+                try:
+                    cur.execute("SELECT COUNT(*) FROM predictions")
+                    predictions_count = cur.fetchone()[0]
+                    if predictions_count > 0:
+                        cur.execute("DELETE FROM predictions")
+                    try:
+                        cur.execute("ALTER SEQUENCE predictions_id_seq RESTART WITH 1")
+                    except:
+                        pass  # 序列可能不存在
+                    cleared_tables.append(f"predictions({predictions_count})")
+                except psycopg2.ProgrammingError:
+                    conn.rollback()  # 重置连接状态
+                    cleared_tables.append("predictions(表不存在)")
                 
                 conn.commit()
                 cur.close()
                 conn.close()
                 
-                results.append(f"✅ 数据库清理成功: {images_count}张图片, {analysis_count}条分析, {predictions_count}条预测")
+                results.append(f"✅ 数据库清理完成: {', '.join(cleared_tables)}")
                 success_count += 1
                 
         except Exception as e:
@@ -164,14 +195,27 @@ def gallery_status():
                 conn = psycopg2.connect(database_url)
                 cur = conn.cursor()
                 
-                cur.execute("SELECT COUNT(*) FROM images")
-                status['database_images'] = cur.fetchone()[0]
+                # 安全地检查每个表
+                try:
+                    cur.execute("SELECT COUNT(*) FROM images")
+                    status['database_images'] = cur.fetchone()[0]
+                except psycopg2.ProgrammingError:
+                    conn.rollback()
+                    status['database_images'] = 0
                 
-                cur.execute("SELECT COUNT(*) FROM image_analysis")
-                status['analysis_records'] = cur.fetchone()[0]
+                try:
+                    cur.execute("SELECT COUNT(*) FROM image_analysis")
+                    status['analysis_records'] = cur.fetchone()[0]
+                except psycopg2.ProgrammingError:
+                    conn.rollback()
+                    status['analysis_records'] = 0
                 
-                cur.execute("SELECT COUNT(*) FROM predictions")
-                status['prediction_records'] = cur.fetchone()[0]
+                try:
+                    cur.execute("SELECT COUNT(*) FROM predictions")
+                    status['prediction_records'] = cur.fetchone()[0]
+                except psycopg2.ProgrammingError:
+                    conn.rollback()
+                    status['prediction_records'] = 0
                 
                 cur.close()
                 conn.close()
