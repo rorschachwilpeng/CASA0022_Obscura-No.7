@@ -32,18 +32,18 @@
                                 <span class="story-icon" aria-hidden="true">📖</span>
                                 Environmental Narrative
                             </h3>
-                        </div>
-                        
+                    </div>
+                    
                         <div class="story-container">
                             <div class="story-loading" id="storyLoading">
                                 <div class="story-spinner" aria-hidden="true">✍️</div>
                                 <p>Generating environmental narrative...</p>
-                            </div>
+                        </div>
                             <div class="story-content" id="storyContent" style="display: none;">
                                 <div class="narrative-text" id="narrativeText">
                                     Loading story...
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                         </div>
                     </div>
                 </div>
@@ -68,9 +68,9 @@
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
         <!-- 环形打包图可视化模块 -->
         <section class="visualization-section" aria-labelledby="viz-section-title">
@@ -83,11 +83,11 @@
                         <div class="overall-score-header">
                             <span class="overall-score-icon" aria-hidden="true">🎯</span>
                             <h3>Overall Score</h3>
-                        </div>
+                    </div>
                         <div class="overall-score-value" id="overallScore">Loading...</div>
                         <div class="score-explanation">
                             <p>Obscura-No.7 predicts future information from three different dimensions, here are the scores for each dimension:</p>
-                        </div>
+                </div>
                     </div>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             <!-- SHAP分层泡泡图可视化容器 (Focus Drill-down Mode) -->
             <div class="pack-chart-container">
                 <div class="chart-loading" id="packChartLoading">
-                    <div class="chart-spinner" aria-hidden="true">⚙️</div>
+                        <div class="chart-spinner" aria-hidden="true">⚙️</div>
                     <p>Loading interactive feature analysis...</p>
                 </div>
                 <div id="packChart" class="pack-chart" style="display: none;">
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 初始化完成后显示交互提示
-    setTimeout(() => {
+                setTimeout(() => {
         const interactionHints = document.getElementById('interactionHints');
         if (interactionHints) {
             interactionHints.style.display = 'block';
