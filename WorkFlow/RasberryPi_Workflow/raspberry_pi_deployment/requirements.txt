@@ -4,6 +4,9 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 Pillow>=10.0.0
 
+# Exhibition mode GUI
+pygame>=2.5.0
+
 # Optional dependencies (install if available)
 # RPi.GPIO>=0.7.1          # 树莓派GPIO控制
 # gpiozero>=1.6.2          # 简化的GPIO库
@@ -13,8 +16,12 @@ Pillow>=10.0.0
 # Weather and API clients
 urllib3>=2.0.0
 
+# Cloud image storage
+cloudinary>=1.36.0
+
 # Image processing
-numpy>=1.21.0
+numpy>=1.21.0,<2.0.0
+matplotlib>=3.5.0
 
 # JSON handling (usually built-in)
 # json (built-in)

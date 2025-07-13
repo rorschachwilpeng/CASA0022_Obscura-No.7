@@ -269,6 +269,21 @@ def shap_prediction():
         logger.error(f"SHAP预测页面渲染失败: {e}")
         return render_template('shap_prediction.html'), 500
 
+@frontend_bp.route('/test')
+def local_test():
+    """本地测试页面"""
+    try:
+        logger.info("渲染本地测试页面")
+        return render_template('local_test.html')
+    except Exception as e:
+        logger.error(f"本地测试页面渲染失败: {e}")
+        return render_template('local_test.html'), 500
+
+@frontend_bp.route('/ui-test')
+def ui_test():
+    """UI变化测试页面"""
+    return render_template('test_ui_changes.html')
+
 @frontend_bp.route('/health')
 def health_check():
     """健康检查端点"""

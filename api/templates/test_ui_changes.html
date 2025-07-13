@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Changes Test - Obscura No.7</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}?v={{ range(1000, 9999) | random }}">
+    <style>
+        body { padding: 20px; background: var(--bg-dark); color: var(--text-light); }
+        .test-section { margin-bottom: 30px; padding: 20px; border: 2px solid var(--copper); border-radius: 10px; }
+        .test-title { color: var(--amber); font-size: 1.5rem; margin-bottom: 15px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .test-pass { background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; }
+        .test-fail { background: rgba(244, 67, 54, 0.2); border: 1px solid #f44336; }
+        .mock-data { background: rgba(205, 133, 63, 0.1); padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 UI Changes Test Page</h1>
+    
+    <div class="test-section">
+        <h2 class="test-title">1. 页面标题框缩小测试</h2>
+        <!-- 缩小的页面标题 -->
+        <header class="detail-header compact">
+            <h1 class="detail-title">Environmental Vision Analysis (Compact)</h1>
+            <p class="detail-subtitle">AI-Generated Environmental Art with SHAP Interpretability</p>
+        </header>
+        <div class="test-result test-pass">✅ 如果这个标题框比较小，说明compact样式生效了</div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">2. Cinema Container 1:1 布局测试</h2>
+        <div class="cinema-container" style="min-height: 300px;">
+            <div style="background: rgba(205, 133, 63, 0.3); padding: 20px; border-radius: 10px;">
+                <h3>左侧容器 (50%)</h3>
+                <p>如果左右两个容器宽度相等，说明1:1布局生效了</p>
+            </div>
+            <div style="background: rgba(184, 134, 11, 0.3); padding: 20px; border-radius: 10px;">
+                <h3>右侧容器 (50%)</h3>
+                <p>grid-template-columns: 1fr 1fr</p>
+            </div>
+        </div>
+        <div class="test-result test-pass">✅ 如果左右容器宽度相等，说明布局修改生效了</div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">3. Overall Score 框框测试</h2>
+        <div class="overall-score-section">
+            <div class="overall-score-container">
+                <div class="overall-score-card">
+                    <div class="overall-score-header">
+                        <span class="overall-score-icon" aria-hidden="true">🎯</span>
+                        <h3>Overall Score</h3>
+                    </div>
+                    <div class="overall-score-value">69.2%</div>
+                    <div class="score-explanation">
+                        <p>Obscura-No.7 predicts future information from three different dimensions, here are the scores for each dimension:</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="test-result test-pass">✅ 如果看到一个突出的Overall Score框，说明样式生效了</div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">4. 缩小的三维度框测试</h2>
+        <div class="shap-scores-overview compact">
+            <div class="score-card climate compact">
+                <div class="score-header">
+                    <span class="score-icon" aria-hidden="true">🌡️</span>
+                    <h3>Climate</h3>
+                </div>
+                <div class="score-value">+13.2%</div>
+            </div>
+            
+            <div class="score-card geographic compact">
+                <div class="score-header">
+                    <span class="score-icon" aria-hidden="true">🗺️</span>
+                    <h3>Geographic</h3>
+                </div>
+                <div class="score-value">+18.5%</div>
+            </div>
+            
+            <div class="score-card economic compact">
+                <div class="score-header">
+                    <span class="score-icon" aria-hidden="true">💰</span>
+                    <h3>Economic</h3>
+                </div>
+                <div class="score-value">+4.8%</div>
+            </div>
+        </div>
+        <div class="test-result test-pass">✅ 如果三个框比较小，说明compact样式生效了</div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">5. 正负变化值颜色测试</h2>
+        <div class="mock-data">
+            <h4>正值测试：</h4>
+            <span class="positive-change">+13.2%</span> (应该是绿色)
+            
+            <h4>负值测试：</h4>
+            <span class="negative-change">-5.4%</span> (应该是红色)
+            
+            <h4>在score-value中的测试：</h4>
+            <div class="score-value">
+                <span class="positive-change">+8.9%</span>
+            </div>
+        </div>
+        <div class="test-result test-pass">✅ 如果正值是绿色，负值是红色，说明颜色样式生效了</div>
+    </div>
+
+    <div class="test-section">
+        <h2 class="test-title">6. JavaScript API测试</h2>
+        <button onclick="testAPI()" style="padding: 10px 20px; background: var(--brass-gradient); border: none; border-radius: 5px; cursor: pointer;">测试SHAP API</button>
+        <div id="apiResult" class="mock-data" style="display: none; margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                const response = await fetch('/api/v1/images/1/shap-analysis');
+                const data = await response.json();
+                
+                if (data.data && data.data.climate_change !== undefined) {
+                    resultDiv.innerHTML = `
+                        <h4>✅ API返回正确的正负变化值：</h4>
+                        <ul>
+                            <li>Climate Change: ${data.data.climate_change}%</li>
+                            <li>Geographic Change: ${data.data.geographic_change}%</li>
+                            <li>Economic Change: ${data.data.economic_change}%</li>
+                        </ul>
+                        <p><strong>说明：</strong>API正确返回了正负变化值，前端JavaScript应该能正确处理。</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '❌ API返回数据格式不正确';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ API调用失败: ${error.message}`;
+            }
+        }
+        
+        console.log('🧪 UI测试页面加载完成');
+        console.log('📊 CSS变量测试:', getComputedStyle(document.documentElement).getPropertyValue('--brass'));
+    </script>
+</body>
+</html> 

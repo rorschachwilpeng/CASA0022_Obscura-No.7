@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import io
+import json
 
 # 添加OpenAI导入
 try:
@@ -20,10 +21,203 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
+# 本地图片存储（用于开发环境）
+LOCAL_IMAGES_STORE = {}
+
+# 本地开发时的分析结果存储
+LOCAL_ANALYSIS_STORE = {}
+
 logger = logging.getLogger(__name__)
 
 # 创建蓝图
 images_bp = Blueprint('images', __name__, url_prefix='/api/v1/images')
+
+def process_image_analysis(image_id, image_url, description, prediction_id):
+    """
+    在图片上传后立即进行分析和故事生成
+    
+    Args:
+        image_id: 图片ID
+        image_url: 图片URL
+        description: 图片描述
+        prediction_id: 预测ID
+        
+    Returns:
+        dict: 分析结果
+    """
+    try:
+        logger.info(f"🔄 Starting analysis for image {image_id}")
+        
+        # 1. 生成SHAP分析数据
+        shap_data = generate_shap_analysis_data(image_id, description)
+        
+        # 2. 生成AI故事
+        story_data = generate_ai_environmental_story(shap_data)
+        
+        # 3. 组合分析结果
+        analysis_result = {
+            'image_id': image_id,
+            'shap_analysis': shap_data,
+            'ai_story': story_data,
+            'generated_at': datetime.now().isoformat(),
+            'status': 'completed'
+        }
+        
+        # 4. 存储分析结果
+        try:
+            # 尝试存储到数据库
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            cur = conn.cursor()
+            
+            cur.execute("""
+                INSERT INTO image_analysis (image_id, shap_data, ai_story, generated_at) 
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (image_id) DO UPDATE SET
+                    shap_data = EXCLUDED.shap_data,
+                    ai_story = EXCLUDED.ai_story,
+                    generated_at = EXCLUDED.generated_at
+            """, (image_id, json.dumps(shap_data), json.dumps(story_data), datetime.now()))
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            logger.info(f"✅ Analysis stored in database for image {image_id}")
+            
+        except Exception as db_error:
+            logger.error(f"Database storage failed: {db_error}")
+            # 存储到本地
+            LOCAL_ANALYSIS_STORE[image_id] = analysis_result
+            logger.info(f"✅ Analysis stored locally for image {image_id}")
+        
+        return analysis_result
+        
+    except Exception as e:
+        logger.error(f"❌ Error processing image analysis: {e}")
+        return {
+            'image_id': image_id,
+            'error': str(e),
+            'generated_at': datetime.now().isoformat(),
+            'status': 'failed'
+        }
+
+def generate_shap_analysis_data(image_id, description):
+    """
+    生成SHAP分析数据
+    
+    Args:
+        image_id: 图片ID
+        description: 图片描述
+        
+    Returns:
+        dict: SHAP分析数据
+    """
+    # 基于图片描述生成模拟的SHAP数据
+    # 在实际应用中，这里会调用真实的机器学习模型
+    
+    # 历史基准值（模拟历史数据的平均值）
+    historical_baselines = {
+        'climate_baseline': 0.68,      # 气候维度历史均值
+        'geographic_baseline': 0.65,   # 地理维度历史均值
+        'economic_baseline': 0.63      # 经济维度历史均值
+    }
+    
+    # 当前预测值（基于描述调整）
+    current_scores = {
+        'climate_score': 0.72,
+        'geographic_score': 0.69,
+        'economic_score': 0.66
+    }
+    
+    # 根据描述调整当前预测值
+    description_lower = description.lower()
+    if 'tree' in description_lower or 'forest' in description_lower:
+        current_scores['climate_score'] += 0.05
+        current_scores['geographic_score'] += 0.08
+    elif 'urban' in description_lower or 'city' in description_lower:
+        current_scores['economic_score'] += 0.10
+        current_scores['geographic_score'] += 0.03
+    elif 'ocean' in description_lower or 'sea' in description_lower:
+        current_scores['climate_score'] += 0.08
+        current_scores['geographic_score'] += 0.12
+    
+    # 计算总体分数
+    output_score = (current_scores['climate_score'] + current_scores['geographic_score'] + current_scores['economic_score']) / 3
+    
+    # 计算相对变化百分比（使用ML_Models中的正确公式）
+    def calculate_relative_change(current_value, baseline_value):
+        """
+        计算相对于历史基准的变化百分比
+        公式: (当前值 - 历史均值) / 历史均值 * 100%
+        """
+        if baseline_value == 0:
+            return 0
+        relative_change = ((current_value - baseline_value) / baseline_value) * 100
+        return round(relative_change, 1)
+    
+    # 生成正负变化数据
+    dimension_changes = {
+        'climate_change': calculate_relative_change(
+            current_scores['climate_score'], 
+            historical_baselines['climate_baseline']
+        ),
+        'geographic_change': calculate_relative_change(
+            current_scores['geographic_score'], 
+            historical_baselines['geographic_baseline']
+        ),
+        'economic_change': calculate_relative_change(
+            current_scores['economic_score'], 
+            historical_baselines['economic_baseline']
+        )
+    }
+    
+    # 生成层次化特征重要性
+    hierarchical_features = {
+        'climate': {
+            'temperature_trend': 0.15,
+            'precipitation_pattern': 0.12,
+            'humidity_variation': 0.08,
+            'seasonal_change': 0.10
+        },
+        'geographic': {
+            'elevation_factor': 0.11,
+            'terrain_complexity': 0.09,
+            'vegetation_density': 0.13,
+            'water_proximity': 0.07
+        },
+        'economic': {
+            'development_index': 0.08,
+            'infrastructure_score': 0.06,
+            'resource_availability': 0.09,
+            'population_density': 0.05
+        }
+    }
+    
+    # 生成数据验证结果
+    data_validation = {
+        'is_valid': True,
+        'validation_score': 0.94,
+        'errors': [],
+        'warnings': ['Some features may have lower confidence due to limited data'],
+        'data_quality_score': 0.91
+    }
+    
+    return {
+        'image_id': image_id,
+        'output_score': output_score,
+        'climate_score': current_scores['climate_score'],
+        'geographic_score': current_scores['geographic_score'],
+        'economic_score': current_scores['economic_score'],
+        'climate_change': dimension_changes['climate_change'],
+        'geographic_change': dimension_changes['geographic_change'],
+        'economic_change': dimension_changes['economic_change'],
+        'climate_baseline': historical_baselines['climate_baseline'],
+        'geographic_baseline': historical_baselines['geographic_baseline'],
+        'economic_baseline': historical_baselines['economic_baseline'],
+        'hierarchical_features': hierarchical_features,
+        'data_validation': data_validation,
+        'generated_at': datetime.now().isoformat()
+    }
 
 def transform_to_hierarchical_shap_data(flat_shap_data):
     """
@@ -384,42 +578,24 @@ def upload_image():
                 )
                 logger.info("Reconstructed file from form data")
         
-        # 方法3: 尝试从原始数据中提取
-        if not file and request.data:
-            try:
-                # 这里可以添加更复杂的multipart解析逻辑
-                logger.info("Trying to parse from raw request data")
-                # 暂时跳过，使用前两种方法
-            except Exception as e:
-                logger.error(f"Raw data parsing failed: {e}")
-        
+        # 调试代码 - 结束
         logger.info(f"Final extracted - file: {file}, description: {description}, prediction_id: {prediction_id}")
         
-        # 验证必要参数
-        if not file:
+        if not file or file.filename == '':
             return jsonify({
                 "success": False,
-                "error": "Missing file parameter - check if file field type is set to 'File' in Postman",
-                "debug": {
-                    "files_keys": list(request.files.keys()),
-                    "form_keys": list(request.form.keys()),
-                    "content_type": request.content_type
-                },
-                "timestamp": datetime.now().isoformat()
-            }), 400
-            
-        if not prediction_id:
-            return jsonify({
-                "success": False,
-                "error": "Missing prediction_id parameter",
+                "error": "No file provided",
                 "timestamp": datetime.now().isoformat()
             }), 400
         
-        # 验证文件是否有效
-        if hasattr(file, 'filename') and not file.filename:
+        # 验证文件类型
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        
+        if file_ext not in allowed_extensions:
             return jsonify({
                 "success": False,
-                "error": "No file selected",
+                "error": f"Invalid file type. Allowed: {', '.join(allowed_extensions)}",
                 "timestamp": datetime.now().isoformat()
             }), 400
         
@@ -445,7 +621,42 @@ def upload_image():
                 "timestamp": datetime.now().isoformat()
             }), 500
         
-        # 保存图片信息到数据库
+        # 本地开发环境：使用本地存储代替数据库
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url or "nodename nor servname provided" in str(database_url):
+            logger.info("Using local storage for development environment")
+            
+            # 生成本地图片ID
+            image_id = len(LOCAL_IMAGES_STORE) + 1
+            created_at = datetime.now()
+            
+            # 存储到本地
+            LOCAL_IMAGES_STORE[image_id] = {
+                'id': image_id,
+                'url': image_url,
+                'thumbnail_url': thumbnail_url,
+                'description': description,
+                'prediction_id': int(prediction_id) if prediction_id else 1,
+                'created_at': created_at
+            }
+            
+            logger.info(f"Image stored locally with ID: {image_id}")
+            
+            return jsonify({
+                "success": True,
+                "image": {
+                    "id": image_id,
+                    "url": image_url,
+                    "thumbnail_url": thumbnail_url,
+                    "description": description,
+                    "prediction_id": int(prediction_id) if prediction_id else 1,
+                    "created_at": created_at.isoformat()
+                },
+                "message": "Image uploaded successfully (local dev mode)",
+                "timestamp": datetime.now().isoformat()
+            }), 201
+        
+        # 保存图片信息到数据库（生产环境）
         try:
             conn = psycopg2.connect(os.environ['DATABASE_URL'])
             cur = conn.cursor()
@@ -467,11 +678,79 @@ def upload_image():
             
         except Exception as e:
             logger.error(f"Database insert failed: {e}")
-            return jsonify({
-                "success": False,
-                "error": f"Database save failed: {str(e)}",
-                "timestamp": datetime.now().isoformat()
-            }), 500
+            
+            # 检查是否是数据库连接问题
+            if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
+                logger.info("Database unavailable - creating local record for development")
+                
+                # 生成本地ID
+                new_image_id = max(LOCAL_IMAGES_STORE.keys()) + 1 if LOCAL_IMAGES_STORE else 1
+                
+                # 创建本地记录
+                LOCAL_IMAGES_STORE[new_image_id] = {
+                    'id': new_image_id,
+                    'url': image_url,
+                    'thumbnail_url': thumbnail_url,
+                    'description': description,
+                    'prediction_id': int(prediction_id),
+                    'created_at': datetime.now(),
+                    'location': 'Local Upload Test'
+                }
+                
+                logger.info(f"Image stored locally with ID: {new_image_id}")
+                
+                # 启动后台分析任务
+                import threading
+                
+                def run_analysis():
+                    try:
+                        # 运行分析
+                        result = process_image_analysis(new_image_id, image_url, description, int(prediction_id))
+                        logger.info(f"📊 Analysis completed for image {new_image_id}: {result['status']}")
+                    except Exception as e:
+                        logger.error(f"❌ Background analysis failed: {e}")
+                
+                # 在后台线程中运行分析
+                analysis_thread = threading.Thread(target=run_analysis)
+                analysis_thread.daemon = True
+                analysis_thread.start()
+                
+                return jsonify({
+                    "success": True,
+                    "image": {
+                        "id": new_image_id,
+                        "url": image_url,
+                        "thumbnail_url": thumbnail_url,
+                        "description": description,
+                        "prediction_id": int(prediction_id),
+                        "created_at": datetime.now().isoformat()
+                    },
+                    "message": "Image uploaded successfully (local development mode)",
+                    "analysis_status": "processing",
+                    "timestamp": datetime.now().isoformat()
+                }), 201
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": f"Database save failed: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }), 500
+        
+        # 启动后台分析任务（数据库模式）
+        import threading
+        
+        def run_analysis():
+            try:
+                # 运行分析
+                result = process_image_analysis(image_id, image_url, description, int(prediction_id))
+                logger.info(f"📊 Analysis completed for image {image_id}: {result['status']}")
+            except Exception as e:
+                logger.error(f"❌ Background analysis failed: {e}")
+        
+        # 在后台线程中运行分析
+        analysis_thread = threading.Thread(target=run_analysis)
+        analysis_thread.daemon = True
+        analysis_thread.start()
         
         # 返回成功响应
         return jsonify({
@@ -485,6 +764,7 @@ def upload_image():
                 "created_at": created_at.isoformat()
             },
             "message": "Image uploaded successfully",
+            "analysis_status": "processing",
             "timestamp": datetime.now().isoformat()
         }), 201
         
@@ -747,23 +1027,66 @@ def get_image_detail(image_id):
     except Exception as e:
         logger.error(f"Error fetching image detail: {e}")
         
-        # 本地开发模式：当数据库不可用时，返回模拟数据
+        # 本地开发模式：当数据库不可用时，检查本地存储或返回模拟数据
         if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
-            logger.info(f"Database unavailable - returning mock data for image {image_id}")
+            logger.info(f"Database unavailable - checking local storage for image {image_id}")
+            
+            # 首先检查本地存储
+            if image_id in LOCAL_IMAGES_STORE:
+                local_image = LOCAL_IMAGES_STORE[image_id]
+                logger.info(f"Found image in local storage: {local_image['url']}")
+                
+                return jsonify({
+                    "success": True,
+                    "image": {
+                        "id": local_image['id'],
+                        "url": local_image['url'],
+                        "thumbnail_url": local_image.get('thumbnail_url', local_image['url']),
+                        "description": local_image['description'],
+                        "created_at": local_image['created_at'].isoformat(),
+                        "prediction": {
+                            "id": local_image.get('prediction_id', 1),
+                            "input_data": {
+                                "temperature": 22.5,
+                                "humidity": 65.0,
+                                "location": local_image.get('location', 'Local Upload'),
+                                "timestamp": local_image['created_at'].isoformat()
+                            },
+                            "result_data": {
+                                "temperature": 23.8,
+                                "humidity": 68.2,
+                                "confidence": 0.87,
+                                "climate_type": "temperate",
+                                "vegetation_index": 0.73,
+                                "predictions": {
+                                    "short_term": "Moderate warming expected",
+                                    "long_term": "Stable climate conditions"
+                                }
+                            },
+                            "prompt": "Generate environmental vision based on current climate data",
+                            "location": local_image.get('location', 'Local Upload')
+                        }
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                    "mode": "local_storage"
+                }), 200
+            
+            # 如果本地存储中没有，返回模拟数据
+            logger.info(f"Image {image_id} not found in local storage - returning mock data")
             
             # 模拟图片详情数据
             mock_image_detail = {
                 "id": image_id,
-                "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                "description": "AI Generated Environmental Vision",
+                "url": "https://res.cloudinary.com/dvbqtwgko/image/upload/v1752310322/obscura_images/file_del4l6.png",
+                "thumbnail_url": "https://res.cloudinary.com/dvbqtwgko/image/upload/v1752310322/obscura_images/file_del4l6.png",
+                "description": "Tree Observatory Location",
                 "created_at": datetime.now().isoformat(),
                 "prediction": {
                     "id": image_id + 1,
                     "input_data": {
                         "temperature": 22.5,
                         "humidity": 65.0,
-                        "location": "Global Environmental Station",
+                        "location": "Tree Observatory Location",
                         "timestamp": datetime.now().isoformat()
                     },
                     "result_data": {
@@ -778,7 +1101,7 @@ def get_image_detail(image_id):
                         }
                     },
                     "prompt": "Generate environmental vision based on current climate data",
-                    "location": "Global Environmental Station"
+                    "location": "Tree Observatory Location"
                 }
             }
             
@@ -909,7 +1232,49 @@ def get_image_shap_analysis(image_id):
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        # 查询图片关联的预测数据
+        # 首先尝试获取存储的分析结果
+        cur.execute("""
+            SELECT shap_data, ai_story, generated_at 
+            FROM image_analysis 
+            WHERE image_id = %s
+        """, (image_id,))
+        
+        analysis_row = cur.fetchone()
+        
+        if analysis_row:
+            # 返回存储的分析结果
+            shap_data, ai_story, generated_at = analysis_row
+            
+            logger.info(f"✅ Retrieved stored analysis for image {image_id}")
+            
+            cur.close()
+            conn.close()
+            
+            # 转换为层次化结构
+            enhanced_shap_analysis = transform_to_hierarchical_shap_data(json.loads(shap_data))
+            
+            # 验证数据完整性
+            validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
+            
+            return jsonify({
+                "success": True,
+                "data": {
+                    **enhanced_shap_analysis,
+                    'ai_story': json.loads(ai_story),
+                    "integration_metadata": {
+                        "analysis_timestamp": generated_at.isoformat(),
+                        "model_version": "hierarchical_v1.1",
+                        "analysis_source": "stored_analysis",
+                        "note": "Pre-generated SHAP analysis with hierarchical features",
+                        "data_format_version": "1.1.0"
+                    },
+                    "data_validation": validation_result
+                },
+                "timestamp": datetime.now().isoformat(),
+                "mode": "stored_analysis"
+            }), 200
+        
+        # 如果没有存储的分析结果，查询图片关联的预测数据
         cur.execute("""
             SELECT 
                 i.id, i.url, i.description,
@@ -935,72 +1300,30 @@ def get_image_shap_analysis(image_id):
         cur.close()
         conn.close()
         
-        # 暂时跳过实际的SHAP模型调用，直接返回模拟数据
-        logger.info(f"Returning mock SHAP data for image {image_id}")
+        # 图片存在但没有分析结果，生成新的分析
+        logger.info(f"🔄 No stored analysis found, generating new analysis for image {image_id}")
         
-        # 构建基础SHAP分析数据
-        base_shap_analysis = {
-            "image_info": {
-                "id": row[0],
-                "url": row[1], 
-                "description": row[2]
-            },
-            "original_prediction": {
-                "input_data": input_data,
-                "result_data": result_data,
-                "location": location
-            },
-            "city": location,
-            "coordinates": {
-                "latitude": input_data.get('latitude', 51.5074),
-                "longitude": input_data.get('longitude', -0.1278)
-            },
-            "climate_score": 0.73,
-            "geographic_score": 0.68,
-            "economic_score": 0.71,
-            "final_score": 0.705,
-            "model_accuracy": 0.999,
-            "processing_time": 0.8,
-            "shap_analysis": {
-                "base_value": 0.5,
-                "prediction_value": 0.705,
-                "feature_importance": {
-                    "temperature": 0.18,
-                    "humidity": 0.15,
-                    "pressure": 0.12,
-                    "location_factor": 0.20,
-                    "seasonal_factor": 0.13,
-                    "climate_zone": 0.22,
-                    "precipitation": 0.08,
-                    "elevation": 0.05
-                }
-            }
-        }
+        # 生成新的SHAP分析数据
+        shap_data = generate_shap_analysis_data(image_id, row[2])
         
         # 生成AI故事
-        story_data = {
-            'climate_score': base_shap_analysis['climate_score'],
-            'geographic_score': base_shap_analysis['geographic_score'],
-            'economic_score': base_shap_analysis['economic_score'],
-            'city': location,
-            'shap_analysis': base_shap_analysis['shap_analysis']
-        }
-        base_shap_analysis['ai_story'] = generate_ai_environmental_story(story_data)
+        story_data = generate_ai_environmental_story(shap_data)
         
         # 转换为层次化结构
-        enhanced_shap_analysis = transform_to_hierarchical_shap_data(base_shap_analysis)
+        enhanced_shap_analysis = transform_to_hierarchical_shap_data(shap_data)
         
-        # 验证数据完整性（Task 4.3）
+        # 验证数据完整性
         validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
         
         # 构建完整的响应数据
         mock_shap_analysis = {
             **enhanced_shap_analysis,
+            'ai_story': story_data,
             "integration_metadata": {
                 "analysis_timestamp": datetime.now().isoformat(),
                 "model_version": "hierarchical_v1.1",
-                "analysis_source": "enhanced_shap_framework",
-                "note": "Enhanced SHAP analysis with hierarchical features",
+                "analysis_source": "generated_on_demand",
+                "note": "Generated SHAP analysis with hierarchical features",
                 "data_format_version": "1.1.0"
             },
             "data_validation": validation_result
@@ -1010,57 +1333,56 @@ def get_image_shap_analysis(image_id):
             "success": True,
             "data": mock_shap_analysis,
             "timestamp": datetime.now().isoformat(),
-            "mode": "integrated_mock"
+            "mode": "generated_on_demand"
         }), 200
         
     except Exception as e:
         logger.error(f"Error in SHAP analysis endpoint: {e}")
         
-        # 数据库不可用时的模拟数据
+        # 数据库不可用时，检查本地存储或返回模拟数据
         if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
-            logger.info(f"Database unavailable - returning mock SHAP data for image {image_id}")
+            logger.info(f"Database unavailable - checking local storage for image {image_id}")
             
-            # 构建基础模拟数据（数据库不可用时）
-            fallback_base_data = {
-                "image_info": {
-                    "id": image_id,
-                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "description": "Tree Observatory Environmental Vision"
-                },
-                "city": "Tree Observatory Location",
-                "coordinates": {"latitude": 51.5074, "longitude": -0.1278},
-                "climate_score": 0.72,
-                "geographic_score": 0.69,
-                "economic_score": 0.66,
-                "final_score": 0.69,
-                "shap_analysis": {
-                    "base_value": 0.5,
-                    "prediction_value": 0.69,
-                    "feature_importance": {
-                        "temperature": 0.19,
-                        "humidity": 0.16,
-                        "pressure": 0.13,
-                        "location_factor": 0.21,
-                        "seasonal_factor": 0.14,
-                        "climate_zone": 0.17,
-                        "precipitation": 0.07,
-                        "elevation": 0.04
-                    }
-                }
-            }
+            # 检查本地分析存储
+            if image_id in LOCAL_ANALYSIS_STORE:
+                stored_analysis = LOCAL_ANALYSIS_STORE[image_id]
+                logger.info(f"✅ Retrieved local analysis for image {image_id}")
+                
+                # 转换为层次化结构
+                enhanced_shap_analysis = transform_to_hierarchical_shap_data(stored_analysis['shap_analysis'])
+                
+                # 验证数据完整性
+                validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        **enhanced_shap_analysis,
+                        'ai_story': stored_analysis['ai_story'],
+                        "integration_metadata": {
+                            "analysis_timestamp": stored_analysis['generated_at'],
+                            "model_version": "hierarchical_v1.1",
+                            "analysis_source": "local_storage",
+                            "note": "Pre-generated SHAP analysis from local storage",
+                            "data_format_version": "1.1.0"
+                        },
+                        "data_validation": validation_result
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                    "mode": "local_storage"
+                }), 200
+            
+            # 如果本地存储中没有，生成新的分析
+            logger.info(f"No local analysis found, generating new analysis for image {image_id}")
+            
+            # 生成新的SHAP分析数据
+            shap_data = generate_shap_analysis_data(image_id, "Tree Observatory Location")
             
             # 生成AI故事
-            fallback_story_data = {
-                'climate_score': 0.72,
-                'geographic_score': 0.69,
-                'economic_score': 0.66,
-                'city': "Tree Observatory Location",
-                'shap_analysis': fallback_base_data['shap_analysis']
-            }
-            fallback_base_data['ai_story'] = generate_ai_environmental_story(fallback_story_data)
+            story_data = generate_ai_environmental_story(shap_data)
             
             # 转换为层次化结构
-            enhanced_fallback_data = transform_to_hierarchical_shap_data(fallback_base_data)
+            enhanced_fallback_data = transform_to_hierarchical_shap_data(shap_data)
             
             # 验证fallback数据完整性
             fallback_validation = validate_hierarchical_shap_data(enhanced_fallback_data)
@@ -1069,17 +1391,18 @@ def get_image_shap_analysis(image_id):
                 "success": True,
                 "data": {
                     **enhanced_fallback_data,
+                    'ai_story': story_data,
                     "integration_metadata": {
                         "analysis_timestamp": datetime.now().isoformat(),
                         "model_version": "hierarchical_fallback_v1.1",
-                        "analysis_source": "enhanced_fallback_framework",
-                        "note": "Enhanced fallback SHAP analysis with hierarchical features",
+                        "analysis_source": "generated_for_local_development",
+                        "note": "Generated SHAP analysis for local development",
                         "data_format_version": "1.1.0"
                     },
                     "data_validation": fallback_validation
                 },
                 "timestamp": datetime.now().isoformat(),
-                "mode": "enhanced_fallback_for_local_development"
+                "mode": "generated_for_local_development"
             }), 200
         
         return jsonify({

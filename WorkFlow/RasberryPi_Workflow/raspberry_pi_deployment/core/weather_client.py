@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-环境数据获取客户端
-调用OpenWeather API获取当前和历史环境数据
+Environmental Data Acquisition Client
+Call OpenWeather API to get current and historical environmental data
 """
 
 import requests
@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 class WeatherClient:
     def __init__(self, api_key):
-        """初始化天气客户端"""
+        """Initialize weather client"""
         self.api_key = api_key
         self.base_url = "http://api.openweathermap.org/data/2.5"
         self.geo_url = "http://api.openweathermap.org/geo/1.0"
@@ -22,7 +22,7 @@ class WeatherClient:
         })
     
     def get_current_weather(self, lat, lon):
-        """获取当前天气数据"""
+        """Get current weather data"""
         try:
             endpoint = f"{self.base_url}/weather"
             params = {
@@ -38,15 +38,15 @@ class WeatherClient:
                 data = response.json()
                 return self._format_current_weather(data)
             else:
-                print(f"❌ 获取当前天气失败: {response.status_code if response else 'No response'}")
+                print(f"❌ Failed to get current weather: {response.status_code if response else 'No response'}")
                 return None
                 
         except Exception as e:
-            print(f"❌ 当前天气API错误: {e}")
+            print(f"❌ Current weather API error: {e}")
             return None
     
     def get_weather_forecast(self, lat, lon, days=5):
-        """获取天气预报"""
+        """Get weather forecast"""
         try:
             endpoint = f"{self.base_url}/forecast"
             params = {
@@ -62,15 +62,15 @@ class WeatherClient:
                 data = response.json()
                 return self._format_forecast_data(data, days)
             else:
-                print(f"❌ 获取天气预报失败: {response.status_code if response else 'No response'}")
-                return None
-                
+                            print(f"❌ Failed to get weather forecast: {response.status_code if response else 'No response'}")
+            return None
+        
         except Exception as e:
-            print(f"❌ 天气预报API错误: {e}")
+            print(f"❌ Weather forecast API error: {e}")
             return None
     
     def get_air_quality(self, lat, lon):
-        """获取空气质量数据"""
+        """Get air quality data"""
         try:
             endpoint = f"{self.base_url}/air_pollution"
             params = {
@@ -84,23 +84,23 @@ class WeatherClient:
                 data = response.json()
                 return self._format_air_quality(data)
             else:
-                print(f"❌ 获取空气质量失败: {response.status_code if response else 'No response'}")
-                return None
-                
+                            print(f"❌ Failed to get air quality: {response.status_code if response else 'No response'}")
+            return None
+        
         except Exception as e:
-            print(f"❌ 空气质量API错误: {e}")
+            print(f"❌ Air quality API error: {e}")
             return None
     
     def get_comprehensive_data(self, lat, lon):
-        """获取综合环境数据"""
-        print(f"🌤️ 获取坐标 ({lat:.4f}, {lon:.4f}) 的环境数据...")
+        """Get comprehensive environmental data"""
+        print(f"🌤️ Getting environmental data for coordinates ({lat:.4f}, {lon:.4f})...")
         
-        # 并行获取所有数据
+        # Get all data in parallel
         current_weather = self.get_current_weather(lat, lon)
         forecast = self.get_weather_forecast(lat, lon, days=5)
         air_quality = self.get_air_quality(lat, lon)
         
-        # 组合数据
+        # Combine data
         comprehensive_data = {
             'coordinates': {'lat': lat, 'lon': lon},
             'timestamp': datetime.now().isoformat(),
@@ -113,7 +113,7 @@ class WeatherClient:
         return comprehensive_data
     
     def format_for_ml_model(self, weather_data):
-        """格式化天气数据为ML模型输入格式"""
+        """Format weather data for ML model input format"""
         if not weather_data or not weather_data.get('current_weather'):
             return None
         
@@ -121,9 +121,9 @@ class WeatherClient:
         forecast = weather_data.get('forecast', {})
         air_quality = weather_data.get('air_quality', {})
         
-        # 提取ML模型需要的特征
+        # Extract features needed by ML model
         ml_features = {
-            # 当前天气特征
+            # Current weather features
             'temperature': current.get('temperature', 0),
             'humidity': current.get('humidity', 0),
             'pressure': current.get('pressure', 1013),
@@ -132,26 +132,26 @@ class WeatherClient:
             'visibility': current.get('visibility', 10000),
             'cloud_cover': current.get('cloud_cover', 0),
             
-            # 天气状况编码
+            # Weather condition encoding
             'weather_code': current.get('weather_id', 800),
             'is_clear': current.get('weather_main', '') == 'Clear',
             'is_cloudy': current.get('weather_main', '') in ['Clouds', 'Overcast'],
             'is_rainy': current.get('weather_main', '') in ['Rain', 'Drizzle'],
             'is_stormy': current.get('weather_main', '') in ['Thunderstorm'],
             
-            # 时间特征
+            # Time features
             'hour_of_day': datetime.now().hour,
             'day_of_year': datetime.now().timetuple().tm_yday,
             'season': self._get_season(),
             
-            # 空气质量特征
+            # Air quality features
             'aqi': air_quality.get('aqi', 2),
             'pm2_5': air_quality.get('pm2_5', 10),
             'pm10': air_quality.get('pm10', 20),
             'no2': air_quality.get('no2', 20),
             'o3': air_quality.get('o3', 60),
             
-            # 预报趋势特征
+            # Forecast trend features
             'temp_trend': self._calculate_temperature_trend(forecast),
             'pressure_trend': self._calculate_pressure_trend(forecast),
             'humidity_trend': self._calculate_humidity_trend(forecast),
@@ -160,7 +160,7 @@ class WeatherClient:
         return ml_features
     
     def _make_request(self, method, endpoint, params=None, timeout=10):
-        """发起API请求"""
+        """Make API request"""
         try:
             if method.upper() == 'GET':
                 response = self.session.get(endpoint, params=params, timeout=timeout)
@@ -170,24 +170,24 @@ class WeatherClient:
             return response
             
         except requests.exceptions.Timeout:
-            print(f"⏰ API请求超时: {endpoint}")
+            print(f"⏰ API request timeout: {endpoint}")
             return None
         except requests.exceptions.ConnectionError:
-            print(f"🌐 网络连接错误: {endpoint}")
+            print(f"🌐 Network connection error: {endpoint}")
             return None
         except Exception as e:
-            print(f"❌ 请求错误: {e}")
+            print(f"❌ Request error: {e}")
             return None
     
     def _format_current_weather(self, data):
-        """格式化当前天气数据"""
+        """Format current weather data"""
         try:
             return {
                 'temperature': data['main']['temp'],
                 'feels_like': data['main']['feels_like'],
                 'humidity': data['main']['humidity'],
                 'pressure': data['main']['pressure'],
-                'visibility': data.get('visibility', 10000) / 1000,  # 转换为公里
+                'visibility': data.get('visibility', 10000) / 1000,  # Convert to kilometers
                 'wind_speed': data.get('wind', {}).get('speed', 0),
                 'wind_direction': data.get('wind', {}).get('deg', 0),
                 'cloud_cover': data.get('clouds', {}).get('all', 0),

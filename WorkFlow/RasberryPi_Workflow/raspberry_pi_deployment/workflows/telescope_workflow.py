@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Raspberry Pi Telescope Workflow
-树莓派虚拟望远镜工作流 - 真实硬件版本
+Raspberry Pi Virtual Telescope Workflow - Real Hardware Version
 """
 
 import sys
@@ -14,10 +14,11 @@ import random
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# 添加核心模块路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'core'))
+# Add parent directory to path for importing core modules
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
 
-# 导入核心模块（复制自task16）
+# Import core modules
 try:
     from core.coordinate_calculator import CoordinateCalculator
     from core.weather_client import WeatherClient  
@@ -27,7 +28,8 @@ try:
     from core.maps_client import MapsClient
     from core.raspberry_pi_hardware import RaspberryPiHardware
 except ImportError:
-    # 备用导入路径
+    # Fallback import path
+    sys.path.insert(0, os.path.join(parent_dir, 'core'))
     from coordinate_calculator import CoordinateCalculator
     from weather_client import WeatherClient
     from cloud_api_client import CloudAPIClient
@@ -37,40 +39,36 @@ except ImportError:
     from raspberry_pi_hardware import RaspberryPiHardware
 
 class RaspberryPiTelescopeWorkflow:
-    """树莓派虚拟望远镜工作流"""
+    """Raspberry Pi Virtual Telescope Workflow"""
     
     def __init__(self, config_path='config/config.json'):
-        """初始化工作流"""
+        """Initialize workflow"""
         self.config_manager = ConfigManager(config_path)
         self.progress = ProgressDisplay()
         
-        # 初始化核心组件
+        # Initialize core components
         self.coord_calc = CoordinateCalculator(self.config_manager.config)
         
-        # 获取API密钥并初始化WeatherClient
-        weather_api_key = self.config_manager.get('api_keys.openweather_api_key')
-        if weather_api_key:
-            self.weather_client = WeatherClient(weather_api_key)
-            print("🌤️ OpenWeather客户端已初始化")
-        else:
-            self.weather_client = None
-            print("⚠️ OpenWeather API密钥未配置，天气功能将使用模拟数据")
+        # Initialize Open-Meteo client (no API key required)
+        from core.open_meteo_client import OpenMeteoClient
+        self.weather_client = OpenMeteoClient()
+        print("🌤️ Open-Meteo client initialized (免费API，无需密钥)")
         
         self.cloud_client = CloudAPIClient(self.config_manager)
         
-        # 初始化地图客户端
-        google_maps_key = self.config_manager.get('api_keys.google_maps_api_key')
+        # Initialize map client
+        google_maps_key = self.config_manager.get('google_maps_api_key')
         if google_maps_key:
             self.maps_client = MapsClient(google_maps_key)
-            print("🗺️ Google Maps客户端已初始化")
+            print("🗺️ Google Maps client initialized")
         else:
             self.maps_client = None
-            print("⚠️ Google Maps API密钥未配置，地图功能将被跳过")
+            print("⚠️ Google Maps API key not configured, map functionality will be skipped")
         
-        # 初始化硬件接口
+        # Initialize hardware interface
         self.hardware = RaspberryPiHardware(self.config_manager.config)
         
-        # 会话数据
+        # Session data
         self.session_data = {
             'workflow_id': f"pi_telescope_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             'start_time': datetime.now(),
@@ -81,11 +79,11 @@ class RaspberryPiTelescopeWorkflow:
         self.last_result = None
         self.logger = logging.getLogger(__name__)
         
-        print("🍓 树莓派虚拟望远镜已初始化")
-        print(f"📊 硬件状态: {self._format_hardware_status()}")
+        print("🍓 Raspberry Pi Virtual Telescope initialized")
+        print(f"📊 Hardware Status: {self._format_hardware_status()}")
     
     def _format_hardware_status(self) -> str:
-        """格式化硬件状态显示"""
+        """Format hardware status display"""
         status = self.hardware.get_hardware_status()
         indicators = []
         
@@ -104,124 +102,124 @@ class RaspberryPiTelescopeWorkflow:
         return " | ".join(indicators)
     
     def run_telescope_session(self) -> Dict[str, Any]:
-        """运行完整的望远镜会话"""
-        print("\n🔭 启动 Obscura No.7 虚拟望远镜")
+        """Run complete telescope session"""
+        print("\n🔭 Starting Obscura No.7 Virtual Telescope")
         print("=" * 60)
         
         try:
-            # 显示欢迎信息
+            # Show welcome message
             self._show_welcome_message()
             
-            # 运行6步工作流
+            # Run 6-step workflow
             result = self._execute_workflow()
             
-            # 显示完成信息
+            # Show completion message
             self._show_completion_message(result)
             
             return result
             
         except KeyboardInterrupt:
-            print("\n⏹️ 用户中断望远镜会话")
+            print("\n⏹️ User interrupted telescope session")
             return {'success': False, 'error': 'User interrupted'}
         except Exception as e:
             self.logger.error(f"Workflow failed: {e}")
-            print(f"\n❌ 工作流失败: {e}")
+            print(f"\n❌ Workflow failed: {e}")
             return {'success': False, 'error': str(e)}
         finally:
             self.hardware.cleanup()
     
     def _show_welcome_message(self):
-        """显示欢迎信息"""
-        print("🌟 欢迎使用 Obscura No.7 虚拟望远镜")
-        print("📡 这个设备将帮您探索未来的环境可能性")
+        """Show welcome message"""
+        print("🌟 Welcome to Obscura No.7 Virtual Telescope")
+        print("📡 This device will help you explore future environmental possibilities")
         print()
-        print("🎮 操作说明:")
+        print("🎮 Operating Instructions:")
         if self.hardware.hardware_available:
-            print("   📐 转动编码器设置距离")
-            print("   🔘 按下按钮确认选择")
-            print("   🧭 磁感器会自动读取方向")
+            print("   📐 Turn encoder to set distance")
+            print("   🔘 Press button to confirm selection")
+            print("   🧭 Compass sensor will automatically read direction")
         else:
-            print("   ⌨️ 使用键盘输入参数")
+            print("   ⌨️ Use keyboard to input parameters")
         print()
-        print("⏳ 准备开始探索...")
+        print("⏳ Preparing to start exploration...")
         time.sleep(2)
     
     def _execute_workflow(self) -> Dict[str, Any]:
-        """执行6步工作流"""
+        """Execute 6-step workflow"""
         workflow_result = {}
         
-        # 初始化进度显示
+        # Initialize progress display
         self.progress.init_workflow(
-            title="🔭 Obscura No.7 虚拟望远镜工作流",
-            total_steps=7,  # 增加到7步，包含地图生成
+            title="🔭 Obscura No.7 Virtual Telescope Workflow",
+            total_steps=7,  # Increased to 7 steps, including map generation
             workflow_id=self.session_data['workflow_id']
         )
         
-        # 步骤1: 硬件数据采集
-        with self.progress.step(1, "硬件数据采集", "从编码器和磁感器读取用户输入") as step:
+        # Step 1: Hardware Data Collection
+        with self.progress.step(1, "Hardware Data Collection", "Reading user input from encoder and compass sensor") as step:
             hardware_data = self._collect_hardware_input()
             workflow_result['hardware_input'] = hardware_data
-            step.success("硬件数据采集完成")
+            step.success("Hardware data collection completed")
         
-        # 步骤2: 坐标计算
-        with self.progress.step(2, "坐标计算", "基于距离和方向计算目标坐标") as step:
+        # Step 2: Coordinate Calculation
+        with self.progress.step(2, "Coordinate Calculation", "Calculating target coordinates based on distance and direction") as step:
             coordinates = self._calculate_target_coordinates(hardware_data)
             workflow_result['coordinates'] = coordinates
             self._show_coordinates_result(coordinates)
-            step.success("坐标计算完成")
+            step.success("Coordinate calculation completed")
         
-        # 步骤3: 环境数据获取
-        with self.progress.step(3, "环境数据获取", "调用OpenWeather API获取真实环境数据") as step:
+        # Step 3: Environmental Data Acquisition
+        with self.progress.step(3, "Environmental Data Acquisition", "Calling Open-Meteo API to get real environmental data") as step:
             weather_data = self._get_environmental_data(coordinates)
             workflow_result['weather_data'] = weather_data
             self._show_weather_summary(weather_data)
-            step.success("真实环境数据获取完成")
+            step.success("Real environmental data acquisition completed")
         
-        # 步骤4: AI艺术预测
-        with self.progress.step(4, "AI艺术预测", "使用机器学习模型预测艺术风格") as step:
+        # Step 4: AI Art Prediction
+        with self.progress.step(4, "AI Art Prediction", "Using machine learning models to predict art style") as step:
             ml_features = self._prepare_ml_features(coordinates, weather_data)
             style_prediction = self._predict_art_style(ml_features, coordinates)
             workflow_result['style_prediction'] = style_prediction
             self._show_prediction_result(style_prediction)
-            step.success("AI艺术预测完成")
+            step.success("AI art prediction completed")
         
-        # 步骤5: 地图生成
-        with self.progress.step(5, "地图生成", "使用Google Maps API生成位置地图") as step:
+        # Step 5: Map Generation
+        with self.progress.step(5, "Map Generation", "Using Google Maps API to generate location map") as step:
             map_info = self._generate_location_map(coordinates, hardware_data)
             workflow_result['map_info'] = map_info
             if map_info and map_info.get('success'):
-                step.success("地图生成完成")
+                step.success("Map generation completed")
             else:
-                step.warning("地图生成失败或跳过")
+                step.warning("Map generation failed or skipped")
         
-        # 步骤6: 图像生成
-        with self.progress.step(6, "AI图像生成", "使用AI生成艺术作品") as step:
+        # Step 6: Image Generation
+        with self.progress.step(6, "AI Image Generation", "Using AI to generate artwork") as step:
             image_path = self._generate_artwork(style_prediction, weather_data, coordinates)
             workflow_result['generated_image'] = image_path
-            step.success(f"图像生成完成: {os.path.basename(image_path)}")
+            step.success(f"Image generation completed: {os.path.basename(image_path)}")
         
-        # 步骤7: 云端同步
-        with self.progress.step(7, "云端同步", "上传图像和数据到展示网站") as step:
+        # Step 7: Cloud Synchronization
+        with self.progress.step(7, "Cloud Synchronization", "Uploading images and data to exhibition website") as step:
             sync_result = self._sync_to_cloud(workflow_result)
             workflow_result['sync_result'] = sync_result
             if sync_result and sync_result.get('success'):
-                step.success("云端同步完成")
+                step.success("Cloud synchronization completed")
             else:
-                step.warning("云端同步失败或跳过")
+                step.warning("Cloud synchronization failed or skipped")
         
-        # 完成工作流
+        # Complete workflow
         self.progress.complete_workflow(success=True)
         
-        # 保存结果
+        # Save results
         final_result = self._save_workflow_result(workflow_result)
         
         return final_result
     
     def _collect_hardware_input(self) -> Dict[str, float]:
-        """收集硬件输入数据 - 使用三参数同步输入"""
-        print("\n🎮 三参数同步设置...")
+        """Collect hardware input data - using three-parameter synchronized input"""
+        print("\n🎮 Three-parameter synchronized setup...")
         
-        # 使用新的三参数同步输入系统
+        # Use new three-parameter synchronized input system
         distance, direction, time_offset = self.hardware.read_three_parameter_input(timeout=120)
         
         return {
@@ -231,13 +229,13 @@ class RaspberryPiTelescopeWorkflow:
         }
     
     def _calculate_target_coordinates(self, hardware_data: Dict) -> Dict:
-        """计算目标坐标"""
+        """Calculate target coordinates"""
         base_lat = self.config_manager.get('telescope_settings.base_latitude', 51.5074)
         base_lon = self.config_manager.get('telescope_settings.base_longitude', -0.1278)
         
         target_coords = self.coord_calc.calculate_target_coordinates(
             base_lat, base_lon,
-            hardware_data['distance_km'] * 1000,  # 转换为米
+            hardware_data['distance_km'] * 1000,  # Convert to meters
             hardware_data['direction_degrees']
         )
         
@@ -250,25 +248,35 @@ class RaspberryPiTelescopeWorkflow:
         }
     
     def _get_environmental_data(self, coordinates: Dict) -> Dict:
-        """获取环境数据"""
+        """Get environmental data using Open-Meteo API"""
         if self.weather_client:
-            weather_data = self.weather_client.get_comprehensive_data(
+            weather_data = self.weather_client.get_current_environmental_data(
                 coordinates['latitude'],
                 coordinates['longitude']
             )
             if weather_data:
                 return weather_data
         
-        # 如果API不可用或失败，创建备用天气数据
-        print("⚠️ 使用备用天气数据")
+        # If API is unavailable or fails, create fallback weather data
+        print("⚠️ Using fallback weather data")
         return self._create_fallback_weather_data(
             coordinates['latitude'],
             coordinates['longitude']
         )
     
     def _prepare_ml_features(self, coordinates: Dict, weather_data: Dict) -> Dict:
-        """准备ML特征"""
-        current_weather = weather_data.get('current_weather', {})
+        """Prepare ML features"""
+        # Handle case where weather_data is None (API failure)
+        if weather_data is None:
+            print("⚠️ No weather data available, using default values for ML features")
+            current_weather = {}
+        else:
+            # Double-check weather_data is not None before calling .get()
+            current_weather = weather_data.get('current_weather', {}) if weather_data is not None else {}
+            # Handle case where current_weather itself is None
+            if current_weather is None:
+                print("⚠️ Current weather data is None, using default values")
+                current_weather = {}
         
         return {
             'latitude': coordinates['latitude'],
@@ -282,43 +290,43 @@ class RaspberryPiTelescopeWorkflow:
         }
     
     def _predict_art_style(self, ml_features: Dict, location_info: Dict) -> Dict:
-        """预测艺术风格"""
+        """Predict art style"""
         return self.cloud_client.predict_art_style(ml_features, location_info)
     
     def _generate_location_map(self, coordinates: Dict, hardware_data: Dict) -> Optional[Dict]:
-        """生成位置地图
+        """Generate location map
         
         Args:
-            coordinates: 坐标信息
-            hardware_data: 硬件输入数据
+            coordinates: Coordinate information
+            hardware_data: Hardware input data
             
         Returns:
-            Dict: 地图信息，包含地址、地图文件路径等
+            Dict: Map information including address, map file path, etc.
         """
         if not self.maps_client:
-            print("⚠️ Google Maps客户端未初始化，跳过地图生成")
+            print("⚠️ Google Maps client not initialized, skipping map generation")
             return None
         
         try:
             lat = coordinates['latitude']
             lon = coordinates['longitude']
-            distance = hardware_data['distance_km'] * 1000  # 转换为米
+            distance = hardware_data['distance_km'] * 1000  # Convert to meters
             
-            print(f"🗺️ 生成位置地图: {lat:.4f}, {lon:.4f}")
+            print(f"🗺️ Generating location map: {lat:.4f}, {lon:.4f}")
             
-            # 获取位置信息
+            # Get location information
             location_info = self.maps_client.get_location_info(lat, lon)
-            print(f"📍 位置: {location_info}")
+            print(f"📍 Location: {location_info}")
             
-            # 获取详细位置信息
+            # Get detailed location information
             location_details = self.maps_client.get_location_details(lat, lon)
             
-            # 生成静态地图
+            # Generate static map
             map_image = self.maps_client.get_static_map(lat, lon, distance, 800, 600)
             
             map_file_path = None
             if map_image:
-                # 保存地图图像
+                # Save map image
                 from datetime import datetime
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 direction_name = self.maps_client.get_direction_name(hardware_data['direction_degrees'])
@@ -327,10 +335,10 @@ class RaspberryPiTelescopeWorkflow:
                 map_filename = f"telescope_map_{distance_str}_{direction_name}_{timestamp}.png"
                 map_file_path = os.path.join('outputs', 'images', map_filename)
                 
-                # 确保目录存在
+                # Ensure directory exists
                 os.makedirs(os.path.dirname(map_file_path), exist_ok=True)
                 map_image.save(map_file_path)
-                print(f"💾 地图已保存: {map_filename}")
+                print(f"💾 Map saved: {map_filename}")
             
             return {
                 'success': True,
@@ -347,7 +355,7 @@ class RaspberryPiTelescopeWorkflow:
             }
             
         except Exception as e:
-            print(f"❌ 地图生成失败: {e}")
+            print(f"❌ Map generation failed: {e}")
             return {
                 'success': False,
                 'error': str(e),
@@ -355,13 +363,18 @@ class RaspberryPiTelescopeWorkflow:
             }
     
     def _generate_artwork(self, style_prediction: Dict, weather_data: Dict, location_info: Dict) -> str:
-        """生成艺术作品 - 确保返回有效路径"""
+        """Generate artwork - ensure valid path is returned"""
         try:
+            # Handle case where weather_data is None
+            if weather_data is None:
+                print("⚠️ No weather data available, using default values for artwork generation")
+                weather_data = {'current_weather': {'weather_main': 'Clear', 'weather_description': 'clear sky'}}
+            
             image_path = self.cloud_client.generate_artwork(style_prediction, weather_data, location_info)
             
-            # 确保返回有效路径
+            # Ensure valid path is returned
             if not image_path:
-                print("⚠️ 图像生成返回空路径，创建占位符")
+                print("⚠️ Image generation returned empty path, creating placeholder")
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 filename = f'telescope_placeholder_{timestamp}.txt'
                 image_path = os.path.join('outputs', 'images', filename)
@@ -370,10 +383,10 @@ class RaspberryPiTelescopeWorkflow:
                 with open(image_path, 'w', encoding='utf-8') as f:
                     f.write(f"Telescope session {timestamp}\nImage generation failed")
             
-            # 验证文件是否存在
+            # Verify file exists
             if not os.path.exists(image_path):
-                print(f"⚠️ 生成的文件不存在: {image_path}")
-                # 创建占位符
+                print(f"⚠️ Generated file does not exist: {image_path}")
+                # Create placeholder
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 filename = f'telescope_missing_{timestamp}.txt'
                 image_path = os.path.join('outputs', 'images', filename)
@@ -385,8 +398,8 @@ class RaspberryPiTelescopeWorkflow:
             return image_path
             
         except Exception as e:
-            print(f"❌ 图像生成异常: {e}")
-            # 创建错误占位符
+            print(f"❌ Image generation exception: {e}")
+            # Create error placeholder
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'telescope_error_{timestamp}.txt'
             image_path = os.path.join('outputs', 'images', filename)
@@ -398,11 +411,11 @@ class RaspberryPiTelescopeWorkflow:
             return image_path
 
     def _sync_to_cloud(self, workflow_result: Dict) -> Dict:
-        """同步到云端"""
+        """Sync to cloud"""
         if not workflow_result.get('generated_image'):
             return None
         
-        # 构建上传元数据
+        # Build upload metadata
         metadata = {
             'coordinates': workflow_result.get('coordinates', {}),
             'weather': workflow_result.get('weather_data', {}),
@@ -419,7 +432,7 @@ class RaspberryPiTelescopeWorkflow:
         )
     
     def _save_workflow_result(self, workflow_result: Dict) -> Dict:
-        """保存工作流结果"""
+        """Save workflow results"""
         final_result = {
             'workflow_id': self.session_data['workflow_id'],
             'timestamp': datetime.now().isoformat(),
@@ -430,7 +443,7 @@ class RaspberryPiTelescopeWorkflow:
             'data': workflow_result
         }
         
-        # 保存到文件
+        # Save to file
         output_dir = 'outputs/workflow_results'
         os.makedirs(output_dir, exist_ok=True)
         
@@ -443,40 +456,87 @@ class RaspberryPiTelescopeWorkflow:
         return final_result
     
     def _show_coordinates_result(self, coordinates: Dict):
-        """显示坐标计算结果"""
+        """Display coordinate calculation results"""
         self.progress.show_coordinates(
             coordinates['latitude'],
             coordinates['longitude'],
-            coordinates['distance_km'] * 1000,  # 转换为米
+            coordinates['distance_km'] * 1000,  # Convert to meters
             coordinates['direction_degrees']
         )
     
     def _show_weather_summary(self, weather_data: Dict):
-        """显示天气摘要"""
+        """Display weather summary"""
+        if weather_data is None:
+            print("⚠️ No weather data available to display")
+            return
+        
+        # Ensure weather_data is not None before proceeding
+        try:
+            current_weather = weather_data.get('current_weather', {}) if weather_data else {}
+            if current_weather:
+                print(f"🌤️ Weather: {current_weather.get('weather_description', 'N/A')}")
+                print(f"🌡️ Temperature: {current_weather.get('temperature', 'N/A')}°C")
+                print(f"💨 Wind: {current_weather.get('wind_speed', 'N/A')} km/h")
+        except AttributeError as e:
+            print(f"⚠️ Error displaying weather summary: {e}")
+            print("⚠️ Using default weather display")
+            return
         self.progress.show_weather_summary(weather_data)
     
     def _show_prediction_result(self, prediction: Dict):
-        """显示AI预测结果"""
-        self.progress.show_ml_prediction(prediction)
+        """Display AI prediction results"""
+        if prediction is not None:
+            self.progress.show_ml_prediction(prediction)
+        else:
+            print("⚠️ No prediction result to display (prediction is None)")
     
     def _show_completion_message(self, result: Dict):
-        """显示完成信息"""
+        """Display completion message"""
         print("\n" + "=" * 60)
-        print("🎯 望远镜会话完成!")
-        print(f"⏱️ 执行时间: {result.get('execution_time', 0):.1f} 秒")
+        print("🎯 Telescope session completed!")
         
-        if result.get('data', {}).get('generated_image'):
-            print(f"🎨 生成图像: {os.path.basename(result['data']['generated_image'])}")
+        # Safe execution time display
+        try:
+            exec_time = result.get('execution_time', 0) if result else 0
+            print(f"⏱️ Execution time: {exec_time:.1f} seconds")
+        except (AttributeError, TypeError) as e:
+            print(f"⏱️ Execution time: N/A")
         
-        if result.get('data', {}).get('sync_result', {}).get('success'):
-            sync_data = result['data']['sync_result']
-            if sync_data.get('image_data', {}).get('image', {}).get('url'):
-                print(f"🌐 图像URL: {sync_data['image_data']['image']['url']}")
+        # Safe image display
+        try:
+            if result and result.get('data') and result['data'] and result['data'].get('generated_image'):
+                image_path = result['data']['generated_image']
+                print(f"🎨 Generated image: {os.path.basename(image_path)}")
+        except (AttributeError, TypeError, KeyError) as e:
+            print("🎨 Generated image: N/A")
         
-        print("\n🔭 感谢使用 Obscura No.7 虚拟望远镜!")
+        # Safe sync result display - more robust checking
+        try:
+            if (result and 
+                isinstance(result, dict) and 
+                result.get('data') and 
+                isinstance(result['data'], dict)):
+                
+                sync_result = result['data'].get('sync_result')
+                if (sync_result and 
+                    isinstance(sync_result, dict) and 
+                    sync_result.get('success')):
+                    
+                    # Check for image URL in sync result
+                    image_data = sync_result.get('image_data')
+                    if (image_data and 
+                        isinstance(image_data, dict) and 
+                        image_data.get('image') and 
+                        isinstance(image_data['image'], dict) and 
+                        image_data['image'].get('url')):
+                        print(f"🌐 Image URL: {image_data['image']['url']}")
+        except (AttributeError, TypeError, KeyError) as e:
+            pass  # Silent fail for sync result display
+        
+        print("\n🔭 Thank you for using Obscura No.7 Virtual Telescope!")
 
     def _create_fallback_weather_data(self, lat, lon):
-        """创建备用天气数据"""
+        """Create fallback weather data"""
         import random
         
         return {
@@ -492,9 +552,9 @@ class RaspberryPiTelescopeWorkflow:
                 'visibility': random.uniform(5, 15),
                 'cloud_cover': random.randint(0, 100),
                 'weather_main': random.choice(['Clear', 'Clouds', 'Rain']),
-                'weather_description': random.choice(['晴朗', '多云', '小雨']),
+                'weather_description': random.choice(['Clear', 'Cloudy', 'Light Rain']),
                 'weather_id': random.choice([800, 801, 500]),  # Clear, Few clouds, Light rain
-                'location_name': '模拟位置',
+                'location_name': 'Simulated Location',
                 'country': 'UK'
             },
             'forecast': {
@@ -507,7 +567,7 @@ class RaspberryPiTelescopeWorkflow:
             },
             'air_quality': {
                 'aqi': random.randint(1, 3),
-                'aqi_description': random.choice(['优秀', '良好', '中等']),
+                'aqi_description': random.choice(['Excellent', 'Good', 'Moderate']),
                 'pm2_5': random.randint(5, 25),
                 'pm10': random.randint(10, 50),
                 'no2': random.randint(10, 40),
@@ -516,32 +576,41 @@ class RaspberryPiTelescopeWorkflow:
             'data_quality': {
                 'score': 60,
                 'level': 'simulated',
-                'issues': ['使用模拟数据 - API调用失败']
+                'issues': ['Using simulated data - API call failed']
             }
         }
 
 def main():
-    """主函数"""
+    """Main function"""
     print("🍓 Raspberry Pi Obscura No.7 Virtual Telescope")
     print("=" * 60)
     
     try:
-        # 创建工作流实例
+        # Create workflow instance
         workflow = RaspberryPiTelescopeWorkflow()
         
-        # 运行望远镜会话
+        # Run telescope session
         result = workflow.run_telescope_session()
         
-        # 显示最终状态
-        if result.get('success'):
-            print("\n✅ 会话成功完成")
-        else:
-            print(f"\n❌ 会话失败: {result.get('error', 'Unknown error')}")
+        # Display final status with robust error handling
+        try:
+            if result and isinstance(result, dict) and result.get('success'):
+                print("\n✅ Session completed successfully")
+            else:
+                error_msg = 'Unknown error'
+                if result and isinstance(result, dict):
+                    error_msg = result.get('error', 'Unknown error')
+                elif result is None:
+                    error_msg = 'Workflow returned None'
+                print(f"\n❌ Session failed: {error_msg}")
+        except (AttributeError, TypeError) as e:
+            print(f"\n⚠️ Error displaying final status")
+            print("⚠️ Session may have completed, but status display failed")
             
     except KeyboardInterrupt:
-        print("\n⏹️ 程序被用户中断")
+        print("\n⏹️ Program interrupted by user")
     except Exception as e:
-        print(f"\n💥 程序异常: {e}")
+        print(f"\n💥 Program exception: {e}")
         import traceback
         traceback.print_exc()
 

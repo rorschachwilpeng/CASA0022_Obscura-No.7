@@ -3,10 +3,15 @@
 
 echo "🔭 Starting Obscura No.7 Virtual Telescope..."
 
+# 切换到项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_DIR"
+
 # 检查是否在项目目录中
-if [ ! -f "main_telescope.py" ]; then
-    echo "❌ Error: main_telescope.py not found"
-    echo "Please run this script from the raspberry_pi_deployment directory"
+if [ ! -f "main.py" ]; then
+    echo "❌ Error: main.py not found in $PWD"
+    echo "Please check the project structure"
     exit 1
 fi
 
@@ -27,6 +32,6 @@ python3 -c "import requests, datetime, json, os" 2>/dev/null || {
 
 # 启动程序
 echo "🚀 Launching telescope..."
-python3 main_telescope.py
+python3 main.py
 
 echo "🔭 Telescope session ended." 

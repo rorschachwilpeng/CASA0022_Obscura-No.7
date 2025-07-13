@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHAP Bubble Chart Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #FDF5E6;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .debug-panel {
+            background: rgba(26, 26, 46, 0.9);
+            border: 1px solid #CD853F;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .chart-container {
+            background: linear-gradient(45deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #CD853F;
+            border-radius: 10px;
+            height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #testChart {
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        button {
+            background: #CD853F;
+            color: #1a1a2e;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #DAA520;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success { background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; }
+        .status.error { background: rgba(244, 67, 54, 0.2); border: 1px solid #F44336; }
+        .status.warning { background: rgba(255, 193, 7, 0.2); border: 1px solid #FFC107; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 SHAP Bubble Chart Debug Test</h1>
+        
+        <div class="debug-panel" id="debugPanel">
+            <h3>🐛 Debug Information</h3>
+            <div id="debugContent">Loading...</div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="testLibraries()">🔍 Test Libraries</button>
+            <button onclick="loadTestData()">📊 Load Test Data</button>
+            <button onclick="renderChart()">🎨 Render Chart</button>
+            <button onclick="clearChart()">🗑️ Clear Chart</button>
+        </div>
+        
+        <div id="statusArea"></div>
+        
+        <div class="chart-container">
+            <div id="testChart">
+                <div style="text-align: center; color: #CD853F;">
+                    <div style="font-size: 48px;">⚙️</div>
+                    <div>Waiting for initialization...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load required libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-hierarchy@3/dist/d3-hierarchy.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="{{ url_for('static', filename='js/shap-bubble-chart.js') }}?v={{ range(1000, 9999) | random }}"></script>
+
+    <script>
+        let testChart = null;
+        let testData = null;
+
+        function addStatus(message, type = 'info') {
+            const statusArea = document.getElementById('statusArea');
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            statusArea.appendChild(status);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (status.parentNode) {
+                    status.parentNode.removeChild(status);
+                }
+            }, 10000);
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function updateDebug(info) {
+            document.getElementById('debugContent').innerHTML = info;
+        }
+
+        function testLibraries() {
+            let results = [];
+            
+            // Test D3
+            if (typeof d3 !== 'undefined') {
+                results.push('✅ D3.js loaded successfully');
+                results.push(`   Version: ${d3.version || 'Unknown'}`);
+            } else {
+                results.push('❌ D3.js not loaded');
+            }
+            
+            // Test ECharts
+            if (typeof echarts !== 'undefined') {
+                results.push('✅ ECharts loaded successfully');
+                results.push(`   Version: ${echarts.version || 'Unknown'}`);
+            } else {
+                results.push('❌ ECharts not loaded');
+            }
+            
+            // Test SHAPBubbleChart
+            if (typeof SHAPBubbleChart !== 'undefined') {
+                results.push('✅ SHAPBubbleChart component loaded');
+            } else {
+                results.push('❌ SHAPBubbleChart component not loaded');
+            }
+            
+            updateDebug(results.join('<br>'));
+            addStatus('Library test completed', 'success');
+        }
+
+        async function loadTestData() {
+            try {
+                const response = await fetch('/api/v1/images/1/shap-analysis');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                testData = result.data;
+                
+                updateDebug(`
+                    <strong>📊 Test Data Loaded:</strong><br>
+                    • Success: ${result.success}<br>
+                    • Final Score: ${testData.final_score || 'null'}<br>
+                    • Climate Score: ${testData.climate_score}<br>
+                    • Geographic Score: ${testData.geographic_score}<br>
+                    • Economic Score: ${testData.economic_score}<br>
+                    • Has Hierarchical Features: ${!!testData.hierarchical_features}<br>
+                    • Climate Features: ${testData.hierarchical_features?.climate ? Object.keys(testData.hierarchical_features.climate).length : 0}<br>
+                    • Geographic Features: ${testData.hierarchical_features?.geographic ? Object.keys(testData.hierarchical_features.geographic).length : 0}<br>
+                    • Economic Features: ${testData.hierarchical_features?.economic ? Object.keys(testData.hierarchical_features.economic).length : 0}
+                `);
+                
+                addStatus('Test data loaded successfully', 'success');
+                
+            } catch (error) {
+                updateDebug(`❌ Error loading test data: ${error.message}`);
+                addStatus(`Failed to load test data: ${error.message}`, 'error');
+            }
+        }
+
+        function renderChart() {
+            if (!testData) {
+                addStatus('No test data available. Please load test data first.', 'warning');
+                return;
+            }
+            
+            if (typeof SHAPBubbleChart === 'undefined') {
+                addStatus('SHAPBubbleChart component not available', 'error');
+                return;
+            }
+            
+            try {
+                // Clear previous chart
+                if (testChart) {
+                    testChart.chart?.dispose();
+                    testChart = null;
+                }
+                
+                // Clear container
+                const container = document.getElementById('testChart');
+                container.innerHTML = '';
+                
+                // Create new chart
+                testChart = new SHAPBubbleChart('testChart', {
+                    width: 700,
+                    height: 500
+                });
+                
+                console.log('🎯 Chart instance created:', testChart);
+                console.log('🔄 Rendering with data:', testData);
+                
+                // Render chart
+                testChart.render(testData);
+                
+                addStatus('Chart rendered successfully', 'success');
+                updateDebug('✅ Chart rendering completed');
+                
+            } catch (error) {
+                console.error('Chart rendering error:', error);
+                addStatus(`Chart rendering failed: ${error.message}`, 'error');
+                updateDebug(`❌ Chart Error: ${error.message}<br>Stack: ${error.stack}`);
+            }
+        }
+
+        function clearChart() {
+            if (testChart) {
+                testChart.chart?.dispose();
+                testChart = null;
+            }
+            
+            document.getElementById('testChart').innerHTML = `
+                <div style="text-align: center; color: #CD853F;">
+                    <div style="font-size: 48px;">⚙️</div>
+                    <div>Chart cleared</div>
+                </div>
+            `;
+            
+            addStatus('Chart cleared', 'success');
+        }
+
+        // Auto-run library test on load
+        window.addEventListener('load', function() {
+            addStatus('Test page loaded', 'success');
+            setTimeout(testLibraries, 1000);
+        });
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            addStatus(`JavaScript Error: ${e.message}`, 'error');
+            console.error('Global error:', e);
+        });
+    </script>
+</body>
+</html> 

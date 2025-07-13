@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-进度显示模块
-为望远镜工作流提供美观的进度指示和状态更新
+Progress Display Module
+Provides elegant progress indication and status updates for telescope workflow
 """
 
 import time
@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import Enum
 
 class ProgressStatus(Enum):
-    """进度状态枚举"""
+    """Progress Status Enumeration"""
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -20,7 +20,7 @@ class ProgressStatus(Enum):
 
 class ProgressDisplay:
     def __init__(self):
-        """初始化进度显示器"""
+        """Initialize Progress Display"""
         self.steps = []
         self.current_step = 0
         self.start_time = None
@@ -51,8 +51,8 @@ class ProgressDisplay:
             'rocket': '🚀'
         }
     
-    def init_workflow(self, title="工作流", total_steps=6, workflow_id=""):
-        """初始化工作流显示"""
+    def init_workflow(self, title="Workflow", total_steps=6, workflow_id=""):
+        """Initialize workflow display"""
         self.total_steps = total_steps
         self.current_step = 0
         self.start_time = datetime.now()
@@ -60,25 +60,25 @@ class ProgressDisplay:
         
         print(f"{self.emojis['telescope']} {self._colorize(title, 'bold')}")
         print("=" * 60)
-        print(f"📅 启动时间: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"🎯 总步骤数: {total_steps}")
+        print(f"📅 Start time: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🎯 Total steps: {total_steps}")
         if workflow_id:
-            print(f"🆔 工作流ID: {workflow_id}")
+            print(f"🆔 Workflow ID: {workflow_id}")
         print()
     
     def setup_workflow(self, steps):
-        """设置工作流步骤"""
+        """Setup workflow steps"""
         self.steps = steps
         self.current_step = 0
         self.start_time = datetime.now()
         
-        print(f"{self.emojis['telescope']} {self._colorize('Obscura No.7 虚拟望远镜工作流', 'bold')}")
+        print(f"{self.emojis['telescope']} {self._colorize('Obscura No.7 Virtual Telescope Workflow', 'bold')}")
         print("=" * 60)
-        print(f"📅 启动时间: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"🎯 总步骤数: {len(steps)}")
+        print(f"📅 Start time: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🎯 Total steps: {len(steps)}")
         print()
         
-        # 显示所有步骤概览
+        # Display all steps overview
         for i, step in enumerate(steps, 1):
             status_icon = "○"
             color = 'dim'
@@ -86,26 +86,26 @@ class ProgressDisplay:
         print()
     
     def step(self, step_number, step_name, description=""):
-        """创建步骤上下文管理器"""
+        """Create step context manager"""
         return StepContext(self, step_name, step_number, description)
     
     def start_step(self, step_name, description=""):
-        """开始新步骤"""
+        """Start new step"""
         self.current_step += 1
         
-        # 更新上一步状态（如果存在）
+        # Update previous step status (if exists)
         if self.current_step > 1:
             self._update_step_status(self.current_step - 1, ProgressStatus.SUCCESS)
         
         total_steps = getattr(self, 'total_steps', len(getattr(self, 'steps', [])))
-        print(f"{self.emojis['loading']} {self._colorize(f'步骤 {self.current_step}/{total_steps}: {step_name}', 'bold')}")
+        print(f"{self.emojis['loading']} {self._colorize(f'Step {self.current_step}/{total_steps}: {step_name}', 'bold')}")
         if description:
             print(f"   {self._colorize(description, 'dim')}")
         
         return StepContext(self, step_name)
     
     def update_step_progress(self, message, status=ProgressStatus.RUNNING):
-        """更新当前步骤进度"""
+        """Update current step progress"""
         icon = self._get_status_icon(status)
         color = self._get_status_color(status)
         timestamp = datetime.now().strftime('%H:%M:%S')
@@ -113,7 +113,7 @@ class ProgressDisplay:
         print(f"   {icon} [{timestamp}] {self._colorize(message, color)}")
     
     def complete_workflow(self, success=True):
-        """完成工作流"""
+        """Complete workflow"""
         if success and self.current_step > 0:
             self._update_step_status(self.current_step, ProgressStatus.SUCCESS)
         
@@ -122,80 +122,80 @@ class ProgressDisplay:
         
         print("\n" + "=" * 60)
         if success:
-            print(f"{self.emojis['success']} {self._colorize('工作流完成成功！', 'green', 'bold')}")
+            print(f"{self.emojis['success']} {self._colorize('Workflow completed successfully!', 'green', 'bold')}")
         else:
-            print(f"{self.emojis['error']} {self._colorize('工作流执行失败', 'red', 'bold')}")
+            print(f"{self.emojis['error']} {self._colorize('Workflow execution failed', 'red', 'bold')}")
         
-        print(f"🕐 结束时间: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🕐 End time: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
         if duration:
-            print(f"⏱️ 总耗时: {self._format_duration(duration)}")
+            print(f"⏱️ Total duration: {self._format_duration(duration)}")
         print()
     
     def show_error(self, error_message, details=None):
-        """显示错误信息"""
-        print(f"\n{self.emojis['error']} {self._colorize('错误', 'red', 'bold')}")
+        """Show error information"""
+        print(f"\n{self.emojis['error']} {self._colorize('Error', 'red', 'bold')}")
         print(f"   {self._colorize(error_message, 'red')}")
         if details:
-            print(f"   {self._colorize('详细信息:', 'dim')}")
+            print(f"   {self._colorize('Details:', 'dim')}")
             for line in str(details).split('\n'):
                 if line.strip():
                     print(f"   {self._colorize(f'  {line}', 'dim')}")
         print()
     
     def show_warning(self, warning_message):
-        """显示警告信息"""
-        print(f"{self.emojis['warning']} {self._colorize(f'警告: {warning_message}', 'yellow')}")
+        """Show warning information"""
+        print(f"{self.emojis['warning']} {self._colorize(f'Warning: {warning_message}', 'yellow')}")
     
     def show_info(self, info_message):
-        """显示信息"""
+        """Show information"""
         print(f"{self.emojis['info']} {self._colorize(info_message, 'cyan')}")
     
     def show_coordinates(self, lat, lon, distance, direction):
-        """显示坐标信息"""
-        print(f"{self.emojis['coordinates']} {self._colorize('目标坐标计算结果:', 'bold')}")
-        print(f"   📍 纬度: {self._colorize(f'{lat:.6f}', 'green')}")
-        print(f"   📍 经度: {self._colorize(f'{lon:.6f}', 'green')}")
-        print(f"   📏 距离: {self._colorize(f'{distance/1000:.1f} km', 'blue')}")
-        print(f"   🧭 方向: {self._colorize(f'{direction:.1f}°', 'blue')}")
+        """Show coordinates information"""
+        print(f"{self.emojis['coordinates']} {self._colorize('Target Coordinates Calculation Result:', 'bold')}")
+        print(f"   📍 Latitude: {self._colorize(f'{lat:.6f}', 'green')}")
+        print(f"   📍 Longitude: {self._colorize(f'{lon:.6f}', 'green')}")
+        print(f"   📏 Distance: {self._colorize(f'{distance/1000:.1f} km', 'blue')}")
+        print(f"   🧭 Direction: {self._colorize(f'{direction:.1f}°', 'blue')}")
     
     def show_weather_summary(self, weather_data):
-        """显示天气数据摘要"""
+        """Show weather data summary"""
         if not weather_data or not weather_data.get('current_weather'):
-            self.show_warning("无天气数据可显示")
+            self.show_warning("No weather data to display")
             return
         
         current = weather_data['current_weather']
-        print(f"{self.emojis['weather']} {self._colorize('环境数据摘要:', 'bold')}")
+        print(f"{self.emojis['weather']} {self._colorize('Environmental Data Summary:', 'bold')}")
         temp_text = f'{current.get("temperature", "N/A")}°C'
         humidity_text = f'{current.get("humidity", "N/A")}%'
         pressure_text = f'{current.get("pressure", "N/A")} hPa'
         wind_text = f'{current.get("wind_speed", "N/A")} m/s'
         
-        print(f"   🌡️ 温度: {self._colorize(temp_text, 'green')}")
-        print(f"   💧 湿度: {self._colorize(humidity_text, 'blue')}")
-        print(f"   📊 气压: {self._colorize(pressure_text, 'blue')}")
-        print(f"   💨 风速: {self._colorize(wind_text, 'blue')}")
-        print(f"   ☁️ 天气: {self._colorize(current.get('weather_description', 'N/A'), 'cyan')}")
+        print(f"   🌡️ Temperature: {self._colorize(temp_text, 'green')}")
+        print(f"   💧 Humidity: {self._colorize(humidity_text, 'blue')}")
+        print(f"   📊 Pressure: {self._colorize(pressure_text, 'blue')}")
+        print(f"   💨 Wind Speed: {self._colorize(wind_text, 'blue')}")
+        print(f"   ☁️ Weather: {self._colorize(current.get('weather_description', 'N/A'), 'cyan')}")
         
-        # 空气质量
+        # Air Quality
         if weather_data.get('air_quality'):
             aqi = weather_data['air_quality']
             aqi_color = 'green' if aqi.get('aqi', 3) <= 2 else 'yellow' if aqi.get('aqi', 3) <= 3 else 'red'
-            print(f"   🫁 空气质量: {self._colorize(aqi.get('aqi_description', 'N/A'), aqi_color)}")
+            print(f"   🫁 Air Quality: {self._colorize(aqi.get('aqi_description', 'N/A'), aqi_color)}")
     
     def show_ml_prediction(self, prediction_result):
-        """显示ML预测结果"""
-        print(f"{self.emojis['ai']} {self._colorize('AI艺术预测结果:', 'bold')}")
-        if prediction_result:
-            print(f"   🎯 预测类型: {self._colorize(prediction_result.get('prediction_type', 'N/A'), 'green')}")
+        """Show ML prediction results"""
+        print(f"{self.emojis['ai']} {self._colorize('AI Art Prediction Results:', 'bold')}")
+        if prediction_result and isinstance(prediction_result, dict):
+            print(f"   🎯 Prediction Type: {self._colorize(prediction_result.get('prediction_type', 'N/A'), 'green')}")
             confidence_text = f'{prediction_result.get("confidence", 0)*100:.1f}%'
-            print(f"   📊 置信度: {self._colorize(confidence_text, 'blue')}")
-            print(f"   🎨 风格建议: {self._colorize(prediction_result.get('style_recommendation', 'N/A'), 'purple')}")
+            print(f"   📊 Confidence: {self._colorize(confidence_text, 'blue')}")
+            print(f"   🎨 Style Recommendation: {self._colorize(prediction_result.get('style_recommendation', 'N/A'), 'purple')}")
         else:
-            print(f"   {self._colorize('预测失败或无结果', 'red')}")
+            print(f"   {self._colorize('Prediction failed or no results', 'red')}")
     
-    def show_progress_bar(self, current, total, prefix="进度", bar_length=40):
-        """显示进度条"""
+    def show_progress_bar(self, current, total, prefix="Progress", bar_length=40):
+        """Show progress bar"""
         percent = current / total
         filled_length = int(bar_length * percent)
         bar = '█' * filled_length + '░' * (bar_length - filled_length)
@@ -203,15 +203,15 @@ class ProgressDisplay:
         print(f"\r   {prefix}: |{bar}| {percent*100:.1f}% ({current}/{total})", end='', flush=True)
         
         if current == total:
-            print()  # 换行
+            print()  # New line
     
     def _colorize(self, text, *colors):
-        """为文本添加颜色"""
+        """Add color to text"""
         color_codes = ''.join(self.colors.get(color, '') for color in colors)
         return f"{color_codes}{text}{self.colors['reset']}"
     
     def _get_status_icon(self, status):
-        """获取状态图标"""
+        """Get status icon"""
         icons = {
             ProgressStatus.PENDING: "○",
             ProgressStatus.RUNNING: "●",
@@ -222,7 +222,7 @@ class ProgressDisplay:
         return icons.get(status, "○")
     
     def _get_status_color(self, status):
-        """获取状态颜色"""
+        """Get status color"""
         colors = {
             ProgressStatus.PENDING: 'dim',
             ProgressStatus.RUNNING: 'blue',
@@ -233,25 +233,25 @@ class ProgressDisplay:
         return colors.get(status, 'white')
     
     def _update_step_status(self, step_index, status):
-        """更新步骤状态（在概览中不显示，仅内部记录）"""
-        pass  # 在简化版本中，我们不重新绘制整个步骤列表
+        """Update step status (not displayed in overview, internal record only)"""
+        pass  # In the simplified version, we don't redraw the entire step list
     
     def _format_duration(self, duration):
-        """格式化持续时间"""
+        """Format duration"""
         total_seconds = int(duration.total_seconds())
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
         
         if hours > 0:
-            return f"{hours}小时{minutes}分钟{seconds}秒"
+            return f"{hours}h {minutes}m {seconds}s"
         elif minutes > 0:
-            return f"{minutes}分钟{seconds}秒"
+            return f"{minutes}m {seconds}s"
         else:
-            return f"{seconds}秒"
+            return f"{seconds}s"
 
 class StepContext:
-    """步骤上下文管理器"""
+    """Step Context Manager"""
     def __init__(self, display, step_name, step_number=None, description=""):
         self.display = display
         self.step_name = step_name
@@ -259,32 +259,32 @@ class StepContext:
         self.description = description
         self.step_start_time = datetime.now()
         
-        # 当进入上下文时自动开始步骤
+        # Auto start step when entering context
         if step_number:
             self.display.current_step = step_number
             total_steps = getattr(self.display, 'total_steps', 6)
-            print(f"{self.display.emojis['loading']} {self.display._colorize(f'步骤 {step_number}/{total_steps}: {step_name}', 'bold')}")
+            print(f"{self.display.emojis['loading']} {self.display._colorize(f'Step {step_number}/{total_steps}: {step_name}', 'bold')}")
             if description:
                 print(f"   {self.display._colorize(description, 'dim')}")
     
     def update(self, message, status=ProgressStatus.RUNNING):
-        """更新步骤进度"""
+        """Update step progress"""
         self.display.update_step_progress(message, status)
     
     def success(self, message=""):
-        """标记步骤成功"""
+        """Mark step as successful"""
         if message:
             self.display.update_step_progress(message, ProgressStatus.SUCCESS)
     
     def error(self, message="", details=None):
-        """标记步骤错误"""
+        """Mark step as failed"""
         if message:
             self.display.update_step_progress(message, ProgressStatus.ERROR)
         if details:
             self.display.show_error(message, details)
     
     def warning(self, message=""):
-        """显示步骤警告"""
+        """Show step warning"""
         if message:
             self.display.update_step_progress(message, ProgressStatus.WARNING)
     
@@ -293,107 +293,107 @@ class StepContext:
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            self.error("步骤执行失败", f"{exc_type.__name__}: {exc_val}")
+            self.error("Step execution failed", f"{exc_type.__name__}: {exc_val}")
             return False
         return True
 
 if __name__ == "__main__":
-    # 测试用例
-    print("🎨 进度显示器测试")
+    # Test cases
+    print("🎨 Progress Display Test")
     print("=" * 40)
     
-    # 模拟工作流
+    # Simulate workflow
     progress = ProgressDisplay()
     
     workflow_steps = [
-        "硬件数据采集",
-        "坐标计算",
-        "环境数据获取",
-        "AI艺术预测",
-        "图片生成",
-        "云端上传"
+        "Hardware Data Collection",
+        "Coordinate Calculation",
+        "Environmental Data Acquisition",
+        "AI Art Prediction",
+        "Image Generation",
+        "Cloud Upload"
     ]
     
     progress.setup_workflow(workflow_steps)
     
-    # 模拟步骤1
-    with progress.start_step("硬件数据采集", "从磁感器和编码器读取数据") as step:
-        step.update("初始化磁感器...")
+    # Simulate step 1
+    with progress.start_step("Hardware Data Collection", "Reading data from compass sensor and encoder") as step:
+        step.update("Initializing compass sensor...")
         time.sleep(0.5)
-        step.update("读取方向数据: 92.5°")
-        step.update("读取距离数据: 5.2km")
-        step.success("硬件数据采集完成")
+        step.update("Reading direction data: 92.5°")
+        step.update("Reading distance data: 5.2km")
+        step.success("Hardware data collection completed")
     
     time.sleep(0.3)
     
-    # 模拟步骤2
-    with progress.start_step("坐标计算", "基于距离和方向计算目标坐标") as step:
-        step.update("计算目标坐标...")
+    # Simulate step 2
+    with progress.start_step("Coordinate Calculation", "Calculating target coordinates based on distance and direction") as step:
+        step.update("Calculating target coordinates...")
         time.sleep(0.3)
         progress.show_coordinates(51.5074, -0.0556, 5200, 92.5)
-        step.success("坐标计算完成")
+        step.success("Coordinate calculation completed")
     
     time.sleep(0.3)
     
-    # 模拟步骤3
-    with progress.start_step("环境数据获取", "调用OpenWeather API") as step:
-        step.update("连接OpenWeather API...")
-        step.update("获取当前天气数据...")
-        step.update("获取空气质量数据...")
+    # Simulate step 3
+    with progress.start_step("Environmental Data Acquisition", "Calling OpenWeather API") as step:
+        step.update("Connecting to OpenWeather API...")
+        step.update("Getting current weather data...")
+        step.update("Getting air quality data...")
         
-        # 模拟天气数据
+        # Mock weather data
         mock_weather = {
             'current_weather': {
                 'temperature': 15.2,
                 'humidity': 65,
                 'pressure': 1013,
                 'wind_speed': 3.5,
-                'weather_description': '多云'
+                'weather_description': 'Cloudy'
             },
             'air_quality': {
                 'aqi': 2,
-                'aqi_description': '良好'
+                'aqi_description': 'Good'
             }
         }
         progress.show_weather_summary(mock_weather)
-        step.success("环境数据获取完成")
+        step.success("Environmental data acquisition completed")
     
     time.sleep(0.3)
     
-    # 模拟步骤4
-    with progress.start_step("AI艺术预测", "使用机器学习模型生成艺术风格") as step:
-        step.update("准备ML输入特征...")
-        step.update("调用预测模型...")
+    # Simulate step 4
+    with progress.start_step("AI Art Prediction", "Using machine learning model to generate art style") as step:
+        step.update("Preparing ML input features...")
+        step.update("Calling prediction model...")
         
-        # 模拟预测结果
+        # Mock prediction result
         mock_prediction = {
-            'prediction_type': '印象派风景',
+            'prediction_type': 'Impressionist Landscape',
             'confidence': 0.87,
-            'style_recommendation': '温暖色调，柔和笔触'
+            'style_recommendation': 'Warm tones, soft brushstrokes'
         }
         progress.show_ml_prediction(mock_prediction)
-        step.success("AI预测完成")
+        step.success("AI prediction completed")
     
     time.sleep(0.3)
     
-    # 模拟进度条
-    with progress.start_step("图片生成", "生成艺术作品") as step:
-        step.update("开始图片生成...")
+    # Simulate progress bar
+    with progress.start_step("Image Generation", "Generating artwork") as step:
+        step.update("Starting image generation...")
         for i in range(11):
-            progress.show_progress_bar(i, 10, "生成进度")
+            progress.show_progress_bar(i, 10, "Generation Progress")
             time.sleep(0.1)
-        step.success("图片生成完成")
+        step.success("Image generation completed")
     
     time.sleep(0.3)
     
-    # 完成工作流
+    # Complete workflow
     progress.complete_workflow(success=True)
     
-    # 测试错误显示
+    # Test error display
     print("\n" + "="*40)
-    print("🚨 错误处理测试")
-    progress.show_error("网络连接失败", "ConnectionError: Failed to establish connection to api.example.com")
-    progress.show_warning("API限额接近")
-    progress.show_info("系统将在30秒后重试")
+    print("🚨 Error Handling Test")
+    progress.show_error("Network connection failed", "ConnectionError: Failed to establish connection to api.example.com")
+    progress.show_warning("API quota approaching")
+    progress.show_info("System will retry in 30 seconds")
     
-    print("\n✅ 进度显示器测试完成")
+    print("\n✅ Progress display test completed")

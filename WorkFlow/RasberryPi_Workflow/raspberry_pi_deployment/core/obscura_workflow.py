@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Obscura No.7 完整工作流 - 笔记本版本
-结合TASK1.5的经验，使用真实API进行完整的端到端流程
+Obscura No.7 Complete Workflow - Laptop Version
+Based on TASK1.5 experience, using real APIs for complete end-to-end process
 """
 
 import json
@@ -18,32 +18,29 @@ from .config_manager import ConfigManager
 
 class ObscuraWorkflow:
     def __init__(self, config_path='config.json'):
-        """初始化Obscura工作流"""
-        print("🔭 初始化 Obscura No.7 虚拟望远镜...")
+        """Initialize Obscura Workflow"""
+        print("🔭 Initializing Obscura No.7 Virtual Telescope...")
         
-        # 加载配置
+        # Load configuration
         self.config_manager = ConfigManager(config_path)
         self.config = self.config_manager.get_config()
         
-        # 初始化核心组件
+        # Initialize core components
         base_location = self.config.get('telescope_settings', {}).get('base_location', {})
         base_lat = base_location.get('latitude', 51.5074)
         base_lon = base_location.get('longitude', -0.1278)
         
         self.coordinate_calc = CoordinateCalculator(self.config)
         
-        # 检查API密钥
-        openweather_key = self.config.get('api_keys', {}).get('openweather_api_key')
-        if not openweather_key or openweather_key == "YOUR_OPENWEATHER_API_KEY_HERE":
-            print("⚠️ 警告：未配置OpenWeather API密钥，将使用模拟天气数据")
-            self.weather_client = None
-        else:
-            self.weather_client = WeatherClient(openweather_key)
+        # Initialize Open-Meteo client (no API key required)
+        from .open_meteo_client import OpenMeteoClient
+        self.weather_client = OpenMeteoClient()
+        print("🌤️ Open-Meteo client initialized (免费API，无需密钥)")
         
         self.cloud_client = CloudAPIClient(self.config)
         self.progress = ProgressDisplay()
         
-        # 工作流状态
+        # Workflow state
         self.last_result = None
         self.session_data = {
             'start_time': datetime.now(),
@@ -95,44 +92,44 @@ class ObscuraWorkflow:
             'timestamp': datetime.now().isoformat()
         }
         
-        print(f"   📏 距离: {distance_km:.2f} km")
-        print(f"   🧭 方向: {direction_deg:.1f}°")
-        print(f"   ⏰ 时间偏移: {time_offset_years:.1f} 年")
+        print(f"   📏 Distance: {distance_km:.2f} km")
+        print(f"   🧭 Direction: {direction_deg:.1f}°")
+        print(f"   ⏰ Time offset: {time_offset_years:.1f} years")
         
         return hardware_data
     
     def run_complete_workflow(self) -> dict:
-        """运行完整工作流"""
+        """Run complete workflow"""
         workflow_steps = [
-            "硬件数据采集",
-            "坐标计算", 
-            "环境数据获取",
-            "AI艺术预测",
-            "图像生成",
-            "结果保存"
+            "Hardware Data Collection",
+            "Coordinate Calculation", 
+            "Environmental Data Acquisition",
+            "AI Art Prediction",
+            "Image Generation",
+            "Result Saving"
         ]
         
         self.progress.setup_workflow(workflow_steps)
         workflow_result = {}
         
         try:
-            # 步骤1: 硬件数据采集
-            with self.progress.start_step("硬件数据采集", "模拟从编码器和磁感器读取数据") as step:
-                step.update("初始化硬件模拟器...")
+            # Step 1: Hardware Data Collection
+            with self.progress.start_step("Hardware Data Collection", "Simulating data reading from encoders and magnetometer") as step:
+                step.update("Initializing hardware simulator...")
                 hardware_data = self.simulate_hardware_input()
-                step.update(f"读取距离: {hardware_data['distance_km']:.2f}km")
-                step.update(f"读取方向: {hardware_data['direction_degrees']:.1f}°")
-                step.update(f"时间偏移: {hardware_data['time_offset_years']:.1f}年")
-                step.success("硬件数据采集完成")
+                step.update(f"Reading distance: {hardware_data['distance_km']:.2f}km")
+                step.update(f"Reading direction: {hardware_data['direction_degrees']:.1f}°")
+                step.update(f"Time offset: {hardware_data['time_offset_years']:.1f} years")
+                step.success("Hardware data collection completed")
                 workflow_result['hardware_input'] = hardware_data
             
-            # 步骤2: 坐标计算
-            with self.progress.start_step("坐标计算", "基于距离和方向计算目标坐标") as step:
-                step.update("应用球面几何算法...")
+            # Step 2: Coordinate Calculation
+            with self.progress.start_step("Coordinate Calculation", "Calculating target coordinates based on distance and direction") as step:
+                step.update("Applying spherical geometry algorithm...")
                 result = self.coordinate_calc.calculate_target_coordinates(
                     self.coordinate_calc.base_lat,
                     self.coordinate_calc.base_lon,
-                    hardware_data['distance_km'] * 1000,  # 转换为米
+                    hardware_data['distance_km'] * 1000,  # Convert to meters
                     hardware_data['direction_degrees']
                 )
                 target_lat, target_lon = result['latitude'], result['longitude']
@@ -144,64 +141,64 @@ class ObscuraWorkflow:
                     hardware_data['distance_km'] * 1000, 
                     hardware_data['direction_degrees']
                 )
-                step.success("坐标计算完成")
+                step.success("Coordinate calculation completed")
                 workflow_result['coordinates'] = {
                     'latitude': target_lat,
                     'longitude': target_lon,
                     'info': coordinate_info
                 }
             
-            # 步骤3: 环境数据获取
-            with self.progress.start_step("环境数据获取", "调用OpenWeather API获取真实环境数据") as step:
+            # Step 3: Environmental Data Acquisition
+            with self.progress.start_step("Environmental Data Acquisition", "Calling Open-Meteo API to get real environmental data") as step:
                 if self.weather_client:
-                    step.update("连接OpenWeather API...")
-                    weather_data = self.weather_client.get_comprehensive_data(target_lat, target_lon)
+                    step.update("Connecting to Open-Meteo API...")
+                    weather_data = self.weather_client.get_current_environmental_data(target_lat, target_lon)
                     
                     if weather_data:
                         self.progress.show_weather_summary(weather_data)
-                        step.success("真实环境数据获取完成")
+                        step.success("Real environmental data acquisition completed")
                     else:
-                        step.warning("API获取失败，使用备用天气数据")
+                        step.warning("API request failed, using fallback weather data")
                         weather_data = self._create_fallback_weather_data(target_lat, target_lon)
                 else:
-                    step.update("使用模拟天气数据...")
+                    step.update("Using simulated weather data...")
                     weather_data = self._create_fallback_weather_data(target_lat, target_lon)
-                    step.warning("使用模拟环境数据（未配置API密钥）")
+                    step.warning("Using simulated environmental data (API client not available)")
                 
                 workflow_result['weather_data'] = weather_data
             
-            # 步骤4: AI艺术预测
-            with self.progress.start_step("AI艺术预测", "使用机器学习模型预测艺术风格") as step:
-                step.update("准备环境特征数据...")
+            # Step 4: AI Art Prediction
+            with self.progress.start_step("AI Art Prediction", "Using machine learning model to predict art style") as step:
+                step.update("Preparing environmental feature data...")
                 
-                # 格式化ML输入特征 - 修复None值处理
+                # Format ML input features - Fix None value handling
                 ml_features = None
                 if weather_data and self.weather_client:
                     ml_features = self.weather_client.format_for_ml_model(weather_data)
                 
-                # 如果天气数据无效或格式化失败，使用备用数据
+                # If weather data is invalid or formatting failed, use fallback data
                 if not ml_features:
-                    step.update("天气数据无效，使用模拟数据...")
+                    step.update("Weather data invalid, using simulated data...")
                     ml_features = self._create_mock_ml_features(workflow_result)
                 
-                step.update("调用AI预测API...")
+                step.update("Calling AI prediction API...")
                 style_prediction = self.cloud_client.predict_art_style(
                     ml_features, 
                     coordinate_info
                 )
                 
                 self.progress.show_ml_prediction(style_prediction)
-                step.success("AI艺术预测完成")
+                step.success("AI art prediction completed")
                 workflow_result['style_prediction'] = style_prediction
             
-            # 步骤5: 图像生成  
-            with self.progress.start_step("图像生成", "使用AI生成艺术作品") as step:
-                step.update("构建艺术提示词...")
-                step.update("调用图像生成API...")
+            # Step 5: Image Generation  
+            with self.progress.start_step("Image Generation", "Using AI to generate artwork") as step:
+                step.update("Building art prompt...")
+                step.update("Calling image generation API...")
                 
-                # 显示进度条模拟
+                # Show progress bar simulation
                 for i in range(11):
-                    self.progress.show_progress_bar(i, 10, "生成进度")
+                    self.progress.show_progress_bar(i, 10, "Generation Progress")
                     time.sleep(0.2)
                 
                 image_path = self.cloud_client.generate_artwork(
@@ -211,10 +208,10 @@ class ObscuraWorkflow:
                 )
                 
                 if image_path:
-                    step.success(f"图像生成完成: {image_path}")
+                    step.success(f"Image generation completed: {image_path}")
                     workflow_result['generated_image'] = image_path
                 else:
-                    step.error("图像生成失败")
+                    step.error("Image generation failed")
                     workflow_result['generated_image'] = None
             
             # 步骤6: 结果保存

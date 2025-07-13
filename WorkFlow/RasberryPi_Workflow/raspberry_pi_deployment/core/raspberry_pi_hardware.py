@@ -324,9 +324,9 @@ class RaspberryPiHardware:
             'base_step': 1,          # 1年步长
         }
         
-        # 初始状态
-        current_distance = 5000  # 5km
-        current_time_offset = 5  # +5年
+        # 初始状态 - 从中性位置开始，用户可通过旋钮调整
+        current_distance = 25000  # 25km (中位值)
+        current_time_offset = 0  # 当前时间 (无偏移)
         
         # Distance Encoder状态追踪 - 获取初始状态
         initial_a, initial_b, _ = self._read_seesaw_gpio_state()
@@ -353,6 +353,11 @@ class RaspberryPiHardware:
             last_time_a_state = False
             last_time_b_state = False
             time_encoder_position = 0
+        
+        # 编码器状态变量 - 轻量级防抖
+        last_distance_change_time = 0
+        last_time_change_time = 0
+        simple_debounce_delay = 0.05  # 50ms轻量级防抖，防止重复触发
         
         # 初始化磁感器
         self._init_compass()
@@ -381,29 +386,36 @@ class RaspberryPiHardware:
         print()
         
         start_time = time.time()
+        last_change_time = start_time  # 记录最后一次参数变化时间
         
         while time.time() - start_time < timeout:
             # 1. 读取Distance Encoder状态 (I2C总线3)
             distance_a_state, distance_b_state, distance_button = self._read_seesaw_gpio_state()
             
             if distance_a_state is not None:
-                # 处理距离编码器旋转
+                # 处理距离编码器旋转 - 只在状态真正变化时处理，方向取反
                 direction = self._process_encoder_rotation(
                     distance_a_state, distance_b_state, 
                     last_distance_a_state, last_distance_b_state,
-                    distance_encoder_position
+                    distance_encoder_position,
+                    invert_direction=True  # Distance Encoder需要取反
                 )
                 
-                if direction:
-                    distance_change = distance_config['base_step'] * direction
-                    new_distance = max(
-                        distance_config['min_distance'],
-                        min(distance_config['max_distance'], current_distance + distance_change)
-                    )
-                    if new_distance != current_distance:
-                        current_distance = new_distance
-                        distance_encoder_position += direction
-                        print(f"\n🔄 距离调整: {direction:+d} → {current_distance/1000:.1f}km")
+                if direction != 0:
+                    # 轻量级防抖：只防止极短时间内的重复触发
+                    now = time.time()
+                    if now - last_distance_change_time >= simple_debounce_delay:
+                        distance_change = distance_config['base_step'] * direction
+                        new_distance = max(
+                            distance_config['min_distance'],
+                            min(distance_config['max_distance'], current_distance + distance_change)
+                        )
+                        if new_distance != current_distance:
+                            current_distance = new_distance
+                            distance_encoder_position += direction
+                            last_distance_change_time = now
+                            last_change_time = now  # 更新最后变化时间
+                            print(f"🔄 距离调整: {direction:+d} → {current_distance/1000:.1f}km")
                 
                 last_distance_a_state = distance_a_state
                 last_distance_b_state = distance_b_state
@@ -416,23 +428,29 @@ class RaspberryPiHardware:
             time_a_state, time_b_state, time_button = self._read_time_encoder_gpio_state()
             
             if time_a_state is not None:
-                # 处理时间编码器旋转
+                # 处理时间编码器旋转 - 只在状态真正变化时处理，保持原始方向
                 time_direction = self._process_encoder_rotation(
                     time_a_state, time_b_state, 
                     last_time_a_state, last_time_b_state,
-                    time_encoder_position
+                    time_encoder_position,
+                    invert_direction=False  # Time Encoder保持原始方向
                 )
                 
-                if time_direction:
-                    time_change = time_config['base_step'] * time_direction
-                    new_time_offset = max(
-                        time_config['min_offset'],
-                        min(time_config['max_offset'], current_time_offset + time_change)
-                    )
-                    if new_time_offset != current_time_offset:
-                        current_time_offset = new_time_offset
-                        time_encoder_position += time_direction
-                        print(f"\n⏰ 时间调整: {time_direction:+d} → +{current_time_offset} 年")
+                if time_direction != 0:
+                    # 轻量级防抖：只防止极短时间内的重复触发
+                    now = time.time()
+                    if now - last_time_change_time >= simple_debounce_delay:
+                        time_change = time_config['base_step'] * time_direction
+                        new_time_offset = max(
+                            time_config['min_offset'],
+                            min(time_config['max_offset'], current_time_offset + time_change)
+                        )
+                        if new_time_offset != current_time_offset:
+                            current_time_offset = new_time_offset
+                            time_encoder_position += time_direction
+                            last_time_change_time = now
+                            last_change_time = now  # 更新最后变化时间
+                            print(f"⏰ 时间调整: {time_direction:+d} → +{current_time_offset} 年")
                 
                 last_time_a_state = time_a_state
                 last_time_b_state = time_b_state
@@ -446,45 +464,67 @@ class RaspberryPiHardware:
             if current_direction is None:
                 current_direction = 0.0  # 默认北方
             
-            # 4. 检查Time Encoder按钮 (I2C总线5)
-            time_button_pressed = self._read_time_encoder_button_state()
-            
-            if time_button_pressed:
+            # 4. 自动确认 - 移除了Time Encoder按钮确认功能
+            # 在参数稳定5秒后自动确认，或者在10秒内无操作自动确认
+            current_time = time.time()
+            if (current_time - start_time > 10.0) or \
+               (current_time - last_change_time > 5.0 and last_change_time > start_time + 2.0):
                 direction_name = self._get_direction_name(current_direction)
-                print(f"\n🔘 参数确认:")
+                print(f"\n✅ 参数自动确认:")
                 print(f"   📏 距离: {current_distance/1000:.1f} km")
                 print(f"   🧭 方向: {current_direction:.1f}° ({direction_name})")
                 print(f"   ⏰ 时间偏移: +{current_time_offset} 年")
                 return current_distance/1000, current_direction, current_time_offset
-            elif time_button_pressed is None:
-                # 每20次循环输出一次调试信息
-                if int((time.time() - start_time) * 20) % 400 == 0:
-                    print(f"\n⚠️ Time Encoder无响应 - 检查I2C总线{self.time_encoder_i2c_bus}连接")
             
             # 5. 显示当前状态
             self._display_three_parameter_status(current_distance, current_direction, current_time_offset)
             
-            time.sleep(0.05)  # 50ms刷新率
+            time.sleep(0.01)  # 10ms刷新率 - 快速响应每次旋转
         
         print(f"\n⏰ 选择超时，使用当前参数")
         return current_distance/1000, current_direction, current_time_offset
     
-    def _process_encoder_rotation(self, a_state, b_state, last_a_state, last_b_state, position):
-        """处理编码器旋转 - 根据simple_workflow.py的逻辑"""
-        direction = None
+    def _process_encoder_rotation(self, a_state, b_state, last_a_state, last_b_state, position, invert_direction=False):
+        """
+        处理编码器旋转 - 优化的四倍频解码算法
+        检测每一次旋转变化，高灵敏度
+        """
+        direction = 0
         
-        if a_state != last_a_state:
-            if a_state:  # A相上升沿
-                if b_state:
-                    direction = 1  # 顺时针
-                else:
-                    direction = -1  # 逆时针
-        elif b_state != last_b_state:
-            if b_state:  # B相上升沿
-                if not a_state:
-                    direction = 1  # 顺时针
-                else:
-                    direction = -1  # 逆时针
+        # 四倍频解码 - 检测所有边沿变化
+        if a_state != last_a_state or b_state != last_b_state:
+            # 构建当前和上一个状态
+            current_state = (a_state << 1) | b_state
+            last_state = (last_a_state << 1) | last_b_state
+            
+            # 状态转换表 - 顺时针和逆时针的标准序列
+            # 顺时针：00 -> 01 -> 11 -> 10 -> 00
+            # 逆时针：00 -> 10 -> 11 -> 01 -> 00
+            clockwise_transitions = {
+                (0b00, 0b01): 1,  # 00 -> 01
+                (0b01, 0b11): 1,  # 01 -> 11
+                (0b11, 0b10): 1,  # 11 -> 10
+                (0b10, 0b00): 1,  # 10 -> 00
+            }
+            
+            counterclockwise_transitions = {
+                (0b00, 0b10): -1,  # 00 -> 10
+                (0b10, 0b11): -1,  # 10 -> 11
+                (0b11, 0b01): -1,  # 11 -> 01
+                (0b01, 0b00): -1,  # 01 -> 00
+            }
+            
+            state_change = (last_state, current_state)
+            
+            # 检查是否为有效的状态转换
+            if state_change in clockwise_transitions:
+                direction = clockwise_transitions[state_change]
+            elif state_change in counterclockwise_transitions:
+                direction = counterclockwise_transitions[state_change]
+        
+        # 根据需要取反方向
+        if direction != 0 and invert_direction:
+            direction = -direction
         
         return direction
     

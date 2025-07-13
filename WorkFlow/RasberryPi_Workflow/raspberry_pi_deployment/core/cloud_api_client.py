@@ -1,21 +1,3 @@
-import json
-import requests
-import os
-import time
-import random
-from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
-import matplotlib
-matplotlib.use('Agg')  # 使用非交互式后端
-import matplotlib.pyplot as plt
-
-def json_serializer(obj):
-    """JSON序列化辅助函数，处理datetime对象"""
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
-
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -28,20 +10,35 @@ import json
 import base64
 import time
 import os
+import random
 from datetime import datetime
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式后端
+import matplotlib.pyplot as plt
+
 try:
     from .config_manager import ConfigManager
+    from .image_prompt_builder import ImagePromptBuilder
 except ImportError:
     from config_manager import ConfigManager
+    from image_prompt_builder import ImagePromptBuilder
 
 
 def json_serializer(obj):
-    """JSON序列化辅助函数，处理datetime对象"""
+    """JSON序列化辅助函数，处理特殊对象类型"""
     if isinstance(obj, datetime):
         return obj.isoformat()
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+    elif isinstance(obj, bytes):
+        # 将bytes转换为base64字符串
+        return base64.b64encode(obj).decode('utf-8')
+    else:
+        # 尝试转换为字符串
+        try:
+            return str(obj)
+        except:
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 class CloudAPIClient:
     def __init__(self, config_manager=None):
@@ -80,6 +77,10 @@ class CloudAPIClient:
         self.max_retries = self.config_manager.get('retry_settings.max_retries', 3)
         self.retry_delay = self.config_manager.get('retry_settings.retry_delay_seconds', 2)
         self.timeout = 120  # 增加到120秒，处理大文件上传
+        
+        # 初始化升级后的ImagePromptBuilder - 统一写实风格
+        self.prompt_builder = ImagePromptBuilder()
+        print("🎨 统一写实风格Prompt构建器已初始化")
     
     def predict_environmental_data(self, latitude, longitude, month=None, future_years=0):
         """
@@ -175,7 +176,18 @@ class CloudAPIClient:
         
         # 方案3: 备用 - 使用规则基算法
         print("⚠️ ML API不可用，使用规则基预测...")
-        return self._fallback_style_prediction(weather_features, location_info)
+        try:
+            fallback_result = self._fallback_style_prediction(weather_features, location_info)
+            return fallback_result
+        except Exception as e:
+            print(f"❌ 备用预测失败: {e}")
+            # 如果备用方案也失败，返回一个安全的默认值
+            return {
+                'prediction_type': 'Default Landscape',
+                'confidence': 0.5,
+                'style_recommendation': 'Natural colors',
+                'weather_influence': 'Fallback prediction due to API failure'
+            }
     
     def generate_artwork(self, style_prediction, weather_data, location_info):
         """生成艺术作品 - 确保总是返回有效的图像文件"""
@@ -346,6 +358,18 @@ class CloudAPIClient:
             # 步骤2: 上传图像
             image_result = self._upload_image_file(image_path, metadata, env_data_result)
             
+            # 如果图像上传也失败，尝试备用存储方式
+            if not image_result:
+                print("ℹ️ 尝试本地存储作为备用方案...")
+                backup_result = self._save_local_backup(image_path, metadata)
+                return {
+                    "environmental_data": env_data_result,
+                    "image_data": None,
+                    "backup_data": backup_result,
+                    "success": bool(backup_result),
+                    "message": "云端上传失败，已保存本地备份"
+                }
+            
             # 返回综合结果
             return {
                 "environmental_data": env_data_result,
@@ -357,6 +381,65 @@ class CloudAPIClient:
         except Exception as e:
             print(f"❌ 上传错误: {e}")
             return None
+    
+    def _save_local_backup(self, image_path, metadata):
+        """保存本地备份"""
+        try:
+            import shutil
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            
+            # 创建备份目录
+            backup_dir = os.path.join('outputs', 'backups', timestamp)
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            # 复制图像文件
+            backup_image_path = os.path.join(backup_dir, os.path.basename(image_path))
+            shutil.copy2(image_path, backup_image_path)
+            
+            # 清理并保存元数据
+            metadata_path = os.path.join(backup_dir, 'metadata.json')
+            cleaned_metadata = self._clean_metadata_for_json(metadata)
+            with open(metadata_path, 'w', encoding='utf-8') as f:
+                json.dump(cleaned_metadata, f, indent=2, default=json_serializer, ensure_ascii=False)
+            
+            print(f"✅ 本地备份已保存: {backup_dir}")
+            return {
+                "backup_directory": backup_dir,
+                "image_path": backup_image_path,
+                "metadata_path": metadata_path,
+                "success": True
+            }
+            
+        except Exception as e:
+            print(f"❌ 本地备份失败: {e}")
+            return None
+    
+    def _clean_metadata_for_json(self, metadata):
+        """清理元数据以便JSON序列化"""
+        def clean_value(value):
+            if isinstance(value, bytes):
+                # 将bytes转换为base64字符串
+                import base64
+                return {"_type": "bytes", "_data": base64.b64encode(value).decode('utf-8')}
+            elif isinstance(value, datetime):
+                return value.isoformat()
+            elif isinstance(value, dict):
+                return {k: clean_value(v) for k, v in value.items()}
+            elif isinstance(value, list):
+                return [clean_value(item) for item in value]
+            elif hasattr(value, '__dict__'):
+                # 处理自定义对象
+                return {"_type": "object", "_class": str(type(value)), "_summary": str(value)[:200]}
+            else:
+                try:
+                    # 测试是否可以JSON序列化
+                    json.dumps(value)
+                    return value
+                except (TypeError, ValueError):
+                    # 不能序列化的对象转换为字符串
+                    return {"_type": "unserializable", "_summary": str(value)[:200]}
+        
+        return clean_value(metadata)
     
     def _upload_environmental_data(self, metadata):
         """上传环境数据到ML预测API"""
@@ -371,20 +454,18 @@ class CloudAPIClient:
                 current_weather = weather_data.get('current_weather', {})
                 coordinates = metadata.get('coordinates', {})
                 
-                # 构建ML预测API需要的数据格式
+                # 构建ML预测API需要的数据格式 - 修复latitude/longitude字段位置
                 ml_payload = {
-                    "environmental_data": {
-                        "latitude": coordinates.get('latitude', 0),
-                        "longitude": coordinates.get('longitude', 0),
-                        "temperature": current_weather.get('temperature', 15),
-                        "humidity": current_weather.get('humidity', 50),
-                        "pressure": current_weather.get('pressure', 1013),
-                        "wind_speed": current_weather.get('wind_speed', 0),
-                        "weather_description": current_weather.get('weather_description', 'clear'),
-                        "timestamp": metadata.get('timestamp', datetime.now().isoformat()),
-                        "location_name": metadata.get('location_name', '')
-                    },
-                    "hours_ahead": 24  # 预测24小时后的天气
+                    "latitude": coordinates.get('latitude', 0),
+                    "longitude": coordinates.get('longitude', 0),
+                    "temperature": current_weather.get('temperature', 15),
+                    "humidity": current_weather.get('humidity', 50),
+                    "pressure": current_weather.get('pressure', 1013),
+                    "wind_speed": current_weather.get('wind_speed', 0),
+                    "weather_description": current_weather.get('weather_description', 'clear'),
+                    "timestamp": metadata.get('timestamp', datetime.now().isoformat()),
+                    "month": datetime.now().month,
+                    "future_years": 0
                 }
                 
                 response = self.session.post(
@@ -439,7 +520,158 @@ class CloudAPIClient:
         return cleaned
 
     def _upload_image_file(self, image_path, metadata, env_data_result):
-        """上传图像文件到API"""
+        """上传图像文件到API - 优先使用Cloudinary"""
+        # 优先检查Cloudinary配置
+        cloudinary_url = self.config_manager.get('api_keys.cloudinary_url') or os.getenv('CLOUDINARY_URL')
+        
+        if cloudinary_url:
+            print("🌤️ 检测到Cloudinary配置，使用Cloudinary上传...")
+            return self._upload_to_cloudinary(image_path, metadata)
+        else:
+            print("⚠️ 未发现Cloudinary配置，回退到网站API...")
+            return self._upload_to_website_api(image_path, metadata, env_data_result)
+    
+    def _upload_to_cloudinary(self, image_path, metadata):
+        """上传图像到Cloudinary并通知网站API"""
+        try:
+            import cloudinary
+            import cloudinary.uploader
+            
+            # 从环境变量自动配置Cloudinary
+            cloudinary_url = self.config_manager.get('api_keys.cloudinary_url') or os.getenv('CLOUDINARY_URL')
+            if cloudinary_url:
+                # Cloudinary会自动解析CLOUDINARY_URL
+                cloudinary.config()
+                
+                # 上传图像到Cloudinary
+                upload_result = cloudinary.uploader.upload(
+                    image_path,
+                    folder="obscura_images",
+                    public_id_prefix="telescope",
+                    resource_type="image"
+                )
+                
+                image_url = upload_result.get('secure_url', upload_result.get('url'))
+                print(f"✅ 图像上传成功: {image_url}")
+                
+                # 构建Cloudinary结果
+                cloudinary_result = {
+                    'image': {
+                        'url': image_url,
+                        'public_id': upload_result.get('public_id'),
+                        'cloudinary_data': upload_result
+                    },
+                    'success': True
+                }
+                
+                # 同时通知网站API，让数据库记录这个图像
+                print("📝 通知网站API记录图像信息...")
+                try:
+                    api_result = self._notify_website_api(image_url, metadata)
+                    if api_result:
+                        print("✅ 网站API通知成功")
+                        cloudinary_result['website_notification'] = api_result
+                    else:
+                        print("⚠️ 网站API通知失败，但Cloudinary上传成功")
+                except Exception as api_error:
+                    print(f"⚠️ 网站API通知错误: {api_error}")
+                
+                return cloudinary_result
+                
+        except ImportError:
+            print("❌ Cloudinary库未安装，请运行: pip install cloudinary")
+            return None
+        except Exception as e:
+            print(f"❌ Cloudinary上传失败: {e}")
+            return None
+    
+    def _notify_website_api(self, image_url, metadata):
+        """通知网站API记录Cloudinary图像"""
+        try:
+            # 构建API通知数据 - 清理数据确保JSON兼容
+            api_data = {
+                'url': image_url,
+                'source': 'cloudinary_telescope',
+                'description': f"Telescope generated artwork based on {metadata.get('style', {}).get('prediction_type', 'unknown')} style",
+                'metadata': self._clean_metadata_for_api(metadata)
+            }
+            
+            # 调用网站API记录图像
+            api_url = f"{self.website_api_url}/api/v1/images/register"
+            response = self.session.post(
+                api_url,
+                json=api_data,
+                headers={'Content-Type': 'application/json'},
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                return response.json()
+            else:
+                print(f"❌ 网站API响应: {response.status_code}")
+                if response.text:
+                    print(f"   响应内容: {response.text[:200]}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ 网站API通知错误: {e}")
+            return None
+    
+    def _clean_metadata_for_api(self, metadata):
+        """清理元数据，确保JSON兼容性"""
+        import math
+        
+        def clean_value(value):
+            """清理单个值"""
+            if isinstance(value, float):
+                # 检查无效的浮点数
+                if math.isnan(value) or math.isinf(value):
+                    return None
+                # 限制精度避免过大数值
+                return round(value, 6)
+            elif isinstance(value, dict):
+                return {k: clean_value(v) for k, v in value.items()}
+            elif isinstance(value, list):
+                return [clean_value(item) for item in value]
+            elif isinstance(value, datetime):
+                return value.isoformat()
+            elif isinstance(value, bytes):
+                # 跳过bytes数据，不发送给API
+                return None
+            elif hasattr(value, '__dict__'):
+                # 处理自定义对象
+                return str(value)[:100]  # 限制长度
+            else:
+                try:
+                    # 测试JSON序列化
+                    json.dumps(value)
+                    return value
+                except (TypeError, ValueError):
+                    return str(value)[:100]
+        
+        # 只保留关键信息，避免复杂数据结构
+        cleaned = {
+            'coordinates': clean_value(metadata.get('coordinates', {})),
+            'style': clean_value(metadata.get('style', {})),
+            'timestamp': metadata.get('timestamp', datetime.now().isoformat())
+        }
+        
+        # 简化天气数据，只保留基础信息
+        weather_data = metadata.get('weather', {})
+        if weather_data:
+            current_weather = weather_data.get('current_weather', {})
+            cleaned['weather'] = {
+                'temperature': clean_value(current_weather.get('temperature')),
+                'humidity': clean_value(current_weather.get('humidity')),
+                'pressure': clean_value(current_weather.get('pressure')),
+                'weather_main': current_weather.get('weather_main'),
+                'weather_description': current_weather.get('weather_description')
+            }
+        
+        return cleaned
+    
+    def _upload_to_website_api(self, image_path, metadata, env_data_result):
+        """上传图像到网站API（备用方案）"""
         try:
             # 获取prediction_id (如果有ML预测ID就用它，否则用默认)
             prediction_id = 1  # 默认预测ID
@@ -494,23 +726,39 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
         return prompt
     
     def _build_art_prompt(self, style_prediction, weather_data, location_info):
-        """构建图像生成的详细提示词 - 修复format错误"""
+        """构建图像生成的详细提示词 - 使用升级后的ImagePromptBuilder"""
         try:
-            # 安全地获取数据，避免None值
-            current_weather = weather_data.get('current_weather', {}) if weather_data else {}
-            temp = current_weather.get('temperature', 15) if current_weather else 15
-            weather_desc = current_weather.get('weather_description', 'clear sky') if current_weather else 'clear sky'
-            style = style_prediction.get('style_recommendation', 'realistic landscape') if style_prediction else 'realistic landscape'
+            print("🎨 使用统一写实风格Prompt构建器...")
             
-            # 安全的字符串格式化
-            prompt = f"A professional landscape photograph showing {weather_desc} at {temp}°C, created in {style} style. The scene captures the atmospheric conditions with detailed environmental elements. High quality, professional photography, artistic composition."
+            # 使用升级后的ImagePromptBuilder类构建高质量写实风格prompt
+            prompt = self.prompt_builder.build_comprehensive_prompt(
+                weather_data=weather_data,
+                location_info=location_info,
+                prediction_data=style_prediction,
+                style_preference="realistic"
+            )
             
+            print(f"✅ 统一写实风格Prompt构建完成，长度: {len(prompt)}字符")
             return prompt
             
         except Exception as e:
-            print(f"⚠️ Prompt构建错误: {e}")
-            # 返回默认prompt
-            return "A beautiful landscape photograph with clear atmospheric conditions, high quality, professional photography."
+            print(f"⚠️ 升级版Prompt构建错误，使用备用方案: {e}")
+            
+            # 备用方案：使用简化的写实风格prompt
+            try:
+                current_weather = weather_data.get('current_weather', {}) if weather_data else {}
+                temp = current_weather.get('temperature', 15) if current_weather else 15
+                weather_desc = current_weather.get('weather_description', 'clear sky') if current_weather else 'clear sky'
+                
+                backup_prompt = f"A high-quality photorealistic landscape photograph showing {weather_desc} at {temp}°C. Professional DSLR camera, natural lighting, sharp focus, documentary photography style, no artistic filters, authentic environmental conditions."
+                
+                print(f"✅ 备用写实风格Prompt构建完成")
+                return backup_prompt
+                
+            except Exception as backup_error:
+                print(f"❌ 备用Prompt构建也失败: {backup_error}")
+                # 最终备用方案
+                return "A high-quality photorealistic landscape photograph with natural lighting, professional photography, documentary style, authentic environmental conditions."
 
     def _call_huggingface_inference(self, prompt):
         """调用HuggingFace推理API"""

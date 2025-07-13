@@ -7,16 +7,16 @@
 {% block og_title %}Environmental Prediction Analysis - Obscura No.7{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/image-detail.css') }}?v={{ range(1000, 9999) | random }}">
 {% endblock %}
 
 {% block content %}
 <div class="detail-page">
     <div class="detail-container" data-image-id="{% if image_id %}{{ image_id }}{% endif %}">
-        <!-- 简化的页面标题 -->
-        <header class="detail-header">
-            <h1 class="detail-title" id="imageTitle">Environmental Vision Analysis</h1>
-            <p class="detail-subtitle" id="imageSubtitle">AI-Generated Environmental Art with SHAP Interpretability</p>
+        <!-- 缩小的页面标题 -->
+        <header class="detail-header compact">
+            <h1 class="detail-title">Environmental Vision Analysis</h1>
+            <p class="detail-subtitle">AI-Generated Environmental Art with SHAP Interpretability</p>
         </header>
 
         <!-- 电影风格的图片和故事模块 -->
@@ -24,29 +24,7 @@
             <h2 id="cinema-section-title" class="sr-only">Environmental Vision Theater</h2>
             
             <div class="cinema-container">
-                <!-- 图片显示（左侧，电影屏幕风格） -->
-                <div class="cinema-screen">
-                    <div class="screen-frame">
-                        <img class="cinema-image" 
-                             id="mainImage" 
-                             alt=""
-                             tabindex="0"
-                             role="img">
-                        
-                        <!-- 下载按钮（屏幕下方） -->
-                        <div class="screen-controls">
-                            <button class="download-button" 
-                                    id="downloadBtn" 
-                                    type="button"
-                                    title="Download Image (Ctrl+D)">
-                                <span aria-hidden="true">💾</span>
-                                <span>Download Image</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- AI故事（右侧，剧本风格） -->
+                <!-- AI故事（左侧，剧本风格） -->
                 <div class="cinema-story">
                     <div class="story-panel">
                         <div class="story-header">
@@ -69,6 +47,28 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- 图片显示（右侧，电影屏幕风格） -->
+                <div class="cinema-screen">
+                    <div class="screen-frame">
+                        <img class="cinema-image" 
+                             id="mainImage" 
+                             alt=""
+                             tabindex="0"
+                             role="img">
+                        
+                        <!-- 下载按钮（屏幕下方） -->
+                        <div class="screen-controls">
+                            <button class="download-button" 
+                                    id="downloadBtn" 
+                                    type="button"
+                                    title="Download Image (Ctrl+D)">
+                                <span aria-hidden="true">💾</span>
+                                <span>Download Image</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -76,9 +76,25 @@
         <section class="visualization-section" aria-labelledby="viz-section-title">
             <h2 id="viz-section-title" class="sr-only">Feature Impact Visualization</h2>
             
+            <!-- 总体分数和解释 -->
+            <div class="overall-score-section" id="overallScoreSection">
+                <div class="overall-score-container">
+                    <div class="overall-score-card">
+                        <div class="overall-score-header">
+                            <span class="overall-score-icon" aria-hidden="true">🎯</span>
+                            <h3>Overall Score</h3>
+                        </div>
+                        <div class="overall-score-value" id="overallScore">Loading...</div>
+                        <div class="score-explanation">
+                            <p>Obscura-No.7 predicts future information from three different dimensions, here are the scores for each dimension:</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- SHAP三维度评分 -->
-            <div class="shap-scores-overview" id="shapScoresOverview">
-                <div class="score-card climate">
+            <div class="shap-scores-overview compact" id="shapScoresOverview">
+                <div class="score-card climate compact">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">🌡️</span>
                         <h3>Climate</h3>
@@ -86,7 +102,7 @@
                     <div class="score-value" id="climateScore">Loading...</div>
                 </div>
                 
-                <div class="score-card geographic">
+                <div class="score-card geographic compact">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">🗺️</span>
                         <h3>Geographic</h3>
@@ -94,7 +110,7 @@
                     <div class="score-value" id="geographicScore">Loading...</div>
                 </div>
                 
-                <div class="score-card economic">
+                <div class="score-card economic compact">
                     <div class="score-header">
                         <span class="score-icon" aria-hidden="true">💰</span>
                         <h3>Economic</h3>
@@ -103,35 +119,28 @@
                 </div>
             </div>
             
-            <!-- 圆形打包图可视化容器 -->
+            <!-- SHAP分层泡泡图可视化容器 (Focus Drill-down Mode) -->
             <div class="pack-chart-container">
                 <div class="chart-loading" id="packChartLoading">
                     <div class="chart-spinner" aria-hidden="true">⚙️</div>
-                    <p>Loading feature impact visualization...</p>
+                    <p>Loading interactive feature analysis...</p>
                 </div>
                 <div id="packChart" class="pack-chart" style="display: none;">
-                    <!-- 圆形打包图将在这里渲染 -->
+                    <!-- SHAP分层泡泡图将在这里渲染 -->
                 </div>
             </div>
             
-            <!-- 可视化控制 -->
-            <div class="viz-controls" id="vizControls" style="display: none;">
-                <button class="viz-control-btn active" data-dimension="overview">
-                    <span aria-hidden="true">🎯</span>
-                    Overview
-                </button>
-                <button class="viz-control-btn" data-dimension="climate">
-                    <span aria-hidden="true">🌡️</span>
-                    Climate
-                </button>
-                <button class="viz-control-btn" data-dimension="geographic">
-                    <span aria-hidden="true">🗺️</span>
-                    Geographic
-                </button>
-                <button class="viz-control-btn" data-dimension="economic">
-                    <span aria-hidden="true">💰</span>
-                    Economic
-                </button>
+            <!-- 操作提示 -->
+            <div class="interaction-hints" id="interactionHints" style="display: none;">
+                <div class="hint-card">
+                    <h4>💡 交互提示</h4>
+                    <ul>
+                        <li>点击 <strong>Climate</strong>、<strong>Geographic</strong>、<strong>Economic</strong> 维度进入聚焦模式</li>
+                        <li>在聚焦模式下点击子特征查看详细信息</li>
+                        <li>按 <kbd>ESC</kbd> 键或点击空白处返回全局视图</li>
+                        <li>点击面包屑导航快速返回</li>
+                    </ul>
+                </div>
             </div>
         </section>
     </div>
@@ -168,12 +177,12 @@
 <!-- Hidden Elements for Screen Readers -->
 <div class="sr-only">
     <h2>Page Navigation Help</h2>
-    <p>This page displays detailed analysis of an AI-generated environmental prediction image. Use keyboard shortcuts: Ctrl+F for fullscreen, Ctrl+D to download, ESC to close overlays.</p>
+    <p>This page displays detailed analysis of an AI-generated environmental prediction image. Use keyboard shortcuts: Ctrl+F for fullscreen, Ctrl+D to download, ESC to close overlays or exit focus mode.</p>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- D3.js库用于圆形打包图可视化 -->
+<!-- D3.js库用于分层泡泡图可视化 -->
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-hierarchy@3/dist/d3-hierarchy.min.js"></script>
 
@@ -181,13 +190,13 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
 <!-- 页面特定的JavaScript -->
-<script src="{{ url_for('static', filename='js/pack-chart.js') }}"></script>
-<script src="{{ url_for('static', filename='js/image-detail.js') }}"></script>
+<script src="{{ url_for('static', filename='js/shap-bubble-chart.js') }}?v={{ range(1000, 9999) | random }}"></script>
+<script src="{{ url_for('static', filename='js/image-detail.js') }}?v={{ range(1000, 9999) | random }}"></script>
 
 <script>
 // 初始化页面功能
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎬 Initializing cinema-style image detail page...');
+    console.log('🎬 Initializing cinema-style image detail page with Focus Drill-down Mode...');
     
     // 初始化图片详情页面
     if (typeof ImageDetailPage !== 'undefined') {
@@ -199,26 +208,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 可视化控制按钮事件
-    const vizControlButtons = document.querySelectorAll('.viz-control-btn');
-    vizControlButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // 移除所有active类
-            vizControlButtons.forEach(btn => btn.classList.remove('active'));
-            // 添加active类到当前按钮
-            this.classList.add('active');
-            
-            const dimension = this.getAttribute('data-dimension');
-            console.log(`🎯 Switching to ${dimension} dimension view`);
-            
-            // 实现维度切换逻辑
-            if (window.packChartInstance) {
-                window.packChartInstance.focusDimension(dimension);
-            } else {
-                console.warn('Pack chart instance not available');
-            }
-        });
-    });
+    // 初始化完成后显示交互提示
+    setTimeout(() => {
+        const interactionHints = document.getElementById('interactionHints');
+        if (interactionHints) {
+            interactionHints.style.display = 'block';
+        }
+    }, 2000);
 });
 </script>
 {% endblock %}
