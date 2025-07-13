@@ -47,18 +47,8 @@
                 </a>
             </div>
             
-            <!-- Navigation Menu -->
-            <div class="nav-menu" role="menubar">
-                <a href="{{ url_for('frontend.home') }}" 
-                   class="nav-link {% if request.endpoint == 'frontend.home' or request.endpoint == 'frontend.gallery' %}active{% endif %}" 
-                   role="menuitem"
-                   aria-label="Gallery Home">
-                    <div class="nav-button">
-                        <span class="gallery-icon" aria-hidden="true">🖼️</span>
-                        <span>Gallery</span>
-                    </div>
-                </a>
-            </div>
+            <!-- Navigation Menu - 移除Gallery按钮，简化导航 -->
+            <!-- 左上方的品牌logo已经足够作为主页按钮 -->
             
             <!-- System Status Indicator removed for cleaner interface -->
         </div>
