@@ -661,11 +661,43 @@ def upload_image():
             conn = psycopg2.connect(os.environ['DATABASE_URL'])
             cur = conn.cursor()
             
+            # 自动创建prediction记录（如果不存在）
+            prediction_id_int = int(prediction_id) if prediction_id else 1
+            
+            # 检查prediction记录是否存在
+            cur.execute("SELECT id FROM predictions WHERE id = %s", (prediction_id_int,))
+            existing_prediction = cur.fetchone()
+            
+            if not existing_prediction:
+                logger.info(f"Creating missing prediction record with ID: {prediction_id_int}")
+                
+                # 创建默认的prediction记录
+                cur.execute("""
+                    INSERT INTO predictions (
+                        id, temperature, humidity, pressure, wind_speed, 
+                        coordinates, weather_description, created_at, model_confidence
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) ON CONFLICT (id) DO NOTHING
+                """, (
+                    prediction_id_int,
+                    15.0,  # 默认温度
+                    60.0,  # 默认湿度
+                    1013.0,  # 默认气压
+                    5.0,   # 默认风速
+                    '{"latitude": 51.5074, "longitude": -0.1278}',  # London coordinates
+                    'System generated prediction for image upload',
+                    datetime.now(),
+                    1.0    # 默认置信度
+                ))
+                logger.info(f"✅ Default prediction record created with ID: {prediction_id_int}")
+            
+            # 现在插入image记录
             cur.execute("""
                 INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
                 VALUES (%s, %s, %s, %s, %s) 
                 RETURNING id, created_at
-            """, (image_url, thumbnail_url, description, int(prediction_id), datetime.now()))
+            """, (image_url, thumbnail_url, description, prediction_id_int, datetime.now()))
             
             result = cur.fetchone()
             image_id, created_at = result
@@ -833,6 +865,36 @@ def register_image():
             conn = psycopg2.connect(os.environ['DATABASE_URL'])
             cur = conn.cursor()
             
+            # 自动创建prediction记录（如果不存在）
+            # 检查prediction记录是否存在
+            cur.execute("SELECT id FROM predictions WHERE id = %s", (prediction_id,))
+            existing_prediction = cur.fetchone()
+            
+            if not existing_prediction:
+                logger.info(f"Creating missing prediction record with ID: {prediction_id}")
+                
+                # 创建默认的prediction记录
+                cur.execute("""
+                    INSERT INTO predictions (
+                        id, temperature, humidity, pressure, wind_speed, 
+                        coordinates, weather_description, created_at, model_confidence
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) ON CONFLICT (id) DO NOTHING
+                """, (
+                    prediction_id,
+                    15.0,  # 默认温度
+                    60.0,  # 默认湿度
+                    1013.0,  # 默认气压
+                    5.0,   # 默认风速
+                    '{"latitude": 51.5074, "longitude": -0.1278}',  # London coordinates
+                    'System generated prediction for image registration',
+                    datetime.now(),
+                    1.0    # 默认置信度
+                ))
+                logger.info(f"✅ Default prediction record created with ID: {prediction_id}")
+            
+            # 现在插入image记录
             cur.execute("""
                 INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
                 VALUES (%s, %s, %s, %s, %s) 
