@@ -1131,7 +1131,7 @@ def get_images():
     """
     获取图片列表API端点
     
-    返回: 所有图片信息的JSON列表
+    返回: 所有图片信息的JSON列表，包含基本预测信息
     """
     images = []
     
@@ -1140,27 +1140,41 @@ def get_images():
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        # 查询所有图片，按创建时间倒序
+        # 联查图片和预测数据，获取基本信息
         cur.execute("""
-            SELECT id, url, thumbnail_url, description, prediction_id, created_at 
-            FROM images 
-            ORDER BY created_at DESC
+            SELECT 
+                i.id, i.url, i.thumbnail_url, i.description, i.prediction_id, i.created_at,
+                p.location, p.input_data, p.result_data
+            FROM images i
+            LEFT JOIN predictions p ON i.prediction_id = p.id
+            ORDER BY i.created_at DESC
         """)
         
         for row in cur.fetchall():
-            images.append({
+            image_data = {
                 "id": row[0],
                 "url": row[1],
                 "thumbnail_url": row[2],
                 "description": row[3],
                 "prediction_id": row[4],
                 "created_at": row[5].isoformat()
-            })
+            }
+            
+            # 添加基本预测信息
+            if row[6] or row[7] or row[8]:  # 如果有预测数据
+                prediction_info = {
+                    "location": row[6],
+                    "input_data": row[7] or {},
+                    "result_data": row[8] or {}
+                }
+                image_data["prediction"] = prediction_info
+            
+            images.append(image_data)
         
         cur.close()
         conn.close()
         
-        logger.info(f"Retrieved {len(images)} images from database")
+        logger.info(f"Retrieved {len(images)} images from database with prediction data")
         
     except Exception as e:
         logger.error(f"Error fetching images from database: {e}")
@@ -1170,18 +1184,39 @@ def get_images():
     if not images and LOCAL_IMAGES_STORE:
         logger.info("Database returned no images, checking local storage")
         
-        # 转换本地存储格式
+        # 转换本地存储格式，添加mock prediction数据
         for image_id, image_data in LOCAL_IMAGES_STORE.items():
-            images.append({
+            image_info = {
                 "id": image_data['id'],
                 "url": image_data['url'],
                 "thumbnail_url": image_data.get('thumbnail_url', image_data['url']),
                 "description": image_data['description'],
                 "prediction_id": image_data['prediction_id'],
                 "created_at": image_data['created_at'].isoformat() if isinstance(image_data['created_at'], datetime) else image_data['created_at']
-            })
+            }
+            
+            # 添加mock预测信息
+            mock_prediction = {
+                "location": image_data.get('location', 'London, UK'),
+                "input_data": {
+                    "location_name": image_data.get('location', 'London, UK'),
+                    "temperature": 15.0,
+                    "humidity": 60.0,
+                    "pressure": 1013.0,
+                    "wind_speed": 5.0
+                },
+                "result_data": {
+                    "city": image_data.get('location', 'London, UK').split(',')[0],
+                    "climate_score": 0.75,
+                    "geographic_score": 0.80,
+                    "economic_score": 0.70
+                }
+            }
+            image_info["prediction"] = mock_prediction
+            
+            images.append(image_info)
         
-        logger.info(f"Retrieved {len(images)} images from local storage")
+        logger.info(f"Retrieved {len(images)} images from local storage with mock prediction data")
     
     # 如果仍然没有图片，返回空列表
     if not images:
@@ -1191,7 +1226,7 @@ def get_images():
         "success": True,
         "images": images,
         "count": len(images),
-        "source": "database" if images and not LOCAL_IMAGES_STORE else "local_storage" if LOCAL_IMAGES_STORE else "empty",
+        "source": "database_with_predictions" if images and not LOCAL_IMAGES_STORE else "local_storage_with_mock" if LOCAL_IMAGES_STORE else "empty",
         "timestamp": datetime.now().isoformat()
     })
 

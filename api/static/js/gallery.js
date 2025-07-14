@@ -202,14 +202,28 @@ class GalleryApp {
             minute: '2-digit'
         });
 
-        // 提取地理位置信息
+        // 提取地理位置信息 - 修正字段映射
         let locationName = 'Unknown Location';
-        if (image.prediction && image.prediction.location) {
-            locationName = image.prediction.location;
-        } else if (image.prediction && image.prediction.input_data && image.prediction.input_data.location_name) {
-            locationName = image.prediction.input_data.location_name;
-        } else if (image.prediction && image.prediction.result_data && image.prediction.result_data.city) {
-            locationName = image.prediction.result_data.city;
+        if (image.prediction) {
+            // 使用实际存在的字段
+            if (image.prediction.location) {
+                locationName = image.prediction.location;
+            } else if (image.prediction.input_data && image.prediction.input_data.location) {
+                // 注意：字段名是 location 不是 location_name
+                locationName = image.prediction.input_data.location;
+            } else if (image.prediction.result_data && image.prediction.result_data.city) {
+                locationName = image.prediction.result_data.city;
+            } else if (image.prediction.input_data && image.prediction.input_data.latitude && image.prediction.input_data.longitude) {
+                // 最后才使用坐标作为回退
+                const lat = image.prediction.input_data.latitude.toFixed(2);
+                const lon = image.prediction.input_data.longitude.toFixed(2);
+                locationName = `${lat}, ${lon}`;
+            }
+        }
+        
+        // 确保locationName是字符串并且不为空
+        if (!locationName || locationName.trim() === '') {
+            locationName = 'Unknown Location';
         }
 
         imageItem.innerHTML = `

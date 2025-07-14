@@ -107,20 +107,6 @@ class ImageModal {
                                             <div id="summary-location" class="summary-value">--</div>
                                         </div>
                                     </div>
-                                    <div class="summary-item">
-                                        <span class="summary-icon" aria-hidden="true">💨</span>
-                                        <div class="data-content">
-                                            <div class="summary-label">Wind Speed</div>
-                                            <div id="summary-wind-speed" class="summary-value">-- m/s</div>
-                                        </div>
-                                    </div>
-                                    <div class="summary-item">
-                                        <span class="summary-icon" aria-hidden="true">🌫️</span>
-                                        <div class="data-content">
-                                            <div class="summary-label">Pressure</div>
-                                            <div id="summary-pressure" class="summary-value">-- hPa</div>
-                                        </div>
-                                    </div>
                                     
                                     <!-- 生成时间 -->
                                     <div class="time-info">
@@ -468,7 +454,7 @@ class ImageModal {
             }
         };
 
-        // 更新环境数据
+        // 更新环境数据 - 只保留核心三项信息
         if (data.prediction && data.prediction.input_data) {
             const inputData = data.prediction.input_data;
             const resultData = data.prediction.result_data || {};
@@ -481,33 +467,25 @@ class ImageModal {
             const humidity = inputData.humidity || '--';
             updateElement('#summary-humidity', humidity !== '--' ? `${humidity}%` : '--%');
             
-            // 地理位置 - 优先显示地理位置名称而不是坐标
+            // 地理位置 - 使用实际存在的字段名
             let locationName = '--';
-            if (inputData.location_name) {
-                locationName = inputData.location_name;
+            if (data.prediction.location) {
+                locationName = data.prediction.location;
+            } else if (inputData.location) {
+                // 注意：字段名是 location 不是 location_name
+                locationName = inputData.location;
             } else if (resultData.city) {
                 locationName = resultData.city;
-            } else if (data.prediction.location) {
-                locationName = data.prediction.location;
             } else if (inputData.latitude && inputData.longitude) {
                 locationName = `${inputData.latitude.toFixed(2)}, ${inputData.longitude.toFixed(2)}`;
             }
             updateElement('#summary-location', locationName);
             
-            // 风速
-            const windSpeed = inputData.wind_speed || '--';
-            updateElement('#summary-wind-speed', windSpeed !== '--' ? `${windSpeed} m/s` : '-- m/s');
-            
-            // 大气压
-            const pressure = inputData.pressure || '--';
-            updateElement('#summary-pressure', pressure !== '--' ? `${pressure} hPa` : '-- hPa');
         } else {
             // 如果没有预测数据，显示默认值
             updateElement('#summary-temperature', '--°C');
             updateElement('#summary-humidity', '--%');
             updateElement('#summary-location', '--');
-            updateElement('#summary-wind-speed', '-- m/s');
-            updateElement('#summary-pressure', '-- hPa');
         }
 
         // 更新时间信息
