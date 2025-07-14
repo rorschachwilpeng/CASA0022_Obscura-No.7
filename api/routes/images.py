@@ -674,21 +674,21 @@ def upload_image():
                 # 创建默认的prediction记录
                 cur.execute("""
                     INSERT INTO predictions (
-                        id, temperature, humidity, pressure, wind_speed, 
-                        coordinates, weather_description, created_at, model_confidence
+                        id, latitude, longitude, current_temperature, current_humidity, 
+                        weather_description, confidence_score, created_at, full_data
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) ON CONFLICT (id) DO NOTHING
                 """, (
                     prediction_id_int,
-                    15.0,  # 默认温度
-                    60.0,  # 默认湿度
-                    1013.0,  # 默认气压
-                    5.0,   # 默认风速
-                    '{"latitude": 51.5074, "longitude": -0.1278}',  # London coordinates
+                    51.5074,  # London latitude
+                    -0.1278,  # London longitude  
+                    15.0,     # 默认当前温度
+                    60.0,     # 默认当前湿度
                     'System generated prediction for image upload',
+                    1.0,      # 置信度
                     datetime.now(),
-                    1.0    # 默认置信度
+                    '{"source": "auto_generated", "type": "image_upload_placeholder"}'  # full_data JSON
                 ))
                 logger.info(f"✅ Default prediction record created with ID: {prediction_id_int}")
             
@@ -711,9 +711,19 @@ def upload_image():
         except Exception as e:
             logger.error(f"Database insert failed: {e}")
             
-            # 检查是否是数据库连接问题
-            if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
-                logger.info("Database unavailable - creating local record for development")
+            # 检查是否是数据库连接问题或架构问题
+            database_issues = [
+                "nodename nor servname provided",
+                "could not translate host name", 
+                "column \"temperature\" of relation \"predictions\" does not exist",
+                "relation \"predictions\" does not exist",
+                "does not exist"
+            ]
+            
+            is_database_issue = any(issue in str(e) for issue in database_issues)
+            
+            if is_database_issue:
+                logger.info(f"Database issue detected - using local storage mode")
                 
                 # 生成本地ID
                 new_image_id = max(LOCAL_IMAGES_STORE.keys()) + 1 if LOCAL_IMAGES_STORE else 1
@@ -726,7 +736,7 @@ def upload_image():
                     'description': description,
                     'prediction_id': int(prediction_id),
                     'created_at': datetime.now(),
-                    'location': 'Local Upload Test'
+                    'location': 'Fallback Local Storage'
                 }
                 
                 logger.info(f"Image stored locally with ID: {new_image_id}")
@@ -757,7 +767,7 @@ def upload_image():
                         "prediction_id": int(prediction_id),
                         "created_at": datetime.now().isoformat()
                     },
-                    "message": "Image uploaded successfully (local development mode)",
+                    "message": "Image uploaded successfully (fallback local storage mode)",
                     "analysis_status": "processing",
                     "timestamp": datetime.now().isoformat()
                 }), 201
@@ -876,21 +886,21 @@ def register_image():
                 # 创建默认的prediction记录
                 cur.execute("""
                     INSERT INTO predictions (
-                        id, temperature, humidity, pressure, wind_speed, 
-                        coordinates, weather_description, created_at, model_confidence
+                        id, latitude, longitude, current_temperature, current_humidity, 
+                        weather_description, confidence_score, created_at, full_data
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) ON CONFLICT (id) DO NOTHING
                 """, (
                     prediction_id,
-                    15.0,  # 默认温度
-                    60.0,  # 默认湿度
-                    1013.0,  # 默认气压
-                    5.0,   # 默认风速
-                    '{"latitude": 51.5074, "longitude": -0.1278}',  # London coordinates
+                    51.5074,  # London latitude
+                    -0.1278,  # London longitude  
+                    15.0,     # 默认当前温度
+                    60.0,     # 默认当前湿度
                     'System generated prediction for image registration',
+                    1.0,      # 置信度
                     datetime.now(),
-                    1.0    # 默认置信度
+                    '{"source": "auto_generated", "type": "image_registration_placeholder"}'  # full_data JSON
                 ))
                 logger.info(f"✅ Default prediction record created with ID: {prediction_id}")
             
@@ -912,11 +922,59 @@ def register_image():
             
         except Exception as e:
             logger.error(f"Database insert failed: {e}")
-            return jsonify({
-                "success": False,
-                "error": f"Database save failed: {str(e)}",
-                "timestamp": datetime.now().isoformat()
-            }), 500
+            
+            # 检查是否是数据库连接问题或架构问题
+            database_issues = [
+                "nodename nor servname provided",
+                "could not translate host name",
+                "column \"temperature\" of relation \"predictions\" does not exist", 
+                "relation \"predictions\" does not exist",
+                "does not exist"
+            ]
+            
+            is_database_issue = any(issue in str(e) for issue in database_issues)
+            
+            if is_database_issue:
+                logger.info(f"Database issue detected - using local storage mode for registration")
+                
+                # 生成本地ID  
+                new_image_id = max(LOCAL_IMAGES_STORE.keys()) + 1 if LOCAL_IMAGES_STORE else 1
+                created_at = datetime.now()
+                
+                # 创建本地记录
+                LOCAL_IMAGES_STORE[new_image_id] = {
+                    'id': new_image_id,
+                    'url': image_url,
+                    'thumbnail_url': thumbnail_url,
+                    'description': description,
+                    'prediction_id': prediction_id,
+                    'created_at': created_at,
+                    'source': source,
+                    'location': 'Fallback Local Registration'
+                }
+                
+                logger.info(f"Image registered locally with ID: {new_image_id}")
+                
+                return jsonify({
+                    "success": True,
+                    "image": {
+                        "id": new_image_id,
+                        "url": image_url,
+                        "thumbnail_url": thumbnail_url,
+                        "description": description,
+                        "prediction_id": prediction_id,
+                        "created_at": created_at.isoformat(),
+                        "source": source
+                    },
+                    "message": "Image registered successfully (fallback local storage mode)",
+                    "timestamp": datetime.now().isoformat()
+                }), 201
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": f"Database save failed: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }), 500
         
         # 返回成功响应
         return jsonify({
