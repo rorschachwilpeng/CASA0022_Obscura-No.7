@@ -252,6 +252,7 @@ def _fallback_prediction_response(request, fallback_reason="shap_unavailable"):
         latitude = data.get('latitude', 51.5074)  # 默认伦敦
         longitude = data.get('longitude', -0.1278)
         month = data.get('month', datetime.now().month)
+        location_name = data.get('location_name')  # 获取真实地理位置信息
         
         # 简化的环境评分算法
         city_centers = {
@@ -260,20 +261,40 @@ def _fallback_prediction_response(request, fallback_reason="shap_unavailable"):
             'Edinburgh': {'lat': 55.9533, 'lon': -3.1883, 'base_climate': 0.72, 'base_geo': 0.68}
         }
         
-        # 找到最近城市
-        min_distance = float('inf')
-        closest_city = "London"
-        closest_info = city_centers['London']
-        
-        for city, info in city_centers.items():
-            distance = np.sqrt((latitude - info['lat'])**2 + (longitude - info['lon'])**2)
-            if distance < min_distance:
-                min_distance = distance
-                closest_city = city
-                closest_info = info
+        # 确定城市信息：优先使用真实地理位置，否则基于坐标查找
+        if location_name and location_name != "Unknown Location":
+            # 使用真实地理位置信息
+            closest_city = location_name
+            # 基于位置名称选择合适的基础评分
+            if 'London' in location_name or 'london' in location_name.lower():
+                closest_info = city_centers['London']
+            elif 'Manchester' in location_name or 'manchester' in location_name.lower():
+                closest_info = city_centers['Manchester']
+            elif 'Edinburgh' in location_name or 'edinburgh' in location_name.lower():
+                closest_info = city_centers['Edinburgh']
+            else:
+                # 对于其他地点，使用默认的中等评分
+                closest_info = {'lat': latitude, 'lon': longitude, 'base_climate': 0.70, 'base_geo': 0.68}
+            
+            distance_factor = 1.0  # 真实位置信息，距离因子设为1
+            logger.info(f"✅ Using real location name: {closest_city}")
+        else:
+            # 回退到基于坐标的城市查找
+            min_distance = float('inf')
+            closest_city = "London"
+            closest_info = city_centers['London']
+            
+            for city, info in city_centers.items():
+                distance = np.sqrt((latitude - info['lat'])**2 + (longitude - info['lon'])**2)
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_city = city
+                    closest_info = info
+            
+            distance_factor = max(0.5, 1.0 - min_distance * 0.1)
+            logger.info(f"⚠️ Using coordinate-based city detection: {closest_city}")
         
         # 基于距离和季节的简化评分
-        distance_factor = max(0.5, 1.0 - min_distance * 0.1)
         seasonal_factor = 1.0 + 0.1 * np.sin(2 * np.pi * month / 12)  # 季节性变化
         
         climate_score = max(0.0, min(1.0, closest_info['base_climate'] * distance_factor * seasonal_factor))

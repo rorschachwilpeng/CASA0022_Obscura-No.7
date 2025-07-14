@@ -103,8 +103,8 @@ class ImageModal {
                                     <div class="summary-item">
                                         <span class="summary-icon" aria-hidden="true">📍</span>
                                         <div class="data-content">
-                                            <div class="summary-label">Coordinates</div>
-                                            <div id="summary-coordinates" class="summary-value">--</div>
+                                            <div class="summary-label">Location</div>
+                                            <div id="summary-location" class="summary-value">--</div>
                                         </div>
                                     </div>
                                     <div class="summary-item">
@@ -471,6 +471,7 @@ class ImageModal {
         // 更新环境数据
         if (data.prediction && data.prediction.input_data) {
             const inputData = data.prediction.input_data;
+            const resultData = data.prediction.result_data || {};
             
             // 温度
             const temperature = inputData.temperature || '--';
@@ -480,14 +481,18 @@ class ImageModal {
             const humidity = inputData.humidity || '--';
             updateElement('#summary-humidity', humidity !== '--' ? `${humidity}%` : '--%');
             
-            // 坐标
-            const lat = inputData.latitude;
-            const lon = inputData.longitude;
-            if (lat && lon) {
-                updateElement('#summary-coordinates', `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
-            } else {
-                updateElement('#summary-coordinates', '--');
+            // 地理位置 - 优先显示地理位置名称而不是坐标
+            let locationName = '--';
+            if (inputData.location_name) {
+                locationName = inputData.location_name;
+            } else if (resultData.city) {
+                locationName = resultData.city;
+            } else if (data.prediction.location) {
+                locationName = data.prediction.location;
+            } else if (inputData.latitude && inputData.longitude) {
+                locationName = `${inputData.latitude.toFixed(2)}, ${inputData.longitude.toFixed(2)}`;
             }
+            updateElement('#summary-location', locationName);
             
             // 风速
             const windSpeed = inputData.wind_speed || '--';
@@ -500,7 +505,7 @@ class ImageModal {
             // 如果没有预测数据，显示默认值
             updateElement('#summary-temperature', '--°C');
             updateElement('#summary-humidity', '--%');
-            updateElement('#summary-coordinates', '--');
+            updateElement('#summary-location', '--');
             updateElement('#summary-wind-speed', '-- m/s');
             updateElement('#summary-pressure', '-- hPa');
         }
@@ -518,11 +523,20 @@ class ImageModal {
             updateElement('#summary-time', formattedDate);
         }
 
-        // 更新描述
+        // 更新描述 - 显示Prompt信息而不是description
         const descriptionElement = this.modal.querySelector('#image-description');
         if (descriptionElement) {
-            descriptionElement.textContent = data.description || 
-                'This vision represents a potential future environmental state based on AI predictions and environmental data analysis.';
+            let visionDescription = 'AI environmental prediction prompt not available';
+            
+            if (data.prediction && data.prediction.prompt) {
+                visionDescription = data.prediction.prompt;
+            } else if (data.prediction && data.prediction.result_data && data.prediction.result_data.ai_story) {
+                visionDescription = data.prediction.result_data.ai_story;
+            } else if (data.description) {
+                visionDescription = data.description;
+            }
+            
+            descriptionElement.textContent = visionDescription;
         }
 
         // 更新详细分析按钮链接

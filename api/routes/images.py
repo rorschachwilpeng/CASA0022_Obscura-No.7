@@ -680,6 +680,20 @@ def upload_image():
                         metadata = json.loads(image_metadata)
                         coordinates = metadata.get('coordinates', {})
                         weather = metadata.get('weather', {}).get('current_weather', {})
+                        map_info = metadata.get('map_info', {})
+                        
+                        # 提取真实的地理位置信息
+                        location_name = "Unknown Location"
+                        if map_info:
+                            # 优先使用详细地理位置信息
+                            location_details = map_info.get('location_details', {})
+                            if location_details.get('locality'):
+                                location_name = location_details['locality']
+                                country = location_details.get('country', '')
+                                if country:
+                                    location_name = f"{location_name}, {country}"
+                            elif map_info.get('location_info'):
+                                location_name = map_info['location_info']
                         
                         environmental_data = {
                             'latitude': coordinates.get('latitude', 51.5074),
@@ -691,9 +705,10 @@ def upload_image():
                             'weather_description': weather.get('weather_description', 'clear'),
                             'timestamp': metadata.get('timestamp', datetime.now().isoformat()),
                             'month': datetime.now().month,
-                            'future_years': 0
+                            'future_years': 0,
+                            'location_name': location_name  # 添加真实地理位置信息
                         }
-                        logger.info(f"✅ Extracted environmental data from metadata")
+                        logger.info(f"✅ Extracted environmental data from metadata, location: {location_name}")
                     except Exception as e:
                         logger.warning(f"⚠️ Failed to parse metadata, using defaults: {e}")
                         environmental_data = {

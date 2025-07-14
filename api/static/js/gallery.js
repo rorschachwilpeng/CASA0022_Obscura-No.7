@@ -202,12 +202,22 @@ class GalleryApp {
             minute: '2-digit'
         });
 
+        // 提取地理位置信息
+        let locationName = 'Unknown Location';
+        if (image.prediction && image.prediction.location) {
+            locationName = image.prediction.location;
+        } else if (image.prediction && image.prediction.input_data && image.prediction.input_data.location_name) {
+            locationName = image.prediction.input_data.location_name;
+        } else if (image.prediction && image.prediction.result_data && image.prediction.result_data.city) {
+            locationName = image.prediction.result_data.city;
+        }
+
         imageItem.innerHTML = `
             <div class="image-container">
-                <img src="${image.url}" alt="${image.description}" class="gallery-image" loading="lazy">
+                <img src="${image.url}" alt="${locationName}" class="gallery-image" loading="lazy">
                 <div class="image-overlay">
                     <div class="overlay-content">
-                        <div class="image-title">${image.description || 'Untitled Vision'}</div>
+                        <div class="image-title">${locationName}</div>
                         <div class="image-meta">${formattedDate} • ${formattedTime}</div>
                     </div>
                 </div>

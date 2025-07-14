@@ -421,6 +421,7 @@ class RaspberryPiTelescopeWorkflow:
             'weather': workflow_result.get('weather_data', {}),
             'style': workflow_result.get('style_prediction', {}),
             'hardware_input': workflow_result.get('hardware_input', {}),
+            'map_info': workflow_result.get('map_info', {}),  # 包含地理位置信息
             'timestamp': datetime.now().isoformat(),
             'device_type': 'raspberry_pi',
             'workflow_id': self.session_data['workflow_id']

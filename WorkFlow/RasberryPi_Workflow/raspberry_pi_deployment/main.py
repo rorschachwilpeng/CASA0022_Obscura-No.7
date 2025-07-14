@@ -286,7 +286,7 @@ class ExhibitionController:
                 )
                 self.last_angle = current_direction
             
-    except Exception as e:
+        except Exception as e:
             # Silent fail in hardware reading
             pass
 
@@ -312,8 +312,8 @@ class DevelopmentMode:
     def run_interactive(self):
         """Interactive development mode"""
         self.logger.info("🚀 Starting development mode...")
-    
-    while True:
+        
+        while True:
             print("\n" + "="*60)
             print("🔭 Obscura No.7 Virtual Telescope - Development Mode")
             print("="*60)
@@ -333,7 +333,7 @@ class DevelopmentMode:
                     print("🎨 Quick Image Generation (Enter key pressed)")
                     self._test_image_generation()
                     continue
-            elif choice == '1':
+                elif choice == '1':
                     self._run_telescope_workflow_interactive()
                 elif choice == '2':
                     self._test_data_fetching()
@@ -395,14 +395,14 @@ class DevelopmentMode:
                 print(f"⏱️ Execution time: {result.get('execution_time', 0):.1f} seconds")
                 if result.get('data', {}).get('generated_image'):
                     print(f"🎨 Generated image: {result['data']['generated_image']}")
-                    else:
-                print("❌ Workflow failed!")
+                else:
+                    print("❌ Workflow failed!")
                 if result and 'error' in result:
                     print(f"Error details: {result['error']}")
                         
         except ValueError:
             print("❌ Invalid input. Please enter numeric values or press Enter for quick generation.")
-                except Exception as e:
+        except Exception as e:
             print(f"❌ Error: {e}")
             self.logger.error(f"Interactive workflow error: {e}")
 
@@ -538,7 +538,7 @@ class DevelopmentMode:
             print("✅ Time Encoder (I2C Bus 5): Connected")
             print("✅ Hardware initialization: Success")
                     
-                except Exception as e:
+        except Exception as e:
             print(f"❌ Hardware test failed: {e}")
 
     def _view_last_results(self):
