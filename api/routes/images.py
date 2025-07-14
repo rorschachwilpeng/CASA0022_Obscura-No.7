@@ -674,21 +674,32 @@ def upload_image():
                 # 创建默认的prediction记录
                 cur.execute("""
                     INSERT INTO predictions (
-                        id, latitude, longitude, current_temperature, current_humidity, 
-                        weather_description, confidence_score, created_at, full_data
+                        id, input_data, result_data, prompt, location, created_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s
                     ) ON CONFLICT (id) DO NOTHING
                 """, (
                     prediction_id_int,
-                    51.5074,  # London latitude
-                    -0.1278,  # London longitude  
-                    15.0,     # 默认当前温度
-                    60.0,     # 默认当前湿度
+                    json.dumps({
+                        "temperature": 15.0,
+                        "humidity": 60.0,
+                        "location": "London, UK",
+                        "timestamp": datetime.now().isoformat()
+                    }),
+                    json.dumps({
+                        "temperature": 15.0,
+                        "humidity": 60.0,
+                        "confidence": 1.0,
+                        "climate_type": "temperate",
+                        "vegetation_index": 0.75,
+                        "predictions": {
+                            "short_term": "System generated placeholder",
+                            "long_term": "Stable conditions expected"
+                        }
+                    }),
                     'System generated prediction for image upload',
-                    1.0,      # 置信度
-                    datetime.now(),
-                    '{"source": "auto_generated", "type": "image_upload_placeholder"}'  # full_data JSON
+                    'London, UK',
+                    datetime.now()
                 ))
                 logger.info(f"✅ Default prediction record created with ID: {prediction_id_int}")
             
@@ -886,21 +897,32 @@ def register_image():
                 # 创建默认的prediction记录
                 cur.execute("""
                     INSERT INTO predictions (
-                        id, latitude, longitude, current_temperature, current_humidity, 
-                        weather_description, confidence_score, created_at, full_data
+                        id, input_data, result_data, prompt, location, created_at
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s
                     ) ON CONFLICT (id) DO NOTHING
                 """, (
                     prediction_id,
-                    51.5074,  # London latitude
-                    -0.1278,  # London longitude  
-                    15.0,     # 默认当前温度
-                    60.0,     # 默认当前湿度
+                    json.dumps({
+                        "temperature": 15.0,
+                        "humidity": 60.0,
+                        "location": "London, UK",
+                        "timestamp": datetime.now().isoformat()
+                    }),
+                    json.dumps({
+                        "temperature": 15.0,
+                        "humidity": 60.0,
+                        "confidence": 1.0,
+                        "climate_type": "temperate",
+                        "vegetation_index": 0.75,
+                        "predictions": {
+                            "short_term": "System generated placeholder",
+                            "long_term": "Stable conditions expected"
+                        }
+                    }),
                     'System generated prediction for image registration',
-                    1.0,      # 置信度
-                    datetime.now(),
-                    '{"source": "auto_generated", "type": "image_registration_placeholder"}'  # full_data JSON
+                    'London, UK',
+                    datetime.now()
                 ))
                 logger.info(f"✅ Default prediction record created with ID: {prediction_id}")
             
@@ -1007,6 +1029,9 @@ def get_images():
     
     返回: 所有图片信息的JSON列表
     """
+    images = []
+    
+    # 首先尝试从数据库获取图片
     try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
@@ -1018,7 +1043,6 @@ def get_images():
             ORDER BY created_at DESC
         """)
         
-        images = []
         for row in cur.fetchall():
             images.append({
                 "id": row[0],
@@ -1034,62 +1058,38 @@ def get_images():
         
         logger.info(f"Retrieved {len(images)} images from database")
         
-        return jsonify({
-            "success": True,
-            "images": images,
-            "count": len(images),
-            "timestamp": datetime.now().isoformat()
-        })
-        
     except Exception as e:
-        logger.error(f"Error fetching images: {e}")
+        logger.error(f"Error fetching images from database: {e}")
+        # 数据库查询失败，将使用本地存储
         
-        # 本地开发模式：当数据库不可用时，返回模拟数据用于测试
-        if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
-            logger.info("Database unavailable - returning mock data for local development")
-            
-            # 模拟图片数据
-            mock_images = [
-                {
-                    "id": 1,
-                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "description": "AI Generated Environmental Vision",
-                    "prediction_id": 2,
-                    "created_at": datetime.now().isoformat()
-                },
-                {
-                    "id": 2,
-                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "description": "Environmental Prediction Analysis",
-                    "prediction_id": 3,
-                    "created_at": datetime.now().isoformat()
-                },
-                {
-                    "id": 3,
-                    "url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png", 
-                    "thumbnail_url": "https://res.cloudinary.com/dvbgtqko/image/upload/v1750191245/obscura_images/file_lksfai.png",
-                    "description": "Climate Change Visualization",
-                    "prediction_id": 4,
-                    "created_at": datetime.now().isoformat()
-                }
-            ]
-            
-            return jsonify({
-                "success": True,
-                "images": mock_images,
-                "count": len(mock_images),
-                "timestamp": datetime.now().isoformat(),
-                "mode": "mock_data_for_local_development"
+    # 如果数据库为空或查询失败，检查本地存储
+    if not images and LOCAL_IMAGES_STORE:
+        logger.info("Database returned no images, checking local storage")
+        
+        # 转换本地存储格式
+        for image_id, image_data in LOCAL_IMAGES_STORE.items():
+            images.append({
+                "id": image_data['id'],
+                "url": image_data['url'],
+                "thumbnail_url": image_data.get('thumbnail_url', image_data['url']),
+                "description": image_data['description'],
+                "prediction_id": image_data['prediction_id'],
+                "created_at": image_data['created_at'].isoformat() if isinstance(image_data['created_at'], datetime) else image_data['created_at']
             })
         
-        # 其他数据库错误
-        return jsonify({
-            "success": False,
-            "error": "Failed to fetch images",
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        logger.info(f"Retrieved {len(images)} images from local storage")
+    
+    # 如果仍然没有图片，返回空列表
+    if not images:
+        logger.info("No images found in database or local storage")
+    
+    return jsonify({
+        "success": True,
+        "images": images,
+        "count": len(images),
+        "source": "database" if images and not LOCAL_IMAGES_STORE else "local_storage" if LOCAL_IMAGES_STORE else "empty",
+        "timestamp": datetime.now().isoformat()
+    })
 
 @images_bp.route('/<int:image_id>', methods=['GET'])
 def get_image_detail(image_id):
