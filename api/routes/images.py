@@ -669,9 +669,113 @@ def upload_image():
             existing_prediction = cur.fetchone()
             
             if not existing_prediction:
-                logger.info(f"Creating missing prediction record with ID: {prediction_id_int}")
+                logger.info(f"Creating prediction record with ID: {prediction_id_int}")
                 
-                # 创建默认的prediction记录
+                # 获取图片的环境数据（来自树莓派的元数据）
+                image_metadata = request.form.get('metadata')
+                environmental_data = {}
+                
+                if image_metadata:
+                    try:
+                        metadata = json.loads(image_metadata)
+                        coordinates = metadata.get('coordinates', {})
+                        weather = metadata.get('weather', {}).get('current_weather', {})
+                        
+                        environmental_data = {
+                            'latitude': coordinates.get('latitude', 51.5074),
+                            'longitude': coordinates.get('longitude', -0.1278),
+                            'temperature': weather.get('temperature', 15.0),
+                            'humidity': weather.get('humidity', 60.0),
+                            'pressure': weather.get('pressure', 1013.0),
+                            'wind_speed': weather.get('wind_speed', 0.0),
+                            'weather_description': weather.get('weather_description', 'clear'),
+                            'timestamp': metadata.get('timestamp', datetime.now().isoformat()),
+                            'month': datetime.now().month,
+                            'future_years': 0
+                        }
+                        logger.info(f"✅ Extracted environmental data from metadata")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Failed to parse metadata, using defaults: {e}")
+                        environmental_data = {
+                            'latitude': 51.5074,
+                            'longitude': -0.1278,
+                            'temperature': 15.0,
+                            'humidity': 60.0,
+                            'pressure': 1013.0,
+                            'wind_speed': 0.0,
+                            'weather_description': 'clear',
+                            'timestamp': datetime.now().isoformat(),
+                            'month': datetime.now().month,
+                            'future_years': 0
+                        }
+                
+                # 调用SHAP预测API获取完整分析结果
+                try:
+                    logger.info("🔮 Calling SHAP prediction API...")
+                    import requests
+                    
+                    shap_api_url = f"{request.host_url}api/v1/shap/predict"
+                    shap_response = requests.post(
+                        shap_api_url,
+                        json=environmental_data,
+                        timeout=30,
+                        headers={'Content-Type': 'application/json'}
+                    )
+                    
+                    if shap_response.status_code == 200:
+                        shap_result = shap_response.json()
+                        if shap_result.get('success') and 'data' in shap_result:
+                            shap_data = shap_result['data']
+                            
+                            # 生成AI故事
+                            logger.info("📝 Generating AI environmental story...")
+                            ai_story = generate_ai_environmental_story(shap_data)
+                            
+                            # 构建完整的result_data结构
+                            result_data = {
+                                # 保留原有兼容字段
+                                "temperature": environmental_data.get('temperature', 15.0),
+                                "humidity": environmental_data.get('humidity', 60.0),
+                                "confidence": shap_data.get('overall_confidence', 1.0),
+                                "climate_type": _determine_climate_type(shap_data),
+                                "vegetation_index": _calculate_vegetation_index(shap_data),
+                                "predictions": {
+                                    "short_term": _generate_short_term_prediction(shap_data),
+                                    "long_term": _generate_long_term_prediction(shap_data)
+                                },
+                                
+                                # 新增完整SHAP分析字段
+                                "climate_score": shap_data.get('climate_score', 0.5),
+                                "geographic_score": shap_data.get('geographic_score', 0.5),
+                                "economic_score": shap_data.get('economic_score', 0.5),
+                                "final_score": shap_data.get('final_score', 0.5),
+                                "city": shap_data.get('city', 'Unknown'),
+                                "shap_analysis": shap_data.get('shap_analysis', {}),
+                                "ai_story": ai_story,
+                                
+                                # 分析元数据
+                                "analysis_metadata": {
+                                    "generated_at": datetime.now().isoformat(),
+                                    "model_version": "shap_v1.0.0", 
+                                    "api_source": "integrated_shap_prediction",
+                                    "fallback_used": shap_data.get('api_info', {}).get('fallback_used', False)
+                                }
+                            }
+                            
+                            logger.info(f"✅ SHAP analysis completed: final_score={shap_data.get('final_score', 'N/A')}")
+                            
+                        else:
+                            logger.warning("⚠️ SHAP API returned invalid data, using fallback")
+                            result_data = _create_fallback_result_data(environmental_data)
+                    else:
+                        logger.warning(f"⚠️ SHAP API failed: {shap_response.status_code}, using fallback")
+                        result_data = _create_fallback_result_data(environmental_data)
+                        
+                except Exception as e:
+                    logger.warning(f"⚠️ SHAP API call failed: {e}, using fallback")
+                    result_data = _create_fallback_result_data(environmental_data)
+                
+                # 创建prediction记录
                 cur.execute("""
                     INSERT INTO predictions (
                         id, input_data, result_data, prompt, location, created_at
@@ -680,28 +784,13 @@ def upload_image():
                     ) ON CONFLICT (id) DO NOTHING
                 """, (
                     prediction_id_int,
-                    json.dumps({
-                        "temperature": 15.0,
-                        "humidity": 60.0,
-                        "location": "London, UK",
-                        "timestamp": datetime.now().isoformat()
-                    }),
-                    json.dumps({
-                        "temperature": 15.0,
-                        "humidity": 60.0,
-                        "confidence": 1.0,
-                        "climate_type": "temperate",
-                        "vegetation_index": 0.75,
-                        "predictions": {
-                            "short_term": "System generated placeholder",
-                            "long_term": "Stable conditions expected"
-                        }
-                    }),
-                    'System generated prediction for image upload',
-                    'London, UK',
+                    json.dumps(environmental_data),
+                    json.dumps(result_data),
+                    'SHAP-based environmental analysis for telescope image',
+                    environmental_data.get('city', 'Unknown Location'),
                     datetime.now()
                 ))
-                logger.info(f"✅ Default prediction record created with ID: {prediction_id_int}")
+                logger.info(f"✅ Enhanced prediction record created with ID: {prediction_id_int}")
             
             # 现在插入image记录
             cur.execute("""
@@ -1346,55 +1435,13 @@ def get_image_shap_analysis(image_id):
     """
     获取图片的SHAP分析数据API端点
     
-    返回: 基于图片关联的环境数据进行的SHAP分析结果
+    优先从predictions.result_data读取已存储的分析结果
     """
     try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        # 首先尝试获取存储的分析结果
-        cur.execute("""
-            SELECT shap_data, ai_story, generated_at 
-            FROM image_analysis 
-            WHERE image_id = %s
-        """, (image_id,))
-        
-        analysis_row = cur.fetchone()
-        
-        if analysis_row:
-            # 返回存储的分析结果
-            shap_data, ai_story, generated_at = analysis_row
-            
-            logger.info(f"✅ Retrieved stored analysis for image {image_id}")
-            
-            cur.close()
-            conn.close()
-            
-            # 转换为层次化结构
-            enhanced_shap_analysis = transform_to_hierarchical_shap_data(json.loads(shap_data))
-            
-            # 验证数据完整性
-            validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
-            
-            return jsonify({
-                "success": True,
-                "data": {
-                    **enhanced_shap_analysis,
-                    'ai_story': json.loads(ai_story),
-                    "integration_metadata": {
-                        "analysis_timestamp": generated_at.isoformat(),
-                        "model_version": "hierarchical_v1.1",
-                        "analysis_source": "stored_analysis",
-                        "note": "Pre-generated SHAP analysis with hierarchical features",
-                        "data_format_version": "1.1.0"
-                    },
-                    "data_validation": validation_result
-                },
-                "timestamp": datetime.now().isoformat(),
-                "mode": "stored_analysis"
-            }), 200
-        
-        # 如果没有存储的分析结果，查询图片关联的预测数据
+        # 查询图片和关联的预测数据
         cur.execute("""
             SELECT 
                 i.id, i.url, i.description,
@@ -1412,7 +1459,7 @@ def get_image_shap_analysis(image_id):
                 "timestamp": datetime.now().isoformat()
             }), 404
         
-        # 提取环境数据用于SHAP分析
+        # 提取数据
         input_data = row[3] if row[3] else {}
         result_data = row[4] if row[4] else {}
         location = row[5] if row[5] else "Unknown Location"
@@ -1420,8 +1467,103 @@ def get_image_shap_analysis(image_id):
         cur.close()
         conn.close()
         
-        # 图片存在但没有分析结果，生成新的分析
-        logger.info(f"🔄 No stored analysis found, generating new analysis for image {image_id}")
+        # 检查result_data中是否已有完整的SHAP分析结果
+        if result_data and 'ai_story' in result_data and 'climate_score' in result_data:
+            logger.info(f"✅ Retrieved stored SHAP analysis for image {image_id}")
+            
+            # 构建SHAP分析数据结构
+            shap_analysis_data = {
+                "climate_score": result_data.get('climate_score', 0.5),
+                "geographic_score": result_data.get('geographic_score', 0.5),
+                "economic_score": result_data.get('economic_score', 0.5),
+                "final_score": result_data.get('final_score', 0.5),
+                "city": result_data.get('city', 'Unknown'),
+                "shap_analysis": result_data.get('shap_analysis', {}),
+                "confidence": result_data.get('confidence', 1.0)
+            }
+            
+            # 转换为层次化结构
+            enhanced_shap_analysis = transform_to_hierarchical_shap_data(shap_analysis_data)
+            
+            # 验证数据完整性
+            validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
+            
+            return jsonify({
+                "success": True,
+                "data": {
+                    **enhanced_shap_analysis,
+                    'ai_story': result_data.get('ai_story'),
+                    "integration_metadata": {
+                        "analysis_timestamp": result_data.get('analysis_metadata', {}).get('generated_at', datetime.now().isoformat()),
+                        "model_version": result_data.get('analysis_metadata', {}).get('model_version', 'shap_v1.0.0'),
+                        "analysis_source": "stored_in_predictions",
+                        "note": "Pre-generated SHAP analysis from image upload",
+                        "data_format_version": "1.2.0",
+                        "fallback_used": result_data.get('analysis_metadata', {}).get('fallback_used', False)
+                    },
+                    "data_validation": validation_result
+                },
+                "timestamp": datetime.now().isoformat(),
+                "mode": "stored_analysis"
+            }), 200
+        
+        # 如果没有存储的完整分析结果，回退到实时生成
+        logger.info(f"🔄 No complete SHAP analysis found, generating fallback for image {image_id}")
+        
+        # 尝试从旧的image_analysis表获取数据（向后兼容）
+        try:
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            cur = conn.cursor()
+            
+            cur.execute("""
+                SELECT shap_data, ai_story, generated_at 
+                FROM image_analysis 
+                WHERE image_id = %s
+            """, (image_id,))
+            
+            analysis_row = cur.fetchone()
+            
+            if analysis_row:
+                # 返回存储的分析结果
+                shap_data, ai_story, generated_at = analysis_row
+                
+                logger.info(f"✅ Retrieved legacy analysis for image {image_id}")
+                
+                cur.close()
+                conn.close()
+                
+                # 转换为层次化结构
+                enhanced_shap_analysis = transform_to_hierarchical_shap_data(json.loads(shap_data))
+                
+                # 验证数据完整性
+                validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
+                
+                return jsonify({
+                    "success": True,
+                    "data": {
+                        **enhanced_shap_analysis,
+                        'ai_story': json.loads(ai_story),
+                        "integration_metadata": {
+                            "analysis_timestamp": generated_at.isoformat(),
+                            "model_version": "legacy_v1.1",
+                            "analysis_source": "legacy_image_analysis_table",
+                            "note": "Retrieved from legacy analysis table",
+                            "data_format_version": "1.1.0"
+                        },
+                        "data_validation": validation_result
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                    "mode": "legacy_analysis"
+                }), 200
+            
+            cur.close()
+            conn.close()
+            
+        except Exception as legacy_error:
+            logger.warning(f"⚠️ Legacy analysis table unavailable: {legacy_error}")
+        
+        # 最终回退：生成实时分析
+        logger.info(f"🔄 Generating real-time analysis for image {image_id}")
         
         # 生成新的SHAP分析数据
         shap_data = generate_shap_analysis_data(image_id, row[2])
@@ -1436,32 +1578,43 @@ def get_image_shap_analysis(image_id):
         validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
         
         # 构建完整的响应数据
-        mock_shap_analysis = {
+        real_time_analysis = {
             **enhanced_shap_analysis,
             'ai_story': story_data,
             "integration_metadata": {
                 "analysis_timestamp": datetime.now().isoformat(),
-                "model_version": "hierarchical_v1.1",
+                "model_version": "real_time_v1.2",
                 "analysis_source": "generated_on_demand",
-                "note": "Generated SHAP analysis with hierarchical features",
-                "data_format_version": "1.1.0"
+                "note": "Generated real-time SHAP analysis",
+                "data_format_version": "1.2.0",
+                "warning": "This analysis is generated each time and may vary"
             },
             "data_validation": validation_result
         }
         
         return jsonify({
             "success": True,
-            "data": mock_shap_analysis,
+            "data": real_time_analysis,
             "timestamp": datetime.now().isoformat(),
-            "mode": "generated_on_demand"
+            "mode": "real_time_generation"
         }), 200
         
     except Exception as e:
         logger.error(f"Error in SHAP analysis endpoint: {e}")
         
-        # 数据库不可用时，检查本地存储或返回模拟数据
-        if "nodename nor servname provided" in str(e) or "could not translate host name" in str(e):
-            logger.info(f"Database unavailable - checking local storage for image {image_id}")
+        # 数据库不可用时的最终回退
+        database_issues = [
+            "nodename nor servname provided",
+            "could not translate host name",
+            "relation \"image_analysis\" does not exist",
+            "relation \"predictions\" does not exist",
+            "does not exist"
+        ]
+        
+        is_database_issue = any(issue in str(e) for issue in database_issues)
+        
+        if is_database_issue:
+            logger.info(f"Database issue detected - using local fallback for image {image_id}")
             
             # 检查本地分析存储
             if image_id in LOCAL_ANALYSIS_STORE:
@@ -1480,54 +1633,31 @@ def get_image_shap_analysis(image_id):
                         **enhanced_shap_analysis,
                         'ai_story': stored_analysis['ai_story'],
                         "integration_metadata": {
-                            "analysis_timestamp": stored_analysis['generated_at'],
-                            "model_version": "hierarchical_v1.1",
-                            "analysis_source": "local_storage",
-                            "note": "Pre-generated SHAP analysis from local storage",
-                            "data_format_version": "1.1.0"
+                            "analysis_timestamp": stored_analysis.get('generated_at', datetime.now().isoformat()),
+                            "model_version": "local_storage_v1.0",
+                            "analysis_source": "local_fallback",
+                            "note": "Retrieved from local storage due to database unavailability",
+                            "data_format_version": "1.0.0"
                         },
                         "data_validation": validation_result
                     },
                     "timestamp": datetime.now().isoformat(),
-                    "mode": "local_storage"
+                    "mode": "local_fallback"
                 }), 200
             
-            # 如果本地存储中没有，生成新的分析
-            logger.info(f"No local analysis found, generating new analysis for image {image_id}")
-            
-            # 生成新的SHAP分析数据
-            shap_data = generate_shap_analysis_data(image_id, "Tree Observatory Location")
-            
-            # 生成AI故事
-            story_data = generate_ai_environmental_story(shap_data)
-            
-            # 转换为层次化结构
-            enhanced_fallback_data = transform_to_hierarchical_shap_data(shap_data)
-            
-            # 验证fallback数据完整性
-            fallback_validation = validate_hierarchical_shap_data(enhanced_fallback_data)
-            
+            # 最终的错误响应
             return jsonify({
-                "success": True,
-                "data": {
-                    **enhanced_fallback_data,
-                    'ai_story': story_data,
-                    "integration_metadata": {
-                        "analysis_timestamp": datetime.now().isoformat(),
-                        "model_version": "hierarchical_fallback_v1.1",
-                        "analysis_source": "generated_for_local_development",
-                        "note": "Generated SHAP analysis for local development",
-                        "data_format_version": "1.1.0"
-                    },
-                    "data_validation": fallback_validation
-                },
-                "timestamp": datetime.now().isoformat(),
-                "mode": "generated_for_local_development"
-            }), 200
+                "success": False,
+                "error": "Analysis data temporarily unavailable",
+                "details": "Database and local storage unavailable",
+                "timestamp": datetime.now().isoformat()
+            }), 503
         
+        # 其他错误
         return jsonify({
             "success": False,
-            "error": "Failed to perform SHAP analysis",
+            "error": "Failed to retrieve SHAP analysis",
+            "details": str(e),
             "timestamp": datetime.now().isoformat()
         }), 500
 
@@ -1822,4 +1952,120 @@ def _generate_process_flow_data():
             {"from": "weather", "to": "ai"},
             {"from": "ai", "to": "output"}
         ]
+    }
+
+def _determine_climate_type(shap_data):
+    """根据SHAP分析结果确定气候类型"""
+    climate_score = shap_data.get('climate_score', 0.5)
+    city = shap_data.get('city', 'Unknown')
+    
+    if climate_score > 0.8:
+        return "optimal"
+    elif climate_score > 0.6:
+        return "temperate"
+    elif climate_score > 0.4:
+        return "moderate"
+    else:
+        return "challenging"
+
+def _calculate_vegetation_index(shap_data):
+    """根据SHAP分析计算植被指数"""
+    geographic_score = shap_data.get('geographic_score', 0.5)
+    climate_score = shap_data.get('climate_score', 0.5)
+    
+    # 简化的植被指数计算，基于地理和气候评分
+    vegetation_index = (geographic_score * 0.6 + climate_score * 0.4)
+    return max(0.0, min(1.0, vegetation_index))
+
+def _generate_short_term_prediction(shap_data):
+    """生成短期预测文本"""
+    final_score = shap_data.get('final_score', 0.5)
+    city = shap_data.get('city', 'Unknown')
+    
+    if final_score > 0.7:
+        return f"Favorable environmental conditions expected for {city} region"
+    elif final_score > 0.5:
+        return f"Moderate environmental stability predicted for {city}"
+    else:
+        return f"Variable environmental conditions forecasted for {city}"
+
+def _generate_long_term_prediction(shap_data):
+    """生成长期预测文本"""
+    climate_score = shap_data.get('climate_score', 0.5)
+    geographic_score = shap_data.get('geographic_score', 0.5)
+    
+    if climate_score > 0.6 and geographic_score > 0.6:
+        return "Long-term environmental resilience indicated"
+    elif climate_score > 0.4 or geographic_score > 0.4:
+        return "Moderate long-term environmental stability expected"
+    else:
+        return "Environmental monitoring recommended for long-term planning"
+
+def _create_fallback_result_data(environmental_data):
+    """创建回退的result_data结构（当SHAP API不可用时）"""
+    
+    # 基于位置的简化评分
+    latitude = environmental_data.get('latitude', 51.5074)
+    longitude = environmental_data.get('longitude', -0.1278) 
+    temperature = environmental_data.get('temperature', 15.0)
+    humidity = environmental_data.get('humidity', 60.0)
+    
+    # 简化的评分算法
+    climate_score = max(0.2, min(1.0, 0.5 + (temperature - 10) / 40))  # 基于温度
+    geographic_score = max(0.3, min(1.0, 0.6 + (50 - latitude) / 100))  # 基于纬度
+    economic_score = 0.5  # 默认值
+    final_score = climate_score * 0.4 + geographic_score * 0.35 + economic_score * 0.25
+    
+    # 确定最近城市
+    city_centers = {
+        'London': {'lat': 51.5074, 'lon': -0.1278},
+        'Manchester': {'lat': 53.4808, 'lon': -2.2426},
+        'Edinburgh': {'lat': 55.9533, 'lon': -3.1883}
+    }
+    
+    closest_city = "Unknown"
+    min_distance = float('inf')
+    for city, coords in city_centers.items():
+        distance = ((latitude - coords['lat'])**2 + (longitude - coords['lon'])**2)**0.5
+        if distance < min_distance:
+            min_distance = distance
+            closest_city = city
+    
+    return {
+        # 兼容字段
+        "temperature": temperature,
+        "humidity": humidity,
+        "confidence": 0.7,  # 降低置信度以表明这是回退数据
+        "climate_type": "temperate",
+        "vegetation_index": 0.6,
+        "predictions": {
+            "short_term": "Fallback prediction - moderate conditions",
+            "long_term": "Long-term analysis requires SHAP model"
+        },
+        
+        # SHAP字段（回退值）
+        "climate_score": climate_score,
+        "geographic_score": geographic_score,
+        "economic_score": economic_score,
+        "final_score": final_score,
+        "city": closest_city,
+        "shap_analysis": {
+            "feature_importance": {
+                "temperature": 0.25,
+                "humidity": 0.20,
+                "location": 0.30,
+                "seasonal": 0.25
+            },
+            "note": "Simplified analysis - SHAP model unavailable"
+        },
+        "ai_story": "Environmental analysis temporarily unavailable. Please check back later for detailed insights.",
+        
+        # 元数据
+        "analysis_metadata": {
+            "generated_at": datetime.now().isoformat(),
+            "model_version": "fallback_v1.0.0",
+            "api_source": "fallback_algorithm",
+            "fallback_used": True,
+            "fallback_reason": "SHAP API unavailable"
+        }
     }

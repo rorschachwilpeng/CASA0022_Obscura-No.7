@@ -442,20 +442,20 @@ class CloudAPIClient:
         return clean_value(metadata)
     
     def _upload_environmental_data(self, metadata):
-        """上传环境数据到ML预测API"""
+        """上传环境数据到SHAP分析API"""
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                # 使用ML预测API而不是环境数据上传API
-                ml_predict_url = self.endpoints.get('ml_predict_url', 'http://localhost:5000/api/v1/ml/predict')
+                # 使用SHAP分析API获取完整的分析结果
+                shap_predict_url = self.endpoints.get('shap_predict_url', f'{self.website_api_url}/api/v1/shap/predict')
                 
-                # 从天气数据中提取ML预测所需的环境数据
+                # 从天气数据中提取SHAP分析所需的环境数据
                 weather_data = metadata.get('weather', {})
                 current_weather = weather_data.get('current_weather', {})
                 coordinates = metadata.get('coordinates', {})
                 
-                # 构建ML预测API需要的数据格式 - 修复latitude/longitude字段位置
-                ml_payload = {
+                # 构建SHAP分析API需要的数据格式
+                shap_payload = {
                     "latitude": coordinates.get('latitude', 0),
                     "longitude": coordinates.get('longitude', 0),
                     "temperature": current_weather.get('temperature', 15),
@@ -469,31 +469,29 @@ class CloudAPIClient:
                 }
                 
                 response = self.session.post(
-                    ml_predict_url,
-                    data=json.dumps(ml_payload, default=json_serializer),
+                    shap_predict_url,
+                    data=json.dumps(shap_payload, default=json_serializer),
                     headers={'Content-Type': 'application/json'},
                     timeout=self.timeout
                 )
                 
                 if response.status_code == 200:
                     result = response.json()
-                    print(f"✅ ML预测成功: 预测温度 {result.get('prediction', {}).get('predicted_temperature', 'N/A')}°C")
+                    print(f"✅ SHAP分析成功: {result.get('data', {}).get('climate_score', 'N/A')}")
                     return result
                 else:
-                    print(f"❌ ML预测失败: {response.status_code}")
-                    if response.text:
-                        print(f"   错误详情: {response.text}")
+                    print(f"❌ SHAP分析API错误: {response.status_code} - {response.text}")
                     if attempt < max_retries - 1:
-                        print(f"   正在重试... ({attempt + 1}/{max_retries})")
-                        time.sleep(2 ** attempt)
+                        print(f"🔄 正在重试 ({attempt + 1}/{max_retries})...")
+                        time.sleep(self.retry_delay)
                         continue
                     return None
                     
             except Exception as e:
-                print(f"❌ ML预测错误 (尝试 {attempt + 1}/{max_retries}): {e}")
+                print(f"❌ SHAP分析API调用异常: {e}")
                 if attempt < max_retries - 1:
-                    print(f"   正在重试...")
-                    time.sleep(2 ** attempt)
+                    print(f"🔄 正在重试 ({attempt + 1}/{max_retries})...")
+                    time.sleep(self.retry_delay)
                     continue
                 return None
         return None
