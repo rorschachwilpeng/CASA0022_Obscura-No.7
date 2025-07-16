@@ -247,6 +247,9 @@ class PygameInterface:
     def __init__(self, fullscreen: bool = True):
         self.logger = logging.getLogger(__name__)
         
+        # 确保pygame字体系统正确初始化 - 防止 "font not initialized" 错误
+        pygame.font.init()
+        
         # Initialize display
         if fullscreen:
             self.screen = pygame.display.set_mode(DISPLAY_SIZE, pygame.FULLSCREEN)
@@ -259,10 +262,19 @@ class PygameInterface:
         if fullscreen:
             pygame.mouse.set_visible(False)
         
-        # Initialize fonts
+        # Initialize fonts - 增加容错处理
         self.fonts = {}
         for size_name, size in FONT_SIZES.items():
-            self.fonts[size_name] = pygame.font.Font(None, size)
+            try:
+                self.fonts[size_name] = pygame.font.Font(None, size)
+            except pygame.error:
+                # 字体初始化失败时的回退机制
+                try:
+                    self.fonts[size_name] = pygame.font.SysFont('arial', size)
+                    self.logger.warning(f"字体 '{size_name}' 使用系统arial字体")
+                except pygame.error:
+                    self.fonts[size_name] = pygame.font.SysFont(None, size)
+                    self.logger.warning(f"字体 '{size_name}' 使用系统默认字体")
         
         # Initialize UI elements
         self._init_ui_elements()

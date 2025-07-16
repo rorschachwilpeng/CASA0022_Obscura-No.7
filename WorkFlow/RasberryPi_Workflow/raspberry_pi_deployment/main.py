@@ -49,6 +49,7 @@ class ExhibitionController:
         
         # Initialize components
         self.state_machine = ExhibitionStateMachine()
+        # 初始化界面 - 恢复使用原始UI设计
         self.interface = PygameInterface(fullscreen=fullscreen)
         # 延迟初始化重量级组件，避免启动时阻塞
         self.telescope_workflow = None
@@ -64,10 +65,10 @@ class ExhibitionController:
         config_manager = ConfigManager('config/config.json')
         self.hardware = RaspberryPiHardware(config_manager.config)
         
-        # Parameter tracking
-        self.last_distance = 25.0
-        self.last_angle = 0.0  
-        self.last_time_offset = 0
+        # Parameter tracking - 与开发模式一致的初始值
+        self.last_distance = 25.0  # km (与开发模式一致)
+        self.last_angle = 0.0      # degrees
+        self.last_time_offset = 0  # years
         
         # Setup callbacks
         self._setup_callbacks()
@@ -99,19 +100,18 @@ class ExhibitionController:
         )
     
     def _setup_callbacks(self):
-        """Setup callbacks between components"""
-        # State machine callbacks
+        """Setup all callback functions"""
+        # 状态机回调
         self.state_machine.set_callback('on_state_change', self._on_state_change)
-        self.state_machine.set_callback('on_data_fetch_trigger', self._on_data_fetch_trigger)
-        self.state_machine.set_callback('on_result_ready', self._on_result_ready)
-        self.state_machine.set_callback('on_error', self._on_error)
-        self.state_machine.set_callback('on_reset', self._on_reset)
         
-        # Interface callbacks
+        # 添加参数更新回调
+        self.state_machine.set_callback('on_parameter_update', self._on_parameter_update)
+        
+        # 原始界面回调 - 使用原始界面支持的回调名称
         self.interface.set_callback('on_city_selected', self._on_city_selected)
-        self.interface.set_callback('on_data_fetch_click', self._on_data_fetch_click)
-        self.interface.set_callback('on_touch_continue', self._on_touch_continue)
-        self.interface.set_callback('on_reset_request', self._on_reset_request)
+        self.interface.set_callback('on_data_fetch_click', self._on_data_fetch_click)  # 修正回调名称
+        self.interface.set_callback('on_touch_continue', self._on_touch_continue)      # 修正回调名称
+        self.interface.set_callback('on_reset_request', self._on_reset_request)       # 修正回调名称
     
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals"""
@@ -211,6 +211,16 @@ class ExhibitionController:
         self.logger.info("System reset completed")
         self.processing_active = False
     
+    def _on_parameter_update(self, context):
+        """Handle parameter updates from state machine"""
+        self.logger.info(f"Received parameter update: distance={context.distance_km}, angle={context.angle_degrees}, time_offset={context.time_offset_years}")
+        self.last_distance = context.distance_km
+        self.last_angle = context.angle_degrees
+        self.last_time_offset = context.time_offset_years
+        
+        # 立即更新GUI界面显示
+        self.interface.update_state(context.current_state, context)
+    
     def run(self):
         """Main exhibition loop"""
         self.logger.info("Starting exhibition mode")
@@ -241,54 +251,187 @@ class ExhibitionController:
             self.shutdown()
     
     def _update_hardware_parameters(self):
-        """Update parameters from hardware input"""
+        """
+        Update parameters from hardware input - 增强的方向传感器容错处理
+        """
         try:
-            # Read compass direction
-            current_direction = self.hardware._read_compass_direction()
-            if current_direction is None:
+            # 使用完整的硬件读取逻辑，与开发模式一致
+            
+            # 1. 读取磁感器方向 - 增强容错处理和调试信息
+            try:
+                current_direction = self.hardware._read_compass_direction()
+                
+                if current_direction is None:
+                    # 如果磁感器读取失败，使用上次的值
+                    current_direction = self.last_angle
+                    self.logger.debug("🧭 磁感器读取返回None，使用上次方向值")
+                else:
+                    # 验证方向值的合理性 - 更严格的验证
+                    if not isinstance(current_direction, (int, float)):
+                        self.logger.warning(f"🧭 方向值类型错误: {type(current_direction)}, 使用上次值")
+                        current_direction = self.last_angle
+                    elif not (0 <= current_direction <= 360):
+                        self.logger.warning(f"🧭 异常方向值: {current_direction}°, 使用上次值")
+                        current_direction = self.last_angle
+                    elif abs(current_direction - self.last_angle) > 180:
+                        # 检查是否是跨越0°/360°边界的正常跳跃
+                        if not ((current_direction < 90 and self.last_angle > 270) or 
+                               (current_direction > 270 and self.last_angle < 90)):
+                            self.logger.warning(f"🧭 方向值跳跃过大: {self.last_angle}° → {current_direction}°")
+                            # 可以选择使用新值或旧值，这里使用新值但记录警告
+                    
+                    # 添加方向值范围检查和归一化
+                    if current_direction >= 360:
+                        current_direction = current_direction % 360
+                    elif current_direction < 0:
+                        current_direction = (current_direction % 360 + 360) % 360
+                        
+            except ConnectionError as e:
+                self.logger.debug(f"🧭 磁感器连接错误: {e}")
+                current_direction = self.last_angle
+            except OSError as e:
+                self.logger.debug(f"🧭 磁感器I2C错误: {e}")
+                current_direction = self.last_angle
+            except ValueError as e:
+                self.logger.debug(f"🧭 磁感器数据格式错误: {e}")
+                current_direction = self.last_angle
+            except Exception as e:
+                self.logger.debug(f"🧭 磁感器读取异常: {type(e).__name__}: {e}")
                 current_direction = self.last_angle
             
-            # Read encoder positions (simplified - just get current state)
-            distance_a, distance_b, _ = self.hardware._read_seesaw_gpio_state()
-            time_a, time_b, _ = self.hardware._read_time_encoder_gpio_state()
-            
-            # Simulate parameter changes based on encoder states
-            # This is a simplified implementation - in full version would track rotation
-            if distance_a is not None and distance_b is not None:
-                # Simple state-based distance adjustment
-                encoder_state = (distance_a << 1) | distance_b
-                if encoder_state != getattr(self, '_last_distance_state', 0):
-                    # Distance changed
-                    if encoder_state > getattr(self, '_last_distance_state', 0):
-                        self.last_distance = min(50.0, self.last_distance + 1.0)
-                    else:
-                        self.last_distance = max(1.0, self.last_distance - 1.0)
-                    self._last_distance_state = encoder_state
-            
-            if time_a is not None and time_b is not None:
-                # Simple state-based time adjustment
-                time_encoder_state = (time_a << 1) | time_b
-                if time_encoder_state != getattr(self, '_last_time_state', 0):
-                    # Time offset changed
-                    if time_encoder_state > getattr(self, '_last_time_state', 0):
-                        self.last_time_offset = min(50, self.last_time_offset + 1)
-                    else:
-                        self.last_time_offset = max(0, self.last_time_offset - 1)
-                    self._last_time_state = time_encoder_state
-            
-            # Update state machine parameters
-            if (abs(current_direction - self.last_angle) > 1.0 or 
-                abs(self.state_machine.context.distance_km - self.last_distance) > 0.1 or
-                abs(self.state_machine.context.time_offset_years - self.last_time_offset) > 0):
+            # 2. 读取Distance Encoder - 使用完整的旋转检测
+            try:
+                distance_a, distance_b, _ = self.hardware._read_seesaw_gpio_state()
                 
+                if distance_a is not None:
+                    # 获取或初始化上次状态
+                    if not hasattr(self, '_last_distance_a_state'):
+                        self._last_distance_a_state = distance_a
+                        self._last_distance_b_state = distance_b
+                        self._distance_encoder_position = 0
+                        self._last_distance_change_time = 0
+                        self.logger.info(f"🎛️ Distance Encoder初始化: A={distance_a}, B={distance_b}")
+                    
+                    # 使用开发模式中的四倍频解码算法
+                    direction = self.hardware._process_encoder_rotation(
+                        distance_a, distance_b,
+                        self._last_distance_a_state, self._last_distance_b_state,
+                        self._distance_encoder_position,
+                        invert_direction=True  # Distance Encoder需要取反
+                    )
+                    
+                    if direction != 0:
+                        # 防抖处理
+                        now = time.time()
+                        if now - self._last_distance_change_time >= 0.05:  # 50ms防抖
+                            # 使用开发模式的距离步长：1km = 1000米
+                            distance_change_km = direction * 1.0  # 每步1km
+                            new_distance = max(1.0, min(50.0, self.last_distance + distance_change_km))
+                            
+                            if abs(new_distance - self.last_distance) > 0.1:
+                                self.last_distance = new_distance
+                                self._distance_encoder_position += direction
+                                self._last_distance_change_time = now
+                                
+                                self.logger.info(f"🔄 距离调整: {direction:+d} → {self.last_distance:.1f}km")
+                                
+                                # 立即更新状态机
+                                self.state_machine.update_parameters(
+                                    self.last_distance, current_direction, self.last_time_offset
+                                )
+                    
+                    self._last_distance_a_state = distance_a
+                    self._last_distance_b_state = distance_b
+                else:
+                    # 每2秒输出一次编码器连接提示
+                    if not hasattr(self, '_last_distance_warning') or time.time() - self._last_distance_warning > 2.0:
+                        self.logger.debug("🎛️ Distance Encoder无响应")
+                        self._last_distance_warning = time.time()
+                        
+            except Exception as e:
+                self.logger.error(f"🎛️ Distance Encoder读取错误: {e}")
+            
+            # 3. 读取Time Encoder - 使用完整的旋转检测
+            try:
+                time_a, time_b, _ = self.hardware._read_time_encoder_gpio_state()
+                
+                if time_a is not None:
+                    # 获取或初始化上次状态
+                    if not hasattr(self, '_last_time_a_state'):
+                        self._last_time_a_state = time_a
+                        self._last_time_b_state = time_b
+                        self._time_encoder_position = 0
+                        self._last_time_change_time = 0
+                        self.logger.info(f"⏰ Time Encoder初始化: A={time_a}, B={time_b}")
+                    
+                    # 使用开发模式中的四倍频解码算法
+                    time_direction = self.hardware._process_encoder_rotation(
+                        time_a, time_b,
+                        self._last_time_a_state, self._last_time_b_state,
+                        self._time_encoder_position,
+                        invert_direction=False  # Time Encoder保持原始方向
+                    )
+                    
+                    if time_direction != 0:
+                        # 防抖处理
+                        now = time.time()
+                        if now - self._last_time_change_time >= 0.05:  # 50ms防抖
+                            # 使用开发模式的时间步长：1年
+                            time_change_years = time_direction * 1.0  # 每步1年
+                            new_time_offset = max(0.0, min(50.0, self.last_time_offset + time_change_years))
+                            
+                            if abs(new_time_offset - self.last_time_offset) > 0.1:
+                                self.last_time_offset = new_time_offset
+                                self._time_encoder_position += time_direction
+                                self._last_time_change_time = now
+                                
+                                self.logger.info(f"⏰ 时间调整: {time_direction:+d} → +{self.last_time_offset:.1f}年")
+                                
+                                # 立即更新状态机
+                                self.state_machine.update_parameters(
+                                    self.last_distance, current_direction, self.last_time_offset
+                                )
+                    
+                    self._last_time_a_state = time_a
+                    self._last_time_b_state = time_b
+                else:
+                    # 每3秒输出一次编码器连接提示
+                    if not hasattr(self, '_last_time_warning') or time.time() - self._last_time_warning > 3.0:
+                        self.logger.debug("⏰ Time Encoder无响应")
+                        self._last_time_warning = time.time()
+                        
+            except Exception as e:
+                self.logger.error(f"⏰ Time Encoder读取错误: {e}")
+            
+            # 4. 检查方向变化 - 增加更好的变化检测和状态更新
+            if abs(current_direction - self.last_angle) > 1.0:
+                old_angle = self.last_angle
+                self.last_angle = current_direction
+                
+                # 尝试获取方向名称，增加容错处理
+                try:
+                    direction_name = self.hardware._get_direction_name(current_direction)
+                except Exception as e:
+                    direction_name = "未知方向"
+                    self.logger.debug(f"方向名称获取失败: {e}")
+                
+                self.logger.info(f"🧭 方向变化: {old_angle:.1f}° → {current_direction:.1f}° ({direction_name})")
+                
+                # 立即更新状态机
                 self.state_machine.update_parameters(
                     self.last_distance, current_direction, self.last_time_offset
                 )
-                self.last_angle = current_direction
+            
+            # 5. 定期输出系统状态（每10秒）
+            if not hasattr(self, '_last_status_output') or time.time() - self._last_status_output > 10.0:
+                self.logger.info(f"📊 系统状态: 距离={self.last_distance:.1f}km, 方向={current_direction:.1f}°, 时间偏移=+{self.last_time_offset:.1f}年")
+                self._last_status_output = time.time()
             
         except Exception as e:
-            # Silent fail in hardware reading
-            pass
+            # 记录错误但不中断程序
+            self.logger.error(f"Hardware parameter update error: {e}")
+            import traceback
+            self.logger.debug(f"Error traceback: {traceback.format_exc()}")
 
     def shutdown(self):
         """Graceful shutdown"""
