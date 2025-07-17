@@ -202,29 +202,8 @@ class GalleryApp {
             minute: '2-digit'
         });
 
-        // 提取地理位置信息 - 修正字段映射
-        let locationName = 'Unknown Location';
-        if (image.prediction) {
-            // 使用实际存在的字段
-            if (image.prediction.location) {
-                locationName = image.prediction.location;
-            } else if (image.prediction.input_data && image.prediction.input_data.location) {
-                // 注意：字段名是 location 不是 location_name
-                locationName = image.prediction.input_data.location;
-            } else if (image.prediction.result_data && image.prediction.result_data.city) {
-                locationName = image.prediction.result_data.city;
-            } else if (image.prediction.input_data && image.prediction.input_data.latitude && image.prediction.input_data.longitude) {
-                // 最后才使用坐标作为回退
-                const lat = image.prediction.input_data.latitude.toFixed(2);
-                const lon = image.prediction.input_data.longitude.toFixed(2);
-                locationName = `${lat}, ${lon}`;
-            }
-        }
-        
-        // 确保locationName是字符串并且不为空
-        if (!locationName || locationName.trim() === '') {
-            locationName = 'Unknown Location';
-        }
+        // 提取地理位置信息 - 格式化为简洁的"City, Region"格式
+        let locationName = this.formatLocationName(image);
 
         imageItem.innerHTML = `
             <div class="image-container">
@@ -349,6 +328,70 @@ class GalleryApp {
         
         const columns = Math.max(1, Math.floor((containerWidth + gap) / (minColumnWidth + gap)));
         return columns;
+    }
+
+    /**
+     * 格式化地理位置名称为简洁的"City, Region"格式
+     * @param {Object} image - 图片数据
+     * @returns {string} 格式化后的位置名称
+     */
+    formatLocationName(image) {
+        if (!image.prediction) {
+            return 'Unknown Location';
+        }
+
+        let locationName = '';
+        const prediction = image.prediction;
+        const inputData = prediction.input_data || {};
+        const resultData = prediction.result_data || {};
+
+        // 优先使用已经格式化好的location字段
+        if (prediction.location) {
+            locationName = prediction.location;
+        } else if (inputData.location) {
+            locationName = inputData.location;
+        } else if (resultData.city) {
+            locationName = resultData.city;
+        } else if (inputData.latitude && inputData.longitude) {
+            // 如果只有坐标，尝试转换为城市名（这里用简化处理）
+            const lat = inputData.latitude;
+            const lon = inputData.longitude;
+            
+            // 简化的城市识别（基于坐标范围）
+            if (lat >= 51.3 && lat <= 51.7 && lon >= -0.5 && lon <= 0.3) {
+                locationName = 'London, UK';
+            } else if (lat >= 55.8 && lat <= 56.0 && lon >= -3.4 && lon <= -3.0) {
+                locationName = 'Edinburgh, UK';
+            } else if (lat >= 53.4 && lat <= 53.6 && lon >= -2.4 && lon <= -2.1) {
+                locationName = 'Manchester, UK';
+            } else {
+                locationName = `${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+            }
+        } else {
+            locationName = 'Unknown Location';
+        }
+
+        // 确保格式统一：如果不包含逗号且不是坐标，尝试添加默认区域
+        if (locationName && !locationName.includes(',') && !locationName.includes('°')) {
+            // 检查是否是已知城市名，如果是就添加国家/地区
+            const knownCities = {
+                'London': 'London, UK',
+                'Edinburgh': 'Edinburgh, UK', 
+                'Manchester': 'Manchester, UK',
+                'Birmingham': 'Birmingham, UK',
+                'Glasgow': 'Glasgow, UK',
+                'Liverpool': 'Liverpool, UK',
+                'Bristol': 'Bristol, UK',
+                'Stratford': 'Stratford, London'
+            };
+            
+            const cityName = locationName.charAt(0).toUpperCase() + locationName.slice(1).toLowerCase();
+            if (knownCities[cityName]) {
+                locationName = knownCities[cityName];
+            }
+        }
+
+        return locationName || 'Unknown Location';
     }
 
     /**

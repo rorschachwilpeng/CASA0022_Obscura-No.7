@@ -467,18 +467,8 @@ class ImageModal {
             const humidity = inputData.humidity || '--';
             updateElement('#summary-humidity', humidity !== '--' ? `${humidity}%` : '--%');
             
-            // 地理位置 - 使用实际存在的字段名
-            let locationName = '--';
-            if (data.prediction.location) {
-                locationName = data.prediction.location;
-            } else if (inputData.location) {
-                // 注意：字段名是 location 不是 location_name
-                locationName = inputData.location;
-            } else if (resultData.city) {
-                locationName = resultData.city;
-            } else if (inputData.latitude && inputData.longitude) {
-                locationName = `${inputData.latitude.toFixed(2)}, ${inputData.longitude.toFixed(2)}`;
-            }
+            // 地理位置 - 使用格式化的位置名称
+            const locationName = this.formatLocationName(data);
             updateElement('#summary-location', locationName);
             
         } else {
@@ -522,6 +512,70 @@ class ImageModal {
         if (detailButton && data.id) {
             detailButton.onclick = () => this.openDetailPage();
         }
+    }
+
+    /**
+     * 格式化地理位置名称为简洁的"City, Region"格式  
+     * @param {Object} data - 图片数据
+     * @returns {string} 格式化后的位置名称
+     */
+    formatLocationName(data) {
+        if (!data.prediction) {
+            return 'Unknown Location';
+        }
+
+        let locationName = '';
+        const prediction = data.prediction;
+        const inputData = prediction.input_data || {};
+        const resultData = prediction.result_data || {};
+
+        // 优先使用已经格式化好的location字段
+        if (prediction.location) {
+            locationName = prediction.location;
+        } else if (inputData.location) {
+            locationName = inputData.location;
+        } else if (resultData.city) {
+            locationName = resultData.city;
+        } else if (inputData.latitude && inputData.longitude) {
+            // 如果只有坐标，尝试转换为城市名（这里用简化处理）
+            const lat = inputData.latitude;
+            const lon = inputData.longitude;
+            
+            // 简化的城市识别（基于坐标范围）
+            if (lat >= 51.3 && lat <= 51.7 && lon >= -0.5 && lon <= 0.3) {
+                locationName = 'London, UK';
+            } else if (lat >= 55.8 && lat <= 56.0 && lon >= -3.4 && lon <= -3.0) {
+                locationName = 'Edinburgh, UK';
+            } else if (lat >= 53.4 && lat <= 53.6 && lon >= -2.4 && lon <= -2.1) {
+                locationName = 'Manchester, UK';
+            } else {
+                locationName = `${lat.toFixed(1)}°, ${lon.toFixed(1)}°`;
+            }
+        } else {
+            locationName = 'Unknown Location';
+        }
+
+        // 确保格式统一：如果不包含逗号且不是坐标，尝试添加默认区域
+        if (locationName && !locationName.includes(',') && !locationName.includes('°')) {
+            // 检查是否是已知城市名，如果是就添加国家/地区
+            const knownCities = {
+                'London': 'London, UK',
+                'Edinburgh': 'Edinburgh, UK', 
+                'Manchester': 'Manchester, UK',
+                'Birmingham': 'Birmingham, UK',
+                'Glasgow': 'Glasgow, UK',
+                'Liverpool': 'Liverpool, UK',
+                'Bristol': 'Bristol, UK',
+                'Stratford': 'Stratford, London'
+            };
+            
+            const cityName = locationName.charAt(0).toUpperCase() + locationName.slice(1).toLowerCase();
+            if (knownCities[cityName]) {
+                locationName = knownCities[cityName];
+            }
+        }
+
+        return locationName || 'Unknown Location';
     }
 
     /**

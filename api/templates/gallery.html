@@ -192,38 +192,76 @@ kbd {
 
 {% block content %}
 <div class="steampunk-container">
-    <!-- Gallery Header -->
-    <section class="gallery-header" aria-labelledby="gallery-main-title">
-        <div class="brass-panel header-panel compact-header">
-            <h1 id="gallery-main-title" class="gallery-title">🔭 OBSCURA NO.7</h1>
-            <p class="gallery-subtitle">Obscura No.7 transforms complex climate data into visual stories through an AI-powered steampunk telescope, making environmental science tangible and emotionally engaging for communities.</p>
+    <!-- Main Content Layout: Left Instructor, Right Title Panel -->
+    <section class="main-layout" aria-labelledby="main-content">
+        <div class="layout-container">
+            <!-- Left Side: Instructor with Image -->
+            <div class="instructor-panel">
+                <div class="brass-panel">
+                    <!-- Image Header -->
+                    <div class="instructor-image-header">
+                                                 <img src="{{ url_for('static', filename='images/insturctor.png') }}" 
+                             alt="Obscura No.7 Operation Instructions" 
+                             class="instructor-image"
+                             aria-describedby="instructor-description">
+                    </div>
+                    
+                    <div id="instructor-description" class="sr-only">
+                        A visual guide showing the 5-step operation process for Obscura No.7: 
+                        1. Select the city, 2. Adjust parameters, 3. Predict the future, 4. View results, 5. Touch to continue.
+                    </div>
+                    
+                    <div class="instructor-note">
+                        <p><em>💡 Tip: Angle and distance determine geographic location, while time controls prediction timeline.</em></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side: Title Panel (Vertical) -->
+            <div class="title-panel">
+                <div class="brass-panel vertical-panel">
+                    <div class="panel-header">
+                        <h1 id="gallery-main-title" class="gallery-title">🔭 OBSCURA NO.7</h1>
+                        <div class="brass-line" aria-hidden="true"></div>
+                    </div>
+                    
+                    <div class="title-content">
+                        <p class="gallery-description">Obscura No.7 transforms complex climate data into visual stories through an AI-powered steampunk telescope, making environmental science tangible and emotionally engaging for communities.</p>
+                    </div>
+                    
+                    <!-- Gallery Statistics (Integrated) -->
+                    <div class="stats-section">
+                        <h2 class="stats-title">Mission Status</h2>
+                        
+                        <div class="stat-item" role="group" aria-labelledby="images-stat">
+                            <span class="stat-icon" aria-hidden="true">📸</span>
+                            <div class="stat-info">
+                                <span id="total-images" class="stat-number" aria-live="polite">Loading...</span>
+                                <span id="images-stat" class="stat-label">Visions Captured</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item" role="group" aria-labelledby="predictions-stat">
+                            <span class="stat-icon" aria-hidden="true">🔮</span>
+                            <div class="stat-info">
+                                <span id="total-predictions" class="stat-number" aria-live="polite">-</span>
+                                <span id="predictions-stat" class="stat-label">Predictions Made</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item" role="group" aria-labelledby="locations-stat">
+                            <span class="stat-icon" aria-hidden="true">🌍</span>
+                            <div class="stat-info">
+                                <span id="locations-explored" class="stat-number" aria-live="polite">-</span>
+                                <span id="locations-stat" class="stat-label">Locations Explored</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
-
-    <!-- Gallery Statistics -->
-    <section class="gallery-stats" aria-labelledby="stats-title">
-        <div class="stats-panel" role="region" aria-label="Gallery Statistics">
-            <h2 id="stats-title" class="sr-only">Gallery Statistics</h2>
-            
-            <div class="stat-item" role="group" aria-labelledby="images-stat">
-                <span class="stat-icon" aria-hidden="true">📸</span>
-                <span id="total-images" class="stat-number" aria-live="polite">Loading...</span>
-                <span id="images-stat" class="stat-label">Visions Captured</span>
-            </div>
-            
-            <div class="stat-item" role="group" aria-labelledby="predictions-stat">
-                <span class="stat-icon" aria-hidden="true">🔮</span>
-                <span id="total-predictions" class="stat-number" aria-live="polite">-</span>
-                <span id="predictions-stat" class="stat-label">Predictions Made</span>
-            </div>
-            
-            <div class="stat-item" role="group" aria-labelledby="locations-stat">
-                <span class="stat-icon" aria-hidden="true">🌍</span>
-                <span id="locations-explored" class="stat-number" aria-live="polite">-</span>
-                <span id="locations-stat" class="stat-label">Locations Explored</span>
-            </div>
-        </div>
-    </section>
+                
 
     <!-- Gallery Controls -->
     <section class="gallery-content" aria-labelledby="gallery-content-title">

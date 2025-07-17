@@ -429,3 +429,224 @@
         gap: 0.5rem;
     }
 }
+
+/* Main Layout Styles */
+.main-layout {
+    margin: 3rem 0;
+}
+
+.layout-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+    min-height: 500px;
+}
+
+.instructor-panel {
+    width: 100%;
+}
+
+.title-panel {
+    width: 100%;
+}
+
+.instructor-panel .brass-panel,
+.title-panel .brass-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.vertical-panel {
+    min-height: 500px;
+}
+
+/* Instructor Image Styles */
+.instructor-image-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 0 1rem;
+}
+
+.instructor-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 12px;
+    border: 3px solid var(--brass-dark);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.instructor-image:hover {
+    transform: scale(1.02);
+    box-shadow: 
+        0 12px 24px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+/* Title Panel Styles */
+.gallery-title {
+    font-size: 2.2rem;
+    color: var(--coal);
+    margin-bottom: 1rem;
+    text-align: center;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.title-content {
+    flex-grow: 1;
+    padding: 1.5rem 0;
+}
+
+.gallery-description {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--coal);
+    line-height: 1.6;
+    text-align: center;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Stats Section in Vertical Panel */
+.stats-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--brass-dark);
+}
+
+.stats-title {
+    font-size: 1.3rem;
+    color: var(--coal);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.stats-section .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    border: 1px solid var(--brass-dark);
+    transition: all 0.3s ease;
+}
+
+.stats-section .stat-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.stats-section .stat-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-info {
+    flex-grow: 1;
+}
+
+.stats-section .stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--coal);
+    display: block;
+    font-family: 'Courier New', monospace;
+}
+
+.stats-section .stat-label {
+    font-size: 0.9rem;
+    color: var(--iron);
+    display: block;
+}
+
+.instructor-note {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--brass-gradient);
+    border-radius: 8px;
+    border: 2px solid var(--brass-dark);
+    text-align: center;
+}
+
+.instructor-note p {
+    margin: 0;
+    color: var(--coal);
+    font-size: 0.9rem;
+}
+
+
+
+/* Responsive Design for Main Layout */
+@media (max-width: 1024px) {
+    .layout-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .instructor-panel,
+    .title-panel {
+        width: 100%;
+    }
+    
+    .vertical-panel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        margin: 2rem 0;
+    }
+    
+    .gallery-title {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+    
+    .gallery-description {
+        font-size: 0.9rem;
+    }
+    
+    .stats-section .stat-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .stats-section .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-title {
+        font-size: 1.5rem;
+    }
+    
+    .instructor-image {
+        border-radius: 8px;
+        border-width: 2px;
+    }
+    
+    .instructor-note p {
+        font-size: 0.8rem;
+    }
+    
+    .stats-title {
+        font-size: 1.1rem;
+    }
+    
+    .layout-container {
+        gap: 1.5rem;
+    }
+}
