@@ -2376,7 +2376,7 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         "location": location_name
     }
 
-@bp.route('/api/v1/images/<int:image_id>/refresh-story', methods=['POST'])
+@images_bp.route('/<int:image_id>/refresh-story', methods=['POST'])
 def refresh_image_story(image_id):
     """
     🔄 强制重新生成指定图片的AI故事
@@ -2434,7 +2434,7 @@ def refresh_image_story(image_id):
             "error": str(e)
         }), 500
 
-@bp.route('/api/v1/images/refresh-all-stories', methods=['POST'])
+@images_bp.route('/refresh-all-stories', methods=['POST'])
 def refresh_all_stories():
     """
     🔄 强制重新生成所有图片的AI故事（危险操作，仅限管理员）
