@@ -637,24 +637,52 @@ class ImageModal {
 
         try {
             console.log('🔭 Modal: Downloading image:', this.currentImageData.id);
+            
+            // 调用后端下载API获取图片文件流
             const response = await fetch(`/api/v1/images/${this.currentImageData.id}/download`);
             
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `obscura-vision-${this.currentImageData.id}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            } else {
-                throw new Error('Download failed');
+            if (!response.ok) {
+                // 提供详细的错误信息
+                const errorText = await response.text();
+                throw new Error(`Download failed: ${response.status} ${response.statusText} - ${errorText}`);
             }
+            
+            // 获取文件blob
+            const blob = await response.blob();
+            
+            // 验证blob是否为有效的图片
+            if (blob.size === 0) {
+                throw new Error('Downloaded file is empty');
+            }
+            
+            const url = window.URL.createObjectURL(blob);
+            
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `obscura-vision-${this.currentImageData.id}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理URL对象和DOM元素
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('✅ Modal: Image download completed');
+            
         } catch (error) {
             console.error('❌ Modal: Download error:', error);
-            alert('Download failed. Please try again.');
+            
+            // 更好的用户反馈
+            if (error.message.includes('403')) {
+                alert('Download not allowed. Please check permissions.');
+            } else if (error.message.includes('404')) {
+                alert('Image not found. It may have been removed.');
+            } else if (error.message.includes('500')) {
+                alert('Server error. Please try again later.');
+            } else {
+                alert(`Download failed: ${error.message}`);
+            }
         }
     }
 
