@@ -55,6 +55,10 @@ class ImageDetailPage {
         const fullscreenClose = document.querySelector('#fullscreenClose');
         fullscreenClose?.addEventListener('click', () => this.closeFullscreen());
 
+        // 刷新故事按钮
+        const refreshStoryBtn = document.querySelector('#refreshStoryBtn');
+        refreshStoryBtn?.addEventListener('click', () => this.refreshStory());
+
         // 键盘快捷键
         document.addEventListener('keydown', (e) => this.handleKeydown(e));
 
@@ -872,23 +876,124 @@ class ImageDetailPage {
     }
 
     /**
+     * 刷新AI故事
+     */
+    async refreshStory() {
+        if (!this.imageId) return;
+        
+        try {
+            const refreshBtn = document.querySelector('#refreshStoryBtn');
+            const storyContent = document.querySelector('#storyContent');
+            const storyLoading = document.querySelector('#storyLoading');
+            
+            // 显示加载状态
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<span class="refresh-icon">🔄</span><span class="refresh-text">Refreshing...</span>';
+            storyContent.style.display = 'none';
+            storyLoading.style.display = 'block';
+            
+            console.log(`🔄 Refreshing story for image ${this.imageId}`);
+            
+            // 调用刷新API
+            const response = await fetch(`/api/v1/images/${this.imageId}/refresh-story`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    // 重新加载图片数据以获取新故事
+                    await this.loadImageData();
+                    console.log('✅ Story refreshed successfully');
+                    
+                    // 显示成功提示
+                    this.showTemporaryMessage('Story refreshed successfully! 🎉');
+                } else {
+                    throw new Error(result.error || 'Failed to refresh story');
+                }
+            } else {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error refreshing story:', error);
+            this.showTemporaryMessage('Failed to refresh story. Please try again. ❌');
+        } finally {
+            // 恢复按钮状态
+            const refreshBtn = document.querySelector('#refreshStoryBtn');
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<span class="refresh-icon">🔄</span><span class="refresh-text">Refresh Story</span>';
+        }
+    }
+
+    /**
+     * 显示临时消息
+     */
+    showTemporaryMessage(message) {
+        const messageEl = document.createElement('div');
+        messageEl.className = 'temporary-message';
+        messageEl.textContent = message;
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2d4a2b;
+            color: #c9a961;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid #c9a961;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        
+        document.body.appendChild(messageEl);
+        
+        setTimeout(() => {
+            messageEl.remove();
+        }, 3000);
+    }
+
+    /**
      * 下载图片
      */
     async downloadImage() {
         if (!this.imageData) return;
 
         try {
+            console.log('🔭 Detail: Downloading image:', this.imageData.id);
+            
+            // 调用后端下载API获取图片文件流
+            const response = await fetch(`/api/v1/images/${this.imageData.id}/download`);
+            
+            if (!response.ok) {
+                throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+            }
+            
+            // 获取文件blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            // 创建下载链接
             const link = document.createElement('a');
-            link.href = this.imageData.url;
+            link.href = url;
             link.download = `obscura-vision-${this.imageData.id}-detailed.jpg`;
-            link.target = '_blank';
+            document.body.appendChild(link);
             link.click();
+            
+            // 清理URL对象和DOM元素
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
 
             // 显示下载成功提示
             this.showNotification('Image download started', 'success');
+            console.log('✅ Detail: Image download completed');
+            
         } catch (error) {
-            console.error('Download failed:', error);
-            this.showNotification('Download failed', 'error');
+            console.error('❌ Detail: Download failed:', error);
+            this.showNotification('Download failed: ' + error.message, 'error');
         }
     }
 

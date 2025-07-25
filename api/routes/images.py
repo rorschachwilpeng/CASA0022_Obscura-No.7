@@ -9,6 +9,7 @@ import cloudinary.uploader
 import psycopg2
 import os
 import logging
+import hashlib
 from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import io
@@ -435,12 +436,13 @@ def validate_hierarchical_shap_data(shap_data):
     
     return validation_result
 
-def generate_ai_environmental_story(shap_data):
+def generate_ai_environmental_story(shap_data, force_unique=True):
     """
     使用DeepSeek生成环境故事（约100词英文，戏剧性描述）
     
     Args:
         shap_data: SHAP分析数据，包含三个维度得分和特征重要性
+        force_unique: 是否强制生成唯一故事（默认True）
         
     Returns:
         str: 生成的英文环境故事
@@ -464,16 +466,34 @@ def generate_ai_environmental_story(shap_data):
         feature_importance = shap_data.get('shap_analysis', {}).get('feature_importance', {})
         top_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)[:3]
         
-        prompt = f"""Write a dramatic environmental narrative in exactly 100 words. 
+        # 🔧 修复：增加唯一性标识和随机性，确保每个图片生成不同的故事
+        import time
+        timestamp = str(int(time.time() * 1000))[-6:]  # 使用时间戳的后6位
+        image_hash = hashlib.md5(f"{city}_{climate_score}_{geographic_score}_{economic_score}_{timestamp}".encode()).hexdigest()[:8]
+        
+        # 添加随机的故事风格提示
+        story_styles = [
+            "like a scene from a climate science thriller",
+            "as if narrated by a future environmental historian", 
+            "in the style of a dramatic weather report from 2050",
+            "like an excerpt from an environmental documentary",
+            "as a dramatic eyewitness account from the future",
+            "in the tone of a scientific expedition journal"
+        ]
+        style_hint = story_styles[int(timestamp[-1]) % len(story_styles)]
+        
+        prompt = f"""Write a dramatic environmental narrative in exactly 100 words for Analysis #{image_hash}. 
 
 Location: {city}
 Climate Impact: {climate_score:.1f}%
 Geographic Impact: {geographic_score:.1f}% 
 Economic Impact: {economic_score:.1f}%
 Key factors: {', '.join([f[0] for f in top_features[:3]])}
+Timestamp: {timestamp}
 
-Create a compelling story that dramatically describes the environmental conditions and future predictions for this location. Use vivid imagery and emotional language. Focus on the interplay between climate, geography, and economics. Make it sound like a scene from a climate science thriller.
+Create a COMPLETELY UNIQUE compelling story that dramatically describes the environmental conditions and future predictions for this specific location and data combination. Use vivid imagery and emotional language. Focus on the interplay between climate, geography, and economics. Write {style_hint}.
 
+IMPORTANT: Each story must be completely different and unique. Use different narrative approaches, perspectives, and dramatic elements for each analysis.
 Write EXACTLY 100 words. Be dramatic and engaging."""
 
         # 调用DeepSeek API
@@ -1693,7 +1713,7 @@ def download_image(image_id):
     """
     图片下载API端点
     
-    返回: 重定向到Cloudinary下载链接
+    返回: 图片文件流供直接下载
     """
     try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
@@ -1716,23 +1736,90 @@ def download_image(image_id):
         cur.close()
         conn.close()
         
-        # 生成带下载参数的Cloudinary URL
-        download_url = image_url.replace('/upload/', '/upload/fl_attachment/')
+        # 从Cloudinary获取图片文件流
+        import requests
+        response = requests.get(image_url, stream=True, timeout=30)
         
-        logger.info(f"Image download requested for ID: {image_id}")
+        if response.status_code != 200:
+            logger.error(f"Failed to fetch image from Cloudinary: {response.status_code}")
+            return jsonify({
+                "success": False,
+                "error": "Failed to fetch image from storage",
+                "timestamp": datetime.now().isoformat()
+            }), 500
         
-        return jsonify({
-            "success": True,
-            "download_url": download_url,
-            "filename": f"{description.replace(' ', '_')}.jpg",
-            "timestamp": datetime.now().isoformat()
-        }), 200
+        # 设置下载响应头
+        from flask import Response
+        filename = f"{description.replace(' ', '_')}.jpg"
+        
+        # 创建流式响应
+        def generate():
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    yield chunk
+        
+        logger.info(f"Image download streaming for ID: {image_id}")
+        
+        return Response(
+            generate(),
+            content_type='image/jpeg',
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': 'image/jpeg',
+                'Cache-Control': 'no-cache'
+            }
+        )
         
     except Exception as e:
-        logger.error(f"Error generating download link: {e}")
+        logger.error(f"Error downloading image: {e}")
+        
+        # 数据库不可用时的备用方案
+        database_issues = [
+            "nodename nor servname provided",
+            "could not translate host name",
+            "relation \"images\" does not exist",
+            "does not exist"
+        ]
+        
+        is_database_issue = any(issue in str(e) for issue in database_issues)
+        
+        if is_database_issue:
+            # 检查本地存储
+            if image_id in LOCAL_IMAGES_STORE:
+                local_image = LOCAL_IMAGES_STORE[image_id]
+                image_url = local_image['url']
+                description = local_image['description'] or f"obscura_image_{image_id}"
+                
+                try:
+                    import requests
+                    response = requests.get(image_url, stream=True, timeout=30)
+                    
+                    if response.status_code == 200:
+                        filename = f"{description.replace(' ', '_')}.jpg"
+                        
+                        def generate():
+                            for chunk in response.iter_content(chunk_size=8192):
+                                if chunk:
+                                    yield chunk
+                        
+                        logger.info(f"Image download streaming from local storage for ID: {image_id}")
+                        
+                        from flask import Response
+                        return Response(
+                            generate(),
+                            content_type='image/jpeg',
+                            headers={
+                                'Content-Disposition': f'attachment; filename="{filename}"',
+                                'Content-Type': 'image/jpeg',
+                                'Cache-Control': 'no-cache'
+                            }
+                        )
+                except Exception as fallback_error:
+                    logger.error(f"Fallback download failed: {fallback_error}")
+        
         return jsonify({
             "success": False,
-            "error": "Failed to generate download link",
+            "error": "Failed to download image",
             "timestamp": datetime.now().isoformat()
         }), 500
 
@@ -2288,3 +2375,105 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         "prompt": f"Dynamic environmental analysis for {location_name} based on telescope observation #{image_id}",
         "location": location_name
     }
+
+@bp.route('/api/v1/images/<int:image_id>/refresh-story', methods=['POST'])
+def refresh_image_story(image_id):
+    """
+    🔄 强制重新生成指定图片的AI故事
+    """
+    try:
+        logger.info(f"🔄 Forcing story refresh for image {image_id}")
+        
+        # 1. 删除数据库中的缓存记录
+        try:
+            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            cur = conn.cursor()
+            
+            # 删除旧的分析记录
+            cur.execute("DELETE FROM image_analysis WHERE image_id = %s", (image_id,))
+            deleted_count = cur.rowcount
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            logger.info(f"✅ Deleted {deleted_count} cached analysis records for image {image_id}")
+            
+        except Exception as db_error:
+            logger.warning(f"⚠️ Database cleanup failed: {db_error}")
+        
+        # 2. 强制生成新的分析和故事
+        analysis_result = process_image_analysis(
+            image_id=image_id,
+            image_url=f"placeholder_url_{image_id}",
+            description=f"Force refresh analysis for image {image_id}",
+            prediction_id=None
+        )
+        
+        if analysis_result and analysis_result.get('status') == 'completed':
+            return jsonify({
+                "success": True,
+                "message": f"Story refreshed successfully for image {image_id}",
+                "data": {
+                    "image_id": image_id,
+                    "new_story": analysis_result.get('ai_story', 'No story generated'),
+                    "generated_at": analysis_result.get('generated_at'),
+                    "refresh_timestamp": datetime.now().isoformat()
+                }
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "Failed to generate new analysis"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"❌ Error refreshing story for image {image_id}: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@bp.route('/api/v1/images/refresh-all-stories', methods=['POST'])
+def refresh_all_stories():
+    """
+    🔄 强制重新生成所有图片的AI故事（危险操作，仅限管理员）
+    """
+    try:
+        logger.info("🔄 Starting bulk story refresh operation")
+        
+        # 获取所有图片ID
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+        
+        # 清空所有缓存
+        cur.execute("DELETE FROM image_analysis")
+        deleted_count = cur.rowcount
+        
+        # 获取所有图片ID
+        cur.execute("SELECT id FROM images ORDER BY id")
+        image_ids = [row[0] for row in cur.fetchall()]
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        logger.info(f"✅ Cleared {deleted_count} cached records, found {len(image_ids)} images to refresh")
+        
+        return jsonify({
+            "success": True,
+            "message": f"Cleared all cached stories for {len(image_ids)} images",
+            "data": {
+                "cleared_cache_count": deleted_count,
+                "total_images": len(image_ids),
+                "refresh_timestamp": datetime.now().isoformat(),
+                "note": "Stories will be regenerated when images are next viewed"
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Error in bulk story refresh: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
