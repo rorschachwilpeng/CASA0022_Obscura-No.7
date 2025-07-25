@@ -642,8 +642,13 @@ class ImageModal {
             const response = await fetch(`/api/v1/images/${this.currentImageData.id}/download`);
             
             if (!response.ok) {
-                // 提供详细的错误信息
-                const errorText = await response.text();
+                // 安全地获取错误信息
+                let errorText = 'Unknown error';
+                try {
+                    errorText = await response.text();
+                } catch (e) {
+                    errorText = `Response read failed: ${e.message}`;
+                }
                 throw new Error(`Download failed: ${response.status} ${response.statusText} - ${errorText}`);
             }
             
@@ -671,17 +676,18 @@ class ImageModal {
             console.log('✅ Modal: Image download completed');
             
         } catch (error) {
-            console.error('❌ Modal: Download error:', error);
+            console.error('❌ Modal: Download error:', error || 'Unknown error occurred');
             
             // 更好的用户反馈
-            if (error.message.includes('403')) {
+            const errorMessage = error?.message || 'Unknown error';
+            if (errorMessage.includes('403')) {
                 alert('Download not allowed. Please check permissions.');
-            } else if (error.message.includes('404')) {
+            } else if (errorMessage.includes('404')) {
                 alert('Image not found. It may have been removed.');
-            } else if (error.message.includes('500')) {
+            } else if (errorMessage.includes('500')) {
                 alert('Server error. Please try again later.');
             } else {
-                alert(`Download failed: ${error.message}`);
+                alert(`Download failed: ${errorMessage}`);
             }
         }
     }
