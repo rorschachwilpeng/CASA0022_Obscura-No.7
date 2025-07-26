@@ -1750,7 +1750,12 @@ def download_image(image_id):
         
         # 设置下载响应头
         from flask import Response
-        filename = f"{description.replace(' ', '_')}.jpg"
+        import re
+        
+        # 清理文件名，移除所有无效字符
+        safe_description = re.sub(r'[^\w\s-]', '', description or f"obscura_image_{image_id}")
+        safe_description = re.sub(r'\s+', '_', safe_description.strip())
+        filename = f"{safe_description[:50]}.jpg"  # 限制长度
         
         # 创建流式响应
         def generate():
@@ -1795,7 +1800,10 @@ def download_image(image_id):
                     response = requests.get(image_url, stream=True, timeout=30)
                     
                     if response.status_code == 200:
-                        filename = f"{description.replace(' ', '_')}.jpg"
+                        # 清理文件名，移除所有无效字符
+                        safe_description = re.sub(r'[^\w\s-]', '', description or f"obscura_image_{image_id}")
+                        safe_description = re.sub(r'\s+', '_', safe_description.strip())
+                        filename = f"{safe_description[:50]}.jpg"  # 限制长度
                         
                         def generate():
                             for chunk in response.iter_content(chunk_size=8192):
