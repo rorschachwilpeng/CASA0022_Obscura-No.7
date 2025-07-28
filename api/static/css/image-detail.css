@@ -207,6 +207,9 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid var(--copper);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .story-title {
@@ -217,6 +220,50 @@
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* 刷新故事按钮样式 */
+.refresh-story-btn {
+    background: linear-gradient(135deg, var(--copper), var(--bronze));
+    border: 1px solid var(--amber);
+    border-radius: 8px;
+    color: var(--amber);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-family: 'Crimson Text', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(201, 169, 97, 0.2);
+}
+
+.refresh-story-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--bronze), var(--amber));
+    color: var(--coal);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 169, 97, 0.4);
+}
+
+.refresh-story-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.refresh-story-btn .refresh-icon {
+    font-size: 1rem;
+    animation: none;
+}
+
+.refresh-story-btn:disabled .refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .story-icon {
