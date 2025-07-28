@@ -76,12 +76,14 @@ def emit_new_image_event(image_data):
     """发送新图片上传事件到所有连接的客户端"""
     try:
         if SOCKETIO_AVAILABLE and hasattr(current_app, 'socketio'):
-            current_app.socketio.emit('new_image_uploaded', {
+            # 直接使用SocketIO实例发送事件到所有客户端
+            socketio = current_app.socketio
+            socketio.emit('new_image_uploaded', {
                 'image_id': image_data.get('id'),
                 'description': image_data.get('description', ''),
                 'created_at': image_data.get('created_at'),
                 'message': 'New environmental vision uploaded!'
-            }, broadcast=True)
+            })
             logger.info(f"✅ WebSocket event sent for image {image_data.get('id')}")
         else:
             logger.warning("⚠️ SocketIO not available, skipping event emission")
