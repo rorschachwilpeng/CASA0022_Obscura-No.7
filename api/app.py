@@ -363,6 +363,7 @@ if __name__ == '__main__':
     logger.info(f"🚀 启动应用 - 端口: {port}, 调试模式: {debug}")
     
     if socketio and SOCKETIO_AVAILABLE:
-        socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+        # 在生产环境中允许Werkzeug运行（仅用于WebSocket支持）
+        socketio.run(app, host='0.0.0.0', port=port, debug=debug, allow_unsafe_werkzeug=True)
     else:
         app.run(host='0.0.0.0', port=port, debug=debug) 
