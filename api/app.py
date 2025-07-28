@@ -86,12 +86,24 @@ def create_app():
     
     # 初始化SocketIO
     socketio = None
+    logger.info(f"🔍 SocketIO availability check: SOCKETIO_AVAILABLE={SOCKETIO_AVAILABLE}")
+    
     if SOCKETIO_AVAILABLE:
-        socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
-        app.socketio = socketio
-        logger.info("✅ SocketIO initialized")
+        try:
+            socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+            app.socketio = socketio
+            logger.info("✅ SocketIO successfully initialized")
+            logger.info(f"🔗 SocketIO instance created: {type(socketio)}")
+        except Exception as e:
+            logger.error(f"❌ SocketIO initialization failed: {e}")
+            socketio = None
     else:
-        logger.warning("⚠️ SocketIO not available")
+        logger.warning("⚠️ SocketIO not available - flask-socketio not imported")
+        try:
+            import flask_socketio
+            logger.warning(f"🤔 Actually flask-socketio IS available, version: {getattr(flask_socketio, '__version__', 'unknown')}")
+        except ImportError as import_error:
+            logger.warning(f"📦 flask-socketio import error: {import_error}")
     
     # 注册蓝图
     register_blueprints(app)
