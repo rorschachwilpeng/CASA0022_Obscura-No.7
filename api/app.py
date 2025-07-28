@@ -12,6 +12,13 @@ from flask import Flask
 from datetime import datetime
 import importlib.util
 
+# SocketIO导入
+try:
+    from flask_socketio import SocketIO, emit
+    SOCKETIO_AVAILABLE = True
+except ImportError:
+    SOCKETIO_AVAILABLE = False
+
 # 添加项目根目录到路径
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
@@ -77,6 +84,15 @@ def create_app():
     # 配置应用
     configure_app(app)
     
+    # 初始化SocketIO
+    socketio = None
+    if SOCKETIO_AVAILABLE:
+        socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+        app.socketio = socketio
+        logger.info("✅ SocketIO initialized")
+    else:
+        logger.warning("⚠️ SocketIO not available")
+    
     # 注册蓝图
     register_blueprints(app)
     
@@ -90,7 +106,7 @@ def create_app():
     startup_check(app)
     
     logger.info("🔭 Obscura No.7 应用初始化完成")
-    return app
+    return app, socketio
 
 def configure_app(app):
     """配置Flask应用"""
@@ -315,7 +331,7 @@ def startup_check(app):
             logger.error(f"❌ 启动检查失败: {e}")
 
 # 创建应用实例
-app = create_app()
+app, socketio = create_app()
 
 # Legacy route for compatibility (在app创建后添加)
 @app.route('/predict', methods=['POST'])
@@ -333,4 +349,8 @@ if __name__ == '__main__':
     debug = not os.environ.get('RENDER')  # 在Render环境中禁用调试模式
     
     logger.info(f"🚀 启动应用 - 端口: {port}, 调试模式: {debug}")
-    app.run(host='0.0.0.0', port=port, debug=debug) 
+    
+    if socketio and SOCKETIO_AVAILABLE:
+        socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    else:
+        app.run(host='0.0.0.0', port=port, debug=debug) 

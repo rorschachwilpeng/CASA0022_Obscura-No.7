@@ -4,7 +4,7 @@
 Images API Routes - 图片上传与管理API端点
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import cloudinary.uploader
 import psycopg2
 import os
@@ -16,6 +16,13 @@ import io
 import json
 import random
 import hashlib
+
+# SocketIO导入
+try:
+    from flask_socketio import emit
+    SOCKETIO_AVAILABLE = True
+except ImportError:
+    SOCKETIO_AVAILABLE = False
 
 # 加载环境变量
 try:
@@ -64,6 +71,22 @@ logger = logging.getLogger(__name__)
 
 # 创建蓝图
 images_bp = Blueprint('images', __name__, url_prefix='/api/v1/images')
+
+def emit_new_image_event(image_data):
+    """发送新图片上传事件到所有连接的客户端"""
+    try:
+        if SOCKETIO_AVAILABLE and hasattr(current_app, 'socketio'):
+            current_app.socketio.emit('new_image_uploaded', {
+                'image_id': image_data.get('id'),
+                'description': image_data.get('description', ''),
+                'created_at': image_data.get('created_at'),
+                'message': 'New environmental vision uploaded!'
+            }, broadcast=True)
+            logger.info(f"✅ WebSocket event sent for image {image_data.get('id')}")
+        else:
+            logger.warning("⚠️ SocketIO not available, skipping event emission")
+    except Exception as e:
+        logger.error(f"❌ Failed to emit WebSocket event: {e}")
 
 def process_image_analysis(image_id, image_url, description, prediction_id):
     """
@@ -675,16 +698,22 @@ def upload_image():
             
             logger.info(f"Image stored locally with ID: {image_id}")
             
+            # 构建图片数据用于WebSocket事件
+            image_data = {
+                "id": image_id,
+                "url": image_url,
+                "thumbnail_url": thumbnail_url,
+                "description": description,
+                "prediction_id": int(prediction_id) if prediction_id else 1,
+                "created_at": created_at.isoformat()
+            }
+            
+            # 发送WebSocket事件
+            emit_new_image_event(image_data)
+            
             return jsonify({
                 "success": True,
-                "image": {
-                    "id": image_id,
-                    "url": image_url,
-                    "thumbnail_url": thumbnail_url,
-                    "description": description,
-                    "prediction_id": int(prediction_id) if prediction_id else 1,
-                    "created_at": created_at.isoformat()
-                },
+                "image": image_data,
                 "message": "Image uploaded successfully (local dev mode)",
                 "timestamp": datetime.now().isoformat()
             }), 201
@@ -905,16 +934,22 @@ def upload_image():
                 analysis_thread.daemon = True
                 analysis_thread.start()
                 
+                # 构建图片数据用于WebSocket事件
+                image_data_fallback = {
+                    "id": new_image_id,
+                    "url": image_url,
+                    "thumbnail_url": thumbnail_url,
+                    "description": description,
+                    "prediction_id": int(prediction_id),
+                    "created_at": datetime.now().isoformat()
+                }
+                
+                # 发送WebSocket事件
+                emit_new_image_event(image_data_fallback)
+                
                 return jsonify({
                     "success": True,
-                    "image": {
-                        "id": new_image_id,
-                        "url": image_url,
-                        "thumbnail_url": thumbnail_url,
-                        "description": description,
-                        "prediction_id": int(prediction_id),
-                        "created_at": datetime.now().isoformat()
-                    },
+                    "image": image_data_fallback,
                     "message": "Image uploaded successfully (fallback local storage mode)",
                     "analysis_status": "processing",
                     "timestamp": datetime.now().isoformat()
@@ -942,17 +977,23 @@ def upload_image():
         analysis_thread.daemon = True
         analysis_thread.start()
         
+        # 构建图片数据用于WebSocket事件
+        image_data_main = {
+            "id": image_id,
+            "url": image_url,
+            "thumbnail_url": thumbnail_url,
+            "description": description,
+            "prediction_id": int(prediction_id),
+            "created_at": created_at.isoformat()
+        }
+        
+        # 发送WebSocket事件
+        emit_new_image_event(image_data_main)
+        
         # 返回成功响应
         return jsonify({
             "success": True,
-            "image": {
-                "id": image_id,
-                "url": image_url,
-                "thumbnail_url": thumbnail_url,
-                "description": description,
-                "prediction_id": int(prediction_id),
-                "created_at": created_at.isoformat()
-            },
+            "image": image_data_main,
             "message": "Image uploaded successfully",
             "analysis_status": "processing",
             "timestamp": datetime.now().isoformat()
@@ -1114,17 +1155,23 @@ def register_image():
                 
                 logger.info(f"Image registered locally with ID: {new_image_id}")
                 
+                # 构建图片数据用于WebSocket事件
+                image_data_register_fallback = {
+                    "id": new_image_id,
+                    "url": image_url,
+                    "thumbnail_url": thumbnail_url,
+                    "description": description,
+                    "prediction_id": prediction_id,
+                    "created_at": created_at.isoformat(),
+                    "source": source
+                }
+                
+                # 发送WebSocket事件
+                emit_new_image_event(image_data_register_fallback)
+                
                 return jsonify({
                     "success": True,
-                    "image": {
-                        "id": new_image_id,
-                        "url": image_url,
-                        "thumbnail_url": thumbnail_url,
-                        "description": description,
-                        "prediction_id": prediction_id,
-                        "created_at": created_at.isoformat(),
-                        "source": source
-                    },
+                    "image": image_data_register_fallback,
                     "message": "Image registered successfully (fallback local storage mode)",
                     "timestamp": datetime.now().isoformat()
                 }), 201
@@ -1135,18 +1182,24 @@ def register_image():
                     "timestamp": datetime.now().isoformat()
                 }), 500
         
+        # 构建图片数据用于WebSocket事件
+        image_data_register_main = {
+            "id": image_id,
+            "url": image_url,
+            "thumbnail_url": thumbnail_url,
+            "description": description,
+            "prediction_id": prediction_id,
+            "created_at": created_at.isoformat(),
+            "source": source
+        }
+        
+        # 发送WebSocket事件
+        emit_new_image_event(image_data_register_main)
+        
         # 返回成功响应
         return jsonify({
             "success": True,
-            "image": {
-                "id": image_id,
-                "url": image_url,
-                "thumbnail_url": thumbnail_url,
-                "description": description,
-                "prediction_id": prediction_id,
-                "created_at": created_at.isoformat(),
-                "source": source
-            },
+            "image": image_data_register_main,
             "message": "Image registered successfully",
             "timestamp": datetime.now().isoformat()
         }), 201
