@@ -238,14 +238,13 @@ def setup_error_handlers(app):
         except:
             # 如果模板不存在，返回简单HTML
             return '''
-            <!DOCTYPE html>
             <html>
-            <head><title>404 - Not Found</title></head>
-            <body>
-                <h1>404 - Page Not Found</h1>
-                <p>The requested page could not be found.</p>
-                <a href="/">Return to Home</a>
-            </body>
+                <head><title>404 - Page Not Found</title></head>
+                <body>
+                    <h1>404 - Page Not Found</h1>
+                    <p>The requested page was not found.</p>
+                    <a href="/">Return to Home</a>
+                </body>
             </html>
             ''', 404
     
@@ -259,6 +258,7 @@ def setup_error_handlers(app):
             return jsonify({
                 "success": False,
                 "error": "Internal server error",
+                "path": request.path,
                 "timestamp": datetime.now().isoformat()
             }), 500
         
@@ -270,48 +270,43 @@ def setup_error_handlers(app):
         except:
             # 如果模板不存在，返回简单HTML
             return '''
-            <!DOCTYPE html>
             <html>
-            <head><title>500 - Server Error</title></head>
-            <body>
-                <h1>500 - Internal Server Error</h1>
-                <p>Something went wrong on our end.</p>
-                <a href="/">Return to Home</a>
-            </body>
+                <head><title>500 - Internal Server Error</title></head>
+                <body>
+                    <h1>500 - Internal Server Error</h1>
+                    <p>An internal server error occurred.</p>
+                    <a href="/">Return to Home</a>
+                </body>
             </html>
             ''', 500
     
-    @app.errorhandler(503)
-    def service_unavailable(error):
-        logger.error(f"503错误: {error}")
-        from flask import render_template, jsonify, request
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """捕获所有未处理的异常"""
+        logger.error(f"未处理的异常: {e}")
+        from flask import jsonify, request
         
         # 如果是API请求，返回JSON
         if request.path.startswith('/api/'):
             return jsonify({
                 "success": False,
-                "error": "Service temporarily unavailable",
+                "error": "Unhandled exception",
+                "exception": str(e),
+                "path": request.path,
                 "timestamp": datetime.now().isoformat()
-            }), 503
+            }), 500
         
-        # 否则返回HTML错误页面
-        try:
-            return render_template('error.html', 
-                                 error_code=503, 
-                                 error_message="Service Unavailable"), 503
-        except:
-            # 如果模板不存在，返回简单HTML
-            return '''
-            <!DOCTYPE html>
-            <html>
-            <head><title>503 - Service Unavailable</title></head>
+        # 否则返回简单错误页面
+        return '''
+        <html>
+            <head><title>Error</title></head>
             <body>
-                <h1>503 - Service Unavailable</h1>
-                <p>The service is temporarily unavailable.</p>
+                <h1>An error occurred</h1>
+                <p>Please try again later.</p>
                 <a href="/">Return to Home</a>
             </body>
-            </html>
-            ''', 503
+        </html>
+        ''', 500
 
 def startup_check(app):
     """启动检查"""

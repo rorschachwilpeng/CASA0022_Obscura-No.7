@@ -301,84 +301,74 @@ def clear_gallery():
             'error': str(e)
         }), 500 
 
-@admin_bp.route('/test-ml-model', methods=['GET'])
-def test_ml_model():
-    """测试ML模型是否正常工作"""
-    try:
-        import subprocess
-        import sys
-        import os
-        
-        # 获取项目根目录
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        
-        # 运行测试脚本
-        test_script = os.path.join(project_root, 'api', 'test_cloud_ml_model.py')
-        
-        result = subprocess.run([
-            sys.executable, test_script
-        ], capture_output=True, text=True, cwd=project_root)
-        
-        if result.returncode == 0:
-            return jsonify({
-                'success': True,
-                'message': 'ML模型测试完成',
-                'output': result.stdout,
-                'error': result.stderr
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'ML模型测试失败',
-                'output': result.stdout,
-                'error': result.stderr,
-                'return_code': result.returncode
-            })
-            
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'message': f'测试执行失败: {str(e)}',
-            'error': str(e)
-        })
-
 @admin_bp.route('/check-dependencies', methods=['GET'])
 def check_dependencies():
     """检查依赖包是否正常安装"""
     try:
-        import subprocess
-        import sys
-        import os
+        deps_status = {}
         
-        # 获取项目根目录
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        # 检查核心依赖
+        core_deps = [
+            ('pandas', 'pandas'),
+            ('numpy', 'numpy'),
+            ('scikit-learn', 'sklearn'),
+            ('joblib', 'joblib'),
+            ('tensorflow', 'tensorflow'),
+            ('requests', 'requests'),
+            ('Flask', 'flask'),
+        ]
         
-        # 运行依赖检查脚本
-        deps_script = os.path.join(project_root, 'api', 'test_dependencies.py')
+        for package, import_name in core_deps:
+            try:
+                module = __import__(import_name)
+                version = getattr(module, '__version__', 'unknown')
+                deps_status[package] = {'available': True, 'version': version}
+            except ImportError as e:
+                deps_status[package] = {'available': False, 'version': None, 'error': str(e)}
         
-        result = subprocess.run([
-            sys.executable, deps_script
-        ], capture_output=True, text=True, cwd=project_root)
+        return jsonify({
+            'success': True,
+            'message': '依赖检查完成',
+            'dependencies': deps_status,
+            'timestamp': '2025-07-31'
+        })
         
-        if result.returncode == 0:
-            return jsonify({
-                'success': True,
-                'message': '依赖检查完成',
-                'output': result.stdout,
-                'error': result.stderr
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': '依赖检查失败',
-                'output': result.stdout,
-                'error': result.stderr,
-                'return_code': result.returncode
-            })
-            
     except Exception as e:
         return jsonify({
             'success': False,
-            'message': f'依赖检查执行失败: {str(e)}',
+            'message': f'依赖检查失败: {str(e)}',
             'error': str(e)
-        }) 
+        }), 500
+
+@admin_bp.route('/test-ml-model', methods=['GET'])
+def test_ml_model():
+    """测试ML模型是否正常工作"""
+    try:
+        # 直接测试ML模型，不使用subprocess
+        from ML_Models.models.shap_deployment.hybrid_model_wrapper import get_hybrid_shap_model
+        
+        # 测试模型加载
+        model = get_hybrid_shap_model()
+        status = model.get_model_status()
+        
+        # 测试简单预测
+        test_result = model.predict_environmental_scores(
+            latitude=51.5074,
+            longitude=-0.1278,
+            month=7
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'ML模型测试完成',
+            'model_status': status,
+            'test_prediction': test_result,
+            'timestamp': '2025-07-31'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'ML模型测试失败: {str(e)}',
+            'error': str(e)
+        }), 500 
