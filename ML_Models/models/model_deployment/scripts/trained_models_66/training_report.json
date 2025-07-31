@@ -1,0 +1,168 @@
+{
+  "training_info": {
+    "timestamp": "2025-07-31T12:34:49.907831",
+    "data_source": "training_data_cache/training_data_500_samples.pkl",
+    "n_samples": 500,
+    "n_features": 66,
+    "test_size": 0.15,
+    "val_size": 0.15,
+    "random_state": 42
+  },
+  "model_results": {
+    "climate": {
+      "model_type": "RandomForest",
+      "target": "climate",
+      "metrics": {
+        "mse": 1.5768867775799015e-05,
+        "mae": 0.0028879596924930016,
+        "r2": 0.9748095473570786,
+        "rmse": 0.003971003371416224,
+        "cv_r2_mean": 0.864967603882399,
+        "cv_r2_std": 0.12301117302308522
+      },
+      "model_path": "trained_models_66/RandomForest_climate_model.joblib",
+      "scaler_path": "trained_models_66/feature_scaler.joblib",
+      "feature_importance": [
+        0.002293761896028755,
+        0.0003829864423347195,
+        0.0006197106872862004,
+        0.0002395842347023138,
+        0.008083173654575,
+        0.8399228269523132,
+        0.0009935425983119564,
+        0.00030742174956899937,
+        0.001683559836172336,
+        0.0031413798368157995,
+        0.0007654173399616437,
+        0.0005405451390473401,
+        0.0005629119865910287,
+        0.0007767059610072887,
+        0.00023412449543990473,
+        0.006543776192942482,
+        0.0004928496824582314,
+        0.0010415651525075645,
+        0.00035157300876165936,
+        0.0003891062180268685,
+        0.0042180362661456364,
+        0.0003573682108640272,
+        0.00022555133644426613,
+        0.0003041783185686007,
+        0.0010066598548693032,
+        7.49098145626184e-05,
+        0.022720021437575632,
+        0.001499370926339742,
+        0.0008734528954113415,
+        0.0010006247410311185,
+        0.00038365224489064434,
+        0.009406980223814173,
+        0.00013077325478498642,
+        0.002206679287143024,
+        0.00042367480398249654,
+        0.0001836533279839478,
+        0.00045516790644331405,
+        0.00945399990513095,
+        0.00044986222130762157,
+        0.0015657702103472658,
+        0.00020439642331566976,
+        0.0005999331763088144,
+        0.0035769344108000844,
+        0.000538760738215316,
+        0.000588777013251455,
+        0.01219354367558226,
+        0.0012475056494387117,
+        0.0003677377242215844,
+        0.0011323511730065743,
+        0.0009629029494531148,
+        0.0005111588663883703,
+        0.0007644143337029592,
+        0.0010469651348818416,
+        0.0011773534124899293,
+        0.0005887742082428056,
+        0.000951025834585724,
+        0.00092686106620256,
+        0.002390823484840489,
+        0.0006796834411798838,
+        0.0005617042762985976,
+        0.00045940777083905795,
+        0.03768189660948066,
+        0.002521538146986027,
+        0.0011202331848492412,
+        0.0001766615569808995,
+        0.0007217454859632926
+      ]
+    },
+    "geographic": {
+      "model_type": "LSTM",
+      "target": "geographic",
+      "metrics": {
+        "mse": 0.0004970719879527289,
+        "mae": 0.017755652254682355,
+        "r2": 0.8882386581967117,
+        "rmse": 0.02229511130164478
+      },
+      "model_path": "trained_models_66/LSTM_geographic_model.h5",
+      "scaler_path": "trained_models_66/feature_scaler.joblib"
+    }
+  },
+  "performance_comparison": {
+    "climate_model": {
+      "model_type": "RandomForest",
+      "target": "climate",
+      "metrics": {
+        "mse": 1.5768867775799015e-05,
+        "mae": 0.0028879596924930016,
+        "r2": 0.9748095473570786,
+        "rmse": 0.003971003371416224,
+        "cv_r2_mean": 0.864967603882399,
+        "cv_r2_std": 0.12301117302308522
+      },
+      "model_path": "trained_models_66/RandomForest_climate_model.joblib"
+    },
+    "geographic_model": {
+      "model_type": "LSTM",
+      "target": "geographic",
+      "metrics": {
+        "mse": 0.0004970719879527289,
+        "mae": 0.017755652254682355,
+        "r2": 0.8882386581967117,
+        "rmse": 0.02229511130164478
+      },
+      "model_path": "trained_models_66/LSTM_geographic_model.h5"
+    },
+    "comparison_summary": {
+      "climate_r2": 0.9748095473570786,
+      "geographic_r2": 0.8882386581967117,
+      "climate_rmse": 0.003971003371416224,
+      "geographic_rmse": 0.02229511130164478,
+      "best_climate_metric": "r2",
+      "best_geographic_metric": "r2"
+    }
+  },
+  "model_paths": {
+    "climate_model": "trained_models_66/RandomForest_climate_model.joblib",
+    "geographic_model": "trained_models_66/LSTM_geographic_model.h5",
+    "feature_scaler": "trained_models_66/feature_scaler.joblib",
+    "training_report": "trained_models_66/training_report.json"
+  },
+  "training_config": {
+    "climate_model_params": {
+      "n_estimators": 100,
+      "max_depth": 10,
+      "min_samples_split": 5,
+      "min_samples_leaf": 2,
+      "random_state": 42
+    },
+    "geographic_model_params": {
+      "units": 64,
+      "dropout": 0.2,
+      "recurrent_dropout": 0.2,
+      "return_sequences": false
+    },
+    "training_params": {
+      "max_epochs": 100,
+      "batch_size": 32,
+      "learning_rate": 0.001,
+      "early_stopping_patience": 10
+    }
+  }
+}

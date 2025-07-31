@@ -1,0 +1,202 @@
+{
+  "optimization_summary": {
+    "timeout_setting": "2秒",
+    "request_interval": "1秒",
+    "test_timestamp": "2025-07-31T11:42:26.109198"
+  },
+  "test_results": {
+    "individual_api_tests": [
+      {
+        "location": "London",
+        "coordinates": {
+          "name": "London",
+          "lat": 51.5074,
+          "lon": -0.1278
+        },
+        "api_results": {
+          "meteorological": {
+            "success": true,
+            "response_time": 0.13176488876342773,
+            "data_count": 6
+          },
+          "geospatial": {
+            "success": true,
+            "response_time": 2.005173921585083,
+            "data_count": 4
+          },
+          "air_quality": {
+            "success": true,
+            "response_time": 0.1138467788696289,
+            "data_count": 1
+          }
+        }
+      },
+      {
+        "location": "Manchester",
+        "coordinates": {
+          "name": "Manchester",
+          "lat": 53.4808,
+          "lon": -2.2426
+        },
+        "api_results": {
+          "meteorological": {
+            "success": true,
+            "response_time": 0.1308119297027588,
+            "data_count": 6
+          },
+          "geospatial": {
+            "success": true,
+            "response_time": 0.22997474670410156,
+            "data_count": 4
+          },
+          "air_quality": {
+            "success": true,
+            "response_time": 0.09873199462890625,
+            "data_count": 1
+          }
+        }
+      },
+      {
+        "location": "Edinburgh",
+        "coordinates": {
+          "name": "Edinburgh",
+          "lat": 55.9533,
+          "lon": -3.1883
+        },
+        "api_results": {
+          "meteorological": {
+            "success": true,
+            "response_time": 0.11541604995727539,
+            "data_count": 6
+          },
+          "geospatial": {
+            "success": true,
+            "response_time": 0.2376859188079834,
+            "data_count": 4
+          },
+          "air_quality": {
+            "success": true,
+            "response_time": 0.10084295272827148,
+            "data_count": 1
+          }
+        }
+      }
+    ],
+    "feature_generation_tests": [
+      {
+        "location": "London",
+        "coordinates": {
+          "name": "London",
+          "lat": 51.5074,
+          "lon": -0.1278
+        },
+        "success": true,
+        "generation_time": 11.810776948928833,
+        "feature_count": 66,
+        "feature_stats": {
+          "mean": 83.27626724542422,
+          "min": -0.77,
+          "max": 1017.7916666666666
+        }
+      },
+      {
+        "location": "Manchester",
+        "coordinates": {
+          "name": "Manchester",
+          "lat": 53.4808,
+          "lon": -2.2426
+        },
+        "success": true,
+        "generation_time": 9.230695009231567,
+        "feature_count": 66,
+        "feature_stats": {
+          "mean": 79.62662709190468,
+          "min": -0.7666666666666666,
+          "max": 1013.7083333333334
+        }
+      },
+      {
+        "location": "Edinburgh",
+        "coordinates": {
+          "name": "Edinburgh",
+          "lat": 55.9533,
+          "lon": -3.1883
+        },
+        "success": true,
+        "generation_time": 6.275459051132202,
+        "feature_count": 66,
+        "feature_stats": {
+          "mean": 79.86950062357518,
+          "min": -0.8571428571428571,
+          "max": 1009.6625
+        }
+      }
+    ],
+    "performance_comparison": {},
+    "mixed_model_predictions": [
+      {
+        "location": "London",
+        "coordinates": {
+          "name": "London",
+          "lat": 51.5074,
+          "lon": -0.1278
+        },
+        "success": true,
+        "prediction_time": 6.287665128707886,
+        "raw_scores": {
+          "climate": 1.706868815238634,
+          "geographic": -0.006937201803777673,
+          "economic": 0.85
+        },
+        "normalized_scores": {
+          "climate": 1.706868815238634,
+          "geographic": -0.006937201803777673,
+          "economic": 0.85
+        },
+        "final_score": 62.4
+      },
+      {
+        "location": "Manchester",
+        "coordinates": {
+          "name": "Manchester",
+          "lat": 53.4808,
+          "lon": -2.2426
+        },
+        "success": true,
+        "prediction_time": 10.2416250705719,
+        "raw_scores": {
+          "climate": 1.656802169072833,
+          "geographic": 0.022626539932067032,
+          "economic": 0.65
+        },
+        "normalized_scores": {
+          "climate": 1.656802169072833,
+          "geographic": 0.022626539932067032,
+          "economic": 0.65
+        },
+        "final_score": 55.5
+      },
+      {
+        "location": "Edinburgh",
+        "coordinates": {
+          "name": "Edinburgh",
+          "lat": 55.9533,
+          "lon": -3.1883
+        },
+        "success": true,
+        "prediction_time": 8.154422998428345,
+        "raw_scores": {
+          "climate": 1.6658041702016875,
+          "geographic": 0.01119219952235729,
+          "economic": 0.55
+        },
+        "normalized_scores": {
+          "climate": 1.6658041702016875,
+          "geographic": 0.01119219952235729,
+          "economic": 0.55
+        },
+        "final_score": 51.7
+      }
+    ]
+  }
+}

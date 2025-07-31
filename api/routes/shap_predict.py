@@ -19,14 +19,37 @@ import numpy as np
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
 
-# 条件导入SHAP模型包装器
+# 导入归一化工具
+from utils.score_normalizer import get_score_normalizer
+
+# 🔧 修复：确保能够正确找到ML_Models模块
 try:
-    from ML_Models.models.shap_deployment.shap_model_wrapper import SHAPModelWrapper
+    # 尝试从项目根目录加载ML_Models
+    import importlib.util
+    ml_models_path = os.path.join(project_root, 'ML_Models')
+    if os.path.exists(ml_models_path) and ml_models_path not in sys.path:
+        sys.path.insert(0, ml_models_path)
+        print(f"✅ 已添加ML_Models路径到sys.path: {ml_models_path}")
+    
+    # 验证混合模型包装器路径
+    hybrid_wrapper_path = os.path.join(project_root, 'ML_Models', 'models', 'shap_deployment', 'hybrid_model_wrapper.py')
+    if os.path.exists(hybrid_wrapper_path):
+        print(f"✅ 混合模型包装器文件存在: {hybrid_wrapper_path}")
+    else:
+        print(f"❌ 混合模型包装器文件不存在: {hybrid_wrapper_path}")
+        
+except Exception as e:
+    print(f"⚠️ 路径设置过程中出现警告: {e}")
+
+# 条件导入混合SHAP模型包装器
+try:
+    from ML_Models.models.shap_deployment.hybrid_model_wrapper import get_hybrid_shap_model
     SHAP_AVAILABLE = True
+    print("✅ HybridSHAPModelWrapper导入成功")
 except ImportError as e:
-    logger.warning(f"⚠️ SHAP模型不可用: {e}")
+    print(f"⚠️ 混合SHAP模型不可用: {e}")
     SHAP_AVAILABLE = False
-    SHAPModelWrapper = None
+    get_hybrid_shap_model = None
 
 from api.utils import ml_prediction_response, error_response
 
@@ -53,24 +76,26 @@ def validate_json_input(request):
         return error_response(f"JSON解析错误: {str(e)}", status_code=400, error_code="json_parse_error")
 
 def get_shap_model():
-    """获取SHAP模型实例 (单例模式)"""
+    """获取混合SHAP模型实例 (单例模式)"""
     global _shap_model
     
     if not SHAP_AVAILABLE:
-        raise RuntimeError("SHAP模型不可用，可能缺少依赖包")
+        raise RuntimeError("混合SHAP模型不可用，可能缺少依赖包")
     
     if _shap_model is None:
         try:
-            # 构建模型路径
-            models_path = os.path.join(project_root, "ML_Models", "models", "shap_deployment")
+            # 🔧 修复：使用混合模型包装器，指定正确的模型路径
+            import os
+            models_path = os.path.join(project_root, "ML_Models", "models", "shap_deployment", "trained_models_66")
+            _shap_model = get_hybrid_shap_model(models_path)
+            print("✅ 混合SHAP模型包装器初始化成功")
             
-            if not os.path.exists(models_path):
-                raise FileNotFoundError(f"SHAP模型目录不存在: {models_path}")
-            
-            _shap_model = SHAPModelWrapper(models_directory=models_path)
-            logger.info("✅ SHAP模型包装器初始化成功")
+            # 验证模型状态
+            status = _shap_model.get_model_status()
+            print(f"📊 SHAP模型状态: {status}")
             
         except Exception as e:
+            print(f"❌ SHAP模型初始化失败: {e}")
             logger.error(f"❌ SHAP模型初始化失败: {e}")
             _shap_model = None
             raise
@@ -393,23 +418,32 @@ def analyze():
         if 'error' in result:
             return error_response(f"分析失败: {result['error']}", status_code=500)
         
+        # 🌟 新增：应用分数归一化
+        normalizer = get_score_normalizer()
+        normalized_result = normalizer.normalize_shap_result(result)
+        
         # 增强分析结果
         analysis_result = {
             'basic_prediction': {
-                'city': result.get('city'),
-                'final_score': result.get('final_score'),
-                'confidence': result.get('overall_confidence')
+                'city': normalized_result.get('city'),
+                'final_score': normalized_result.get('final_score'),  # 保留原始最终分数
+                'confidence': normalized_result.get('overall_confidence')
             },
             'detailed_scores': {
-                'climate_score': result.get('climate_score'),
-                'geographic_score': result.get('geographic_score'),
-                'economic_score': result.get('economic_score')
+                'climate_score': normalized_result.get('climate_score'),
+                'geographic_score': normalized_result.get('geographic_score'),
+                'economic_score': normalized_result.get('economic_score')
             },
-            'shap_analysis': result.get('shap_analysis', {}),
+            'normalized_scores': normalized_result.get('normalized_scores', {}),
+            'environment_change_outcome': normalized_result.get('environment_change_outcome'),
+            'contribution_breakdown': normalized_result.get('contribution_breakdown', {}),
+            'raw_scores': normalized_result.get('raw_scores', {}),
+            'shap_analysis': normalized_result.get('shap_analysis', {}),
             'analysis_metadata': {
                 'analysis_depth': analysis_depth,
                 'analysis_time': datetime.now().isoformat(),
-                'response_time_seconds': (datetime.now() - start_time).total_seconds()
+                'response_time_seconds': (datetime.now() - start_time).total_seconds(),
+                'normalization_applied': True
             }
         }
         

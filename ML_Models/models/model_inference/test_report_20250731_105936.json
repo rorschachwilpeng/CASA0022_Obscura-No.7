@@ -1,0 +1,246 @@
+{
+  "test_summary": {
+    "passed_tests": 5,
+    "total_tests": 5,
+    "success_rate": 100.0,
+    "timestamp": "2025-07-31T10:59:36.055221"
+  },
+  "detailed_results": {
+    "feature_engineer": {
+      "status": "success",
+      "feature_count": 66,
+      "feature_range": [
+        -0.426486845014371,
+        1017.7916666666666
+      ]
+    },
+    "mock_hybrid_model": {
+      "status": "success",
+      "results": [
+        {
+          "location": "London_Center",
+          "coordinates": {
+            "name": "London_Center",
+            "lat": 51.5074,
+            "lon": -0.1278,
+            "month": 7
+          },
+          "climate_score": 0.7007399999999997,
+          "geographic_score": 0.625,
+          "economic_score": 0.85,
+          "model_types": {
+            "climate": "RandomForest (模拟)",
+            "geographic": "LSTM (模拟)",
+            "economic": "启发式算法"
+          }
+        },
+        {
+          "location": "Manchester_Center",
+          "coordinates": {
+            "name": "Manchester_Center",
+            "lat": 53.4808,
+            "lon": -2.2426,
+            "month": 12
+          },
+          "climate_score": 0.8980800000000002,
+          "geographic_score": 0.75,
+          "economic_score": 0.65,
+          "model_types": {
+            "climate": "RandomForest (模拟)",
+            "geographic": "LSTM (模拟)",
+            "economic": "启发式算法"
+          }
+        },
+        {
+          "location": "Edinburgh_Center",
+          "coordinates": {
+            "name": "Edinburgh_Center",
+            "lat": 55.9533,
+            "lon": -3.1883,
+            "month": 3
+          },
+          "climate_score": 1.14533,
+          "geographic_score": 0.525,
+          "economic_score": 0.55,
+          "model_types": {
+            "climate": "RandomForest (模拟)",
+            "geographic": "LSTM (模拟)",
+            "economic": "启发式算法"
+          }
+        },
+        {
+          "location": "Random_UK",
+          "coordinates": {
+            "name": "Random_UK",
+            "lat": 52.5,
+            "lon": -1.5,
+            "month": 6
+          },
+          "climate_score": 0.8,
+          "geographic_score": 0.6,
+          "economic_score": 0.5,
+          "model_types": {
+            "climate": "RandomForest (模拟)",
+            "geographic": "LSTM (模拟)",
+            "economic": "启发式算法"
+          }
+        }
+      ]
+    },
+    "score_normalization": {
+      "status": "success",
+      "normalized_result": {
+        "climate_score": 0.65,
+        "geographic_score": 0.45,
+        "economic_score": 0.75,
+        "city": "London"
+      }
+    },
+    "api_integration": {
+      "status": "success",
+      "api_requests": [
+        {
+          "request": {
+            "endpoint": "/api/shap/predict",
+            "method": "POST",
+            "payload": {
+              "latitude": 51.5074,
+              "longitude": -0.1278,
+              "month": 7
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "basic_prediction": {
+                "city": "London",
+                "final_score": 67.5,
+                "confidence": 0.85
+              },
+              "detailed_scores": {
+                "climate_score": 65.0,
+                "geographic_score": 45.0,
+                "economic_score": 75.0
+              },
+              "model_info": {
+                "climate_model": "RandomForest",
+                "geographic_model": "LSTM",
+                "economic_model": "Heuristic"
+              }
+            },
+            "timestamp": "2025-07-31T10:59:30.985426"
+          }
+        },
+        {
+          "request": {
+            "endpoint": "/api/shap/predict",
+            "method": "POST",
+            "payload": {
+              "latitude": 53.4808,
+              "longitude": -2.2426,
+              "month": 12
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "basic_prediction": {
+                "city": "Manchester",
+                "final_score": 67.5,
+                "confidence": 0.85
+              },
+              "detailed_scores": {
+                "climate_score": 65.0,
+                "geographic_score": 45.0,
+                "economic_score": 75.0
+              },
+              "model_info": {
+                "climate_model": "RandomForest",
+                "geographic_model": "LSTM",
+                "economic_model": "Heuristic"
+              }
+            },
+            "timestamp": "2025-07-31T10:59:30.985443"
+          }
+        },
+        {
+          "request": {
+            "endpoint": "/api/shap/predict",
+            "method": "POST",
+            "payload": {
+              "latitude": 55.9533,
+              "longitude": -3.1883,
+              "month": 3
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "basic_prediction": {
+                "city": "Edinburgh",
+                "final_score": 67.5,
+                "confidence": 0.85
+              },
+              "detailed_scores": {
+                "climate_score": 65.0,
+                "geographic_score": 45.0,
+                "economic_score": 75.0
+              },
+              "model_info": {
+                "climate_model": "RandomForest",
+                "geographic_model": "LSTM",
+                "economic_model": "Heuristic"
+              }
+            },
+            "timestamp": "2025-07-31T10:59:30.985454"
+          }
+        },
+        {
+          "request": {
+            "endpoint": "/api/shap/predict",
+            "method": "POST",
+            "payload": {
+              "latitude": 52.5,
+              "longitude": -1.5,
+              "month": 6
+            }
+          },
+          "response": {
+            "success": true,
+            "data": {
+              "basic_prediction": {
+                "city": "Random",
+                "final_score": 67.5,
+                "confidence": 0.85
+              },
+              "detailed_scores": {
+                "climate_score": 65.0,
+                "geographic_score": 45.0,
+                "economic_score": 75.0
+              },
+              "model_info": {
+                "climate_model": "RandomForest",
+                "geographic_model": "LSTM",
+                "economic_model": "Heuristic"
+              }
+            },
+            "timestamp": "2025-07-31T10:59:30.985462"
+          }
+        }
+      ]
+    },
+    "deployment_readiness": {
+      "status": "ready",
+      "checks": {
+        "hybrid_model_wrapper": true,
+        "simplified_feature_engineer": true,
+        "score_normalizer": true,
+        "tensorflow_available": true,
+        "sklearn_available": true
+      },
+      "tf_version": "2.18.0",
+      "sklearn_version": "1.5.1",
+      "critical_passed": true
+    }
+  }
+}

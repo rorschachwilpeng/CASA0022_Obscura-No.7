@@ -16,6 +16,8 @@ import io
 import json
 import random
 import hashlib
+import uuid
+import time
 
 # SocketIO导入
 try:
@@ -480,6 +482,8 @@ def generate_ai_environmental_story(shap_data, force_unique=True):
     
     try:
         import requests
+        import random
+        import uuid
         
         # 构建用于故事生成的prompt
         climate_score = shap_data.get('climate_score', 0.5) * 100
@@ -491,37 +495,110 @@ def generate_ai_environmental_story(shap_data, force_unique=True):
         feature_importance = shap_data.get('shap_analysis', {}).get('feature_importance', {})
         top_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)[:3]
         
-        # 🔧 修复：增加唯一性标识和随机性，确保每个图片生成不同的故事
+        # 🔧 修复：增强随机性，确保每次刷新都生成完全不同的故事
         import time
-        timestamp = str(int(time.time() * 1000))[-6:]  # 使用时间戳的后6位
-        image_hash = hashlib.md5(f"{city}_{climate_score}_{geographic_score}_{economic_score}_{timestamp}".encode()).hexdigest()[:8]
+        import os
         
-        # 添加随机的故事风格提示
+        # 使用多重随机源确保唯一性
+        current_time = time.time()
+        microseconds = int((current_time * 1000000) % 1000000)  # 微秒级时间戳
+        process_id = os.getpid() % 10000  # 进程ID
+        random_uuid = str(uuid.uuid4())[:8]  # 随机UUID片段
+        random_number = random.randint(100000, 999999)  # 纯随机数
+        
+        # 创建强随机性标识符
+        unique_id = f"{microseconds}_{process_id}_{random_uuid}_{random_number}"
+        image_hash = hashlib.md5(f"{city}_{climate_score}_{geographic_score}_{economic_score}_{unique_id}".encode()).hexdigest()[:8]
+        
+        # 大幅扩展故事风格选项和随机元素
         story_styles = [
             "like a scene from a climate science thriller",
             "as if narrated by a future environmental historian", 
             "in the style of a dramatic weather report from 2050",
             "like an excerpt from an environmental documentary",
             "as a dramatic eyewitness account from the future",
-            "in the tone of a scientific expedition journal"
+            "in the tone of a scientific expedition journal",
+            "like a chapter from a climate change novel",
+            "as told by a time traveler from 2080",
+            "in the voice of an AI environmental analyst",
+            "like a dramatic news report from the future",
+            "as a poetic environmental meditation",
+            "in the style of a survival story",
+            "like a letter from a climate refugee",
+            "as an urgent environmental briefing",
+            "in the tone of a nature documentary narrator"
         ]
-        style_hint = story_styles[int(timestamp[-1]) % len(story_styles)]
         
-        prompt = f"""Write a dramatic environmental narrative in exactly 100 words for Analysis #{image_hash}. 
+        # 添加随机情感基调
+        emotional_tones = [
+            "with urgent concern and hope",
+            "with dramatic tension and mystery",
+            "with scientific wonder and awe",
+            "with melancholic beauty",
+            "with fierce determination",
+            "with quiet contemplation",
+            "with explosive energy",
+            "with gentle optimism",
+            "with stark realism",
+            "with poetic elegance"
+        ]
+        
+        # 添加随机视角
+        perspectives = [
+            "from the perspective of the environment itself",
+            "through the eyes of a scientist",
+            "from a bird's eye view",
+            "from ground level",
+            "through the lens of time",
+            "from multiple viewpoints",
+            "through natural elements",
+            "from an urban perspective",
+            "through seasonal changes",
+            "from a global viewpoint"
+        ]
+        
+        # 使用真正的随机种子（不基于image_id）
+        random.seed(int(current_time * 1000000) % 2**32)
+        
+        # 随机选择风格元素
+        style_hint = random.choice(story_styles)
+        emotional_tone = random.choice(emotional_tones)
+        perspective = random.choice(perspectives)
+        
+        # 添加随机的特殊指令
+        special_instructions = [
+            "Include metaphors from nature.",
+            "Use contrasting imagery.",
+            "Focus on the human element.",
+            "Emphasize the passage of time.",
+            "Include sensory details.",
+            "Use symbolism.",
+            "Create dramatic tension.",
+            "Include environmental sounds.",
+            "Use color imagery.",
+            "Focus on transformation."
+        ]
+        special_instruction = random.choice(special_instructions)
+        
+        # 构建高度随机化的prompt
+        prompt = f"""Write a dramatic environmental narrative in exactly 100 words for Analysis #{image_hash}.
 
 Location: {city}
 Climate Impact: {climate_score:.1f}%
 Geographic Impact: {geographic_score:.1f}% 
 Economic Impact: {economic_score:.1f}%
 Key factors: {', '.join([f[0] for f in top_features[:3]])}
-Timestamp: {timestamp}
+Unique Session: {unique_id}
 
-Create a COMPLETELY UNIQUE compelling story that dramatically describes the environmental conditions and future predictions for this specific location and data combination. Use vivid imagery and emotional language. Focus on the interplay between climate, geography, and economics. Write {style_hint}.
+Create a COMPLETELY UNIQUE compelling story that dramatically describes the environmental conditions and future predictions for this specific location and data combination. Write {style_hint}, {emotional_tone}, and {perspective}.
 
-IMPORTANT: Each story must be completely different and unique. Use different narrative approaches, perspectives, and dramatic elements for each analysis.
-Write EXACTLY 100 words. Be dramatic and engaging."""
+Special instruction: {special_instruction}
 
-        # 调用DeepSeek API
+CRITICAL: This story MUST be entirely different from any previous analysis. Use completely different narrative elements, vocabulary, metaphors, and dramatic structures. Each story should feel like it was written by a different author with a unique style.
+
+Write EXACTLY 100 words. Be dramatic, engaging, and absolutely unique."""
+
+        # 调用DeepSeek API with higher temperature for more creativity
         headers = {
             'Authorization': f'Bearer {deepseek_key}',
             'Content-Type': 'application/json'
@@ -530,11 +607,14 @@ Write EXACTLY 100 words. Be dramatic and engaging."""
         data = {
             "model": "deepseek-chat",
             "messages": [
-                {"role": "system", "content": "You are an environmental storyteller who creates dramatic narratives based on scientific data."},
+                {"role": "system", "content": "You are a creative environmental storyteller who writes dramatically different narratives each time. Never repeat styles, themes, or approaches. Be completely unique and original in every story."},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 150,
-            "temperature": 0.8
+            "temperature": 0.95,  # 增加温度以获得更多创造性
+            "top_p": 0.9,        # 添加nucleus sampling
+            "frequency_penalty": 0.5,  # 减少重复
+            "presence_penalty": 0.5    # 鼓励新颖性
         }
         
         response = requests.post(
@@ -547,7 +627,7 @@ Write EXACTLY 100 words. Be dramatic and engaging."""
         if response.status_code == 200:
             result = response.json()
             story = result['choices'][0]['message']['content'].strip()
-            logger.info(f"✅ DeepSeek AI story generated successfully for {city}")
+            logger.info(f"✅ DeepSeek AI story generated successfully for {city} (ID: {unique_id[:8]})")
             return story
         else:
             logger.error(f"❌ DeepSeek API error: {response.status_code} - {response.text}")
@@ -2208,6 +2288,53 @@ def _create_fallback_result_data(environmental_data):
             min_distance = distance
             closest_city = city
     
+    # 🔧 修复：即使在fallback模式下也生成动态AI故事
+    try:
+        # 构建SHAP数据用于故事生成
+        fallback_shap_data = {
+            'climate_score': climate_score,
+            'geographic_score': geographic_score,
+            'economic_score': economic_score,
+            'final_score': final_score,
+            'city': closest_city,
+            'shap_analysis': {
+                'feature_importance': {
+                    'temperature': 0.25,
+                    'humidity': 0.20,
+                    'location': 0.30,
+                    'seasonal': 0.25
+                }
+            },
+            'overall_confidence': 0.7,
+            'temperature': temperature,
+            'humidity': humidity
+        }
+        
+        # 调用DeepSeek生成动态故事
+        logger.info(f"🔄 Generating AI story in fallback mode for {closest_city}")
+        generated_story = generate_ai_environmental_story(fallback_shap_data, force_unique=True)
+        
+        # 如果故事生成成功，添加fallback标识
+        if generated_story and not generated_story.startswith("Environmental analysis temporarily"):
+            ai_story = f"[Simplified Analysis] {generated_story}"
+            logger.info(f"✅ AI story generated successfully in fallback mode for {closest_city}")
+        else:
+            # 如果DeepSeek也失败，使用动态fallback故事
+            ai_story = _generate_dynamic_fallback_story(fallback_shap_data)
+            logger.warning(f"⚠️ Using dynamic fallback story for {closest_city}")
+            
+    except Exception as e:
+        logger.error(f"❌ Failed to generate AI story in fallback mode: {e}")
+        # 最后的兜底：动态fallback故事
+        ai_story = _generate_dynamic_fallback_story({
+            'climate_score': climate_score,
+            'geographic_score': geographic_score,
+            'economic_score': economic_score,
+            'city': closest_city,
+            'temperature': temperature,
+            'humidity': humidity
+        })
+    
     return {
         # 兼容字段
         "temperature": temperature,
@@ -2235,7 +2362,7 @@ def _create_fallback_result_data(environmental_data):
             },
             "note": "Simplified analysis - SHAP model unavailable"
         },
-        "ai_story": "Environmental analysis temporarily unavailable. Please check back later for detailed insights.",
+        "ai_story": ai_story,  # 🔧 现在使用动态生成的故事
         
         # 元数据
         "analysis_metadata": {
@@ -2243,9 +2370,95 @@ def _create_fallback_result_data(environmental_data):
             "model_version": "fallback_v1.0.0",
             "api_source": "fallback_algorithm",
             "fallback_used": True,
-            "fallback_reason": "SHAP API unavailable"
+            "fallback_reason": "SHAP API unavailable",
+            "story_generation": "dynamic_ai_story" if ai_story and not ai_story.startswith("In a world") else "static_fallback"
         }
     }
+
+def _generate_dynamic_fallback_story(shap_data):
+    """
+    生成动态的fallback故事（当DeepSeek API也不可用时）
+    确保每次调用都产生不同的故事
+    """
+    import random
+    import time
+    
+    # 使用当前时间作为随机种子，确保每次都不同
+    random.seed(int(time.time() * 1000000) % 2**32)
+    
+    climate_score = shap_data.get('climate_score', 0.5) * 100
+    geographic_score = shap_data.get('geographic_score', 0.5) * 100
+    economic_score = shap_data.get('economic_score', 0.5) * 100
+    city = shap_data.get('city', 'Unknown Location')
+    temperature = shap_data.get('temperature', 20)
+    humidity = shap_data.get('humidity', 60)
+    
+    # 动态故事开头
+    story_openings = [
+        f"In a world where {city} stands at the crossroads of environmental change",
+        f"Beneath the shifting skies of {city}, nature tells its ancient story",
+        f"The winds of change sweep through {city}, carrying whispers of transformation",
+        f"In the heart of {city}, where urban landscapes meet natural forces",
+        f"Time flows differently in {city}, where each season brings new revelations",
+        f"Hidden within {city}'s environmental tapestry lies a complex narrative",
+        f"The atmospheric symphony of {city} plays a unique composition",
+        f"Between the earth and sky, {city} experiences its own environmental dance"
+    ]
+    
+    # 动态描述片段
+    climate_descriptions = [
+        f"climate patterns pulse with {climate_score:.1f}% intensity",
+        f"atmospheric conditions weave stories of {climate_score:.1f}% complexity",
+        f"weather systems demonstrate {climate_score:.1f}% environmental vigor",
+        f"climatic forces exhibit {climate_score:.1f}% natural resilience"
+    ]
+    
+    geographic_descriptions = [
+        f"while geographic influences shape {geographic_score:.1f}% of the landscape",
+        f"as topographical elements contribute {geographic_score:.1f}% to the regional character",
+        f"where geological foundations provide {geographic_score:.1f}% environmental stability",
+        f"through terrain features that deliver {geographic_score:.1f}% spatial dynamics"
+    ]
+    
+    economic_descriptions = [
+        f"Economic currents flow at {economic_score:.1f}% capacity",
+        f"Socioeconomic patterns influence {economic_score:.1f}% of development",
+        f"Human activities contribute {economic_score:.1f}% to environmental pressure",
+        f"Development forces maintain {economic_score:.1f}% regional momentum"
+    ]
+    
+    # 动态结尾
+    story_endings = [
+        "creating a unique environmental signature that defines this moment in time.",
+        "weaving together past, present, and future in an intricate ecological ballet.",
+        "establishing patterns that will echo through generations of environmental change.",
+        "forming bonds between human activity and natural systems that transcend simple analysis.",
+        "generating ripples of environmental influence that extend far beyond visible boundaries.",
+        "crafting a narrative where science meets poetry in nature's grand design.",
+        "building bridges between measurable data and the immeasurable beauty of our world."
+    ]
+    
+    # 随机组合生成故事
+    opening = random.choice(story_openings)
+    climate_desc = random.choice(climate_descriptions)
+    geo_desc = random.choice(geographic_descriptions)
+    econ_desc = random.choice(economic_descriptions)
+    ending = random.choice(story_endings)
+    
+    # 添加温度和湿度的动态描述
+    temp_desc = "crisp" if temperature < 15 else "warm" if temperature < 25 else "heated"
+    humidity_desc = "dry" if humidity < 40 else "balanced" if humidity < 70 else "moist"
+    
+    story = f"{opening}, {climate_desc}, {geo_desc}. {econ_desc}, while {temp_desc} {temperature}°C air carries {humidity_desc} {humidity}% humidity through the region, {ending}"
+    
+    # 确保故事长度合适（大约100词）
+    words = story.split()
+    if len(words) > 100:
+        story = ' '.join(words[:100]) + "..."
+    elif len(words) < 80:
+        story += f" This environmental snapshot captures {city}'s unique character at this precise moment."
+    
+    return story
 
 def generate_dynamic_image_analysis(image_id, local_image_data=None):
     """
@@ -2264,122 +2477,144 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
     # 使用image_id作为种子，确保每张图片的结果一致但不同
     random.seed(image_id)
     
-    # 生成基于image_id的变化环境数据
-    base_temp = 15.0 + (image_id * 3.2) % 20  # 15-35度范围
-    base_humidity = 40.0 + (image_id * 2.7) % 40  # 40-80%范围
-    base_pressure = 1000.0 + (image_id * 1.3) % 30  # 1000-1030 hPa
-    base_wind = (image_id * 0.8) % 15  # 0-15 m/s
+    # 🔧 修复：从数据库获取真实的用户输入坐标
+    # 而不是基于image_id随机选择城市
+    try:
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor()
+        
+        # 查询图片关联的预测记录，获取真实的用户输入坐标
+        cur.execute("""
+            SELECT p.input_data, p.location
+            FROM images i
+            LEFT JOIN predictions p ON i.prediction_id = p.id
+            WHERE i.id = %s
+        """, (image_id,))
+        
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if row and row[0]:
+            # 从预测记录中获取真实的用户输入坐标
+            input_data = row[0]
+            if isinstance(input_data, str):
+                import json
+                input_data = json.loads(input_data)
+            
+            # 获取真实的经纬度坐标
+            latitude = input_data.get('latitude')
+            longitude = input_data.get('longitude')
+            location_name = row[1] or "Unknown Location"
+            
+            if latitude is not None and longitude is not None:
+                logger.info(f"✅ 使用真实用户输入坐标: ({latitude}, {longitude}) - {location_name}")
+            else:
+                # 如果没有真实坐标，使用默认的伦敦坐标
+                latitude, longitude = 51.5074, -0.1278
+                location_name = "London, UK"
+                logger.warning(f"⚠️ 未找到真实坐标，使用默认坐标: ({latitude}, {longitude})")
+        else:
+            # 如果没有预测记录，使用默认坐标
+            latitude, longitude = 51.5074, -0.1278
+            location_name = "London, UK"
+            logger.warning(f"⚠️ 未找到预测记录，使用默认坐标: ({latitude}, {longitude})")
+            
+    except Exception as e:
+        logger.error(f"❌ 数据库查询失败: {e}")
+        # 数据库查询失败，使用默认坐标
+        latitude, longitude = 51.5074, -0.1278
+        location_name = "London, UK"
     
-    # 动态地理位置（基于image_id选择不同城市）
-    locations = [
-        ("London, UK", 51.5074, -0.1278),
-        ("Edinburgh, UK", 55.9533, -3.1883), 
-        ("Manchester, UK", 53.4808, -2.2426),
-        ("Paris, France", 48.8566, 2.3522),
-        ("New York, USA", 40.7128, -74.0060),
-        ("Tokyo, Japan", 35.6762, 139.6503),
-        ("Sydney, Australia", -33.8688, 151.2093),
-        ("Berlin, Germany", 52.5200, 13.4050),
-        ("Barcelona, Spain", 41.3851, 2.1734),
-        ("Amsterdam, Netherlands", 52.3676, 4.9041)
-    ]
+    # 获取当前月份
+    current_month = datetime.now().month
     
-    location_index = image_id % len(locations)
-    location_name, lat, lon = locations[location_index]
-    
-    # 天气描述变化
-    weather_conditions = [
-        "clear sky", "partly cloudy", "overcast", "light rain",
-        "sunny", "foggy", "windy", "misty", "stormy", "snow"
-    ]
-    weather_desc = weather_conditions[image_id % len(weather_conditions)]
-    
-    # 生成基于真实环境数据的SHAP分析
+    # 构建环境数据（用于记录）
     environmental_data = {
-        'latitude': lat,
-        'longitude': lon,
-        'temperature': round(base_temp, 1),
-        'humidity': round(base_humidity, 1),
-        'pressure': round(base_pressure, 1),
-        'wind_speed': round(base_wind, 1),
-        'weather_description': weather_desc,
-        'timestamp': datetime.now().isoformat(),
-        'month': datetime.now().month,
-        'future_years': 0,
-        'location_name': location_name
+        'latitude': latitude,
+        'longitude': longitude,
+        'month': current_month,
+        'location_name': location_name,
+        'timestamp': datetime.now().isoformat()
     }
     
-    # 调用SHAP预测API
+    # 🔧 修复：直接调用ML模型而不是模拟数据
     try:
-        logger.info(f"🔮 Generating SHAP analysis for image {image_id} at {location_name}")
-        import requests
+        logger.info(f"🔮 Generating real ML prediction for image {image_id} at {location_name}")
         
-        # 使用内部API调用
-        shap_api_url = "http://localhost:5000/api/v1/shap/predict"
-        response = requests.post(
-            shap_api_url,
-            json=environmental_data,
-            timeout=10,
-            headers={'Content-Type': 'application/json'}
+        # 导入SHAP模型
+        from routes.shap_predict import get_shap_model
+        model = get_shap_model()
+        
+        # 直接调用模型预测
+        shap_result = model.predict_environmental_scores(
+            latitude=latitude,
+            longitude=longitude,
+            month=current_month
         )
         
-        if response.status_code == 200:
-            shap_result = response.json()
-            if shap_result.get('success') and 'data' in shap_result:
-                shap_data = shap_result['data']
-                logger.info(f"✅ SHAP analysis successful for {location_name}")
-                
-                # 生成AI故事
-                ai_story = generate_ai_environmental_story(shap_data)
-                
-                # 构建完整预测数据
-                return {
-                    "id": image_id,
-                    "input_data": environmental_data,
-                    "result_data": {
-                        # 基础环境数据
-                        "temperature": shap_data.get('climate_score', 0.5) * 40 + 10,  # 转换为温度
-                        "humidity": shap_data.get('geographic_score', 0.5) * 60 + 30,  # 转换为湿度
-                        "confidence": shap_data.get('overall_confidence', 0.85),
-                        "climate_type": _determine_climate_type(shap_data),
-                        "vegetation_index": _calculate_vegetation_index(shap_data),
-                        "predictions": {
-                            "short_term": _generate_short_term_prediction(shap_data),
-                            "long_term": _generate_long_term_prediction(shap_data)
-                        },
-                        
-                        # 完整SHAP分析
-                        "climate_score": shap_data.get('climate_score', 0.5),
-                        "geographic_score": shap_data.get('geographic_score', 0.5),
-                        "economic_score": shap_data.get('economic_score', 0.5),
-                        "final_score": shap_data.get('final_score', 0.5),
-                        "city": shap_data.get('city', location_name),
-                        "shap_analysis": shap_data.get('shap_analysis', {}),
-                        "ai_story": ai_story,
-                        
-                        # 分析元数据
-                        "analysis_metadata": {
-                            "generated_at": datetime.now().isoformat(),
-                            "model_version": "dynamic_shap_v1.0.0",
-                            "api_source": "local_shap_prediction", 
-                            "location": location_name,
-                            "image_id": image_id
-                        }
+        if shap_result.get('success'):
+            shap_data = shap_result
+            logger.info(f"✅ ML prediction successful for {location_name}")
+            
+            # 应用分数归一化
+            from utils.score_normalizer import get_score_normalizer
+            normalizer = get_score_normalizer()
+            normalized_result = normalizer.normalize_shap_result(shap_data)
+            
+            # 生成AI故事
+            ai_story = generate_ai_environmental_story(normalized_result)
+            
+            # 构建完整预测数据
+            return {
+                "id": image_id,
+                "input_data": environmental_data,
+                "result_data": {
+                    # 基础环境数据
+                    "temperature": normalized_result.get('climate_score', 0.5) * 40 + 10,  # 转换为温度
+                    "humidity": normalized_result.get('geographic_score', 0.5) * 60 + 30,  # 转换为湿度
+                    "confidence": normalized_result.get('overall_confidence', 0.85),
+                    "climate_type": _determine_climate_type(normalized_result),
+                    "vegetation_index": _calculate_vegetation_index(normalized_result),
+                    "predictions": {
+                        "short_term": _generate_short_term_prediction(normalized_result),
+                        "long_term": _generate_long_term_prediction(normalized_result)
                     },
-                    "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
-                    "location": location_name
-                }
+                    
+                    # 完整SHAP分析
+                    "climate_score": normalized_result.get('climate_score', 0.5),
+                    "geographic_score": normalized_result.get('geographic_score', 0.5),
+                    "economic_score": normalized_result.get('economic_score', 0.5),
+                    "final_score": normalized_result.get('final_score', 0.5),
+                    "city": normalized_result.get('city', location_name),
+                    "shap_analysis": normalized_result.get('shap_analysis', {}),
+                    "ai_story": ai_story,
+                    
+                    # 分析元数据
+                    "analysis_metadata": {
+                        "generated_at": datetime.now().isoformat(),
+                        "model_version": "hybrid_ml_v1.0.0",
+                        "api_source": "real_ml_prediction", 
+                        "location": location_name,
+                        "image_id": image_id,
+                        "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
+                        "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
+                    }
+                },
+                "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
+                "location": location_name
+            }
         
     except Exception as e:
-        logger.warning(f"⚠️ SHAP API call failed for image {image_id}: {e}")
+        logger.warning(f"⚠️ ML prediction failed for image {image_id}: {e}")
     
     # Fallback: 生成基于环境数据的模拟SHAP分析
     logger.info(f"🔄 Generating fallback SHAP analysis for image {image_id}")
     
-    # 基于真实环境数据计算分数
-    climate_score = min(0.9, max(0.1, (base_temp - 10) / 30 + random.uniform(-0.1, 0.1)))
-    geographic_score = min(0.9, max(0.1, abs(lat) / 90 + random.uniform(-0.1, 0.1)))
-    economic_score = min(0.9, max(0.1, (base_humidity / 100) + random.uniform(-0.1, 0.1)))
+    # 基于真实坐标计算分数
+    climate_score = min(0.9, max(0.1, (latitude - 30) / 60 + random.uniform(-0.1, 0.1)))
+    geographic_score = min(0.9, max(0.1, abs(latitude) / 90 + random.uniform(-0.1, 0.1)))
+    economic_score = min(0.9, max(0.1, (current_month / 12) + random.uniform(-0.1, 0.1)))
     final_score = (climate_score + geographic_score + economic_score) / 3
     
     # 构建SHAP数据
@@ -2407,8 +2642,8 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         "id": image_id,
         "input_data": environmental_data,
         "result_data": {
-            "temperature": round(base_temp, 1),
-            "humidity": round(base_humidity, 1),
+            "temperature": round(15 + (image_id * 3.2) % 20, 1),  # 模拟温度
+            "humidity": round(40 + (image_id * 2.7) % 40, 1),     # 模拟湿度
             "confidence": shap_data['overall_confidence'],
             "climate_type": _determine_climate_type(shap_data),
             "vegetation_index": _calculate_vegetation_index(shap_data),
@@ -2432,7 +2667,9 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                 "model_version": "fallback_dynamic_v1.0.0",
                 "api_source": "fallback_generation",
                 "location": location_name,
-                "image_id": image_id
+                "image_id": image_id,
+                "ml_models_used": ["fallback_simulation"],
+                "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
             }
         },
         "prompt": f"Dynamic environmental analysis for {location_name} based on telescope observation #{image_id}",
