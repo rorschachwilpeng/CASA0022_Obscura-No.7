@@ -300,3 +300,44 @@ def clear_gallery():
             'success': False,
             'error': str(e)
         }), 500 
+
+@admin_bp.route('/test-ml-model', methods=['GET'])
+def test_ml_model():
+    """测试ML模型是否正常工作"""
+    try:
+        import subprocess
+        import sys
+        import os
+        
+        # 获取项目根目录
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        # 运行测试脚本
+        test_script = os.path.join(project_root, 'api', 'test_cloud_ml_model.py')
+        
+        result = subprocess.run([
+            sys.executable, test_script
+        ], capture_output=True, text=True, cwd=project_root)
+        
+        if result.returncode == 0:
+            return jsonify({
+                'success': True,
+                'message': 'ML模型测试完成',
+                'output': result.stdout,
+                'error': result.stderr
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'ML模型测试失败',
+                'output': result.stdout,
+                'error': result.stderr,
+                'return_code': result.returncode
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'测试执行失败: {str(e)}',
+            'error': str(e)
+        }) 
