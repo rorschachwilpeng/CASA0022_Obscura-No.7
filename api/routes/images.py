@@ -812,124 +812,22 @@ def upload_image():
             
             logger.info(f"Creating new prediction record with ID: {prediction_id_int}")
             
-            # 获取图片的环境数据（来自树莓派的元数据）
-            image_metadata = request.form.get('metadata')
-            environmental_data = {}
+            # 使用默认环境数据
+            environmental_data = {
+                'latitude': 51.5074,
+                'longitude': -0.1278,
+                'temperature': 15.0,
+                'humidity': 60.0,
+                'pressure': 1013.0,
+                'wind_speed': 0.0,
+                'weather_description': 'clear',
+                'timestamp': datetime.now().isoformat(),
+                'month': datetime.now().month,
+                'future_years': 0
+            }
             
-            if image_metadata:
-                try:
-                    metadata = json.loads(image_metadata)
-                    coordinates = metadata.get('coordinates', {})
-                    weather = metadata.get('weather', {}).get('current_weather', {})
-                    map_info = metadata.get('map_info', {})
-                    
-                    # 提取真实的地理位置信息
-                    location_name = "Unknown Location"
-                    if map_info:
-                        # 优先使用详细地理位置信息
-                        location_details = map_info.get('location_details', {})
-                        if location_details.get('locality'):
-                            location_name = location_details['locality']
-                            country = location_details.get('country', '')
-                            if country:
-                                location_name = f"{location_name}, {country}"
-                        elif map_info.get('location_info'):
-                            location_name = map_info['location_info']
-                    
-                    environmental_data = {
-                        'latitude': coordinates.get('latitude', 51.5074),
-                        'longitude': coordinates.get('longitude', -0.1278),
-                        'temperature': weather.get('temperature', 15.0),
-                        'humidity': weather.get('humidity', 60.0),
-                        'pressure': weather.get('pressure', 1013.0),
-                        'wind_speed': weather.get('wind_speed', 0.0),
-                        'weather_description': weather.get('weather_description', 'clear'),
-                        'timestamp': metadata.get('timestamp', datetime.now().isoformat()),
-                        'month': datetime.now().month,
-                        'future_years': 0,
-                        'location_name': location_name  # 添加真实地理位置信息
-                    }
-                    logger.info(f"✅ Extracted environmental data from metadata, location: {location_name}")
-                except Exception as e:
-                    logger.warning(f"⚠️ Failed to parse metadata, using defaults: {e}")
-                    environmental_data = {
-                        'latitude': 51.5074,
-                        'longitude': -0.1278,
-                        'temperature': 15.0,
-                        'humidity': 60.0,
-                        'pressure': 1013.0,
-                        'wind_speed': 0.0,
-                        'weather_description': 'clear',
-                        'timestamp': datetime.now().isoformat(),
-                        'month': datetime.now().month,
-                        'future_years': 0
-                    }
-            
-            # 调用SHAP预测API获取完整分析结果
-            try:
-                logger.info("🔮 Calling SHAP prediction API...")
-                import requests
-                
-                shap_api_url = f"{request.host_url}api/v1/shap/predict"
-                shap_response = requests.post(
-                    shap_api_url,
-                    json=environmental_data,
-                    timeout=30,
-                    headers={'Content-Type': 'application/json'}
-                )
-                
-                if shap_response.status_code == 200:
-                    shap_result = shap_response.json()
-                    if shap_result.get('success') and 'data' in shap_result:
-                        shap_data = shap_result['data']
-                        
-                        # 生成AI故事
-                        logger.info("📝 Generating AI environmental story...")
-                        ai_story = generate_ai_environmental_story(shap_data)
-                        
-                        # 构建完整的result_data结构
-                        result_data = {
-                            # 保留原有兼容字段
-                            "temperature": environmental_data.get('temperature', 15.0),
-                            "humidity": environmental_data.get('humidity', 60.0),
-                            "confidence": shap_data.get('overall_confidence', 1.0),
-                            "climate_type": _determine_climate_type(shap_data),
-                            "vegetation_index": _calculate_vegetation_index(shap_data),
-                            "predictions": {
-                                "short_term": _generate_short_term_prediction(shap_data),
-                                "long_term": _generate_long_term_prediction(shap_data)
-                            },
-                            
-                            # 新增完整SHAP分析字段
-                            "climate_score": shap_data.get('climate_score', 0.5),
-                            "geographic_score": shap_data.get('geographic_score', 0.5),
-                            "economic_score": shap_data.get('economic_score', 0.5),
-                            "final_score": shap_data.get('final_score', 0.5),
-                            "city": shap_data.get('city', 'Unknown'),
-                            "shap_analysis": shap_data.get('shap_analysis', {}),
-                            "ai_story": ai_story,
-                            
-                            # 分析元数据
-                            "analysis_metadata": {
-                                "generated_at": datetime.now().isoformat(),
-                                "model_version": "shap_v1.0.0", 
-                                "api_source": "integrated_shap_prediction",
-                                "fallback_used": shap_data.get('api_info', {}).get('fallback_used', False)
-                            }
-                        }
-                        
-                        logger.info(f"✅ SHAP analysis completed: final_score={shap_data.get('final_score', 'N/A')}")
-                        
-                    else:
-                        logger.warning("⚠️ SHAP API returned invalid data, using fallback")
-                        result_data = _create_fallback_result_data(environmental_data)
-                else:
-                    logger.warning(f"⚠️ SHAP API failed: {shap_response.status_code}, using fallback")
-                    result_data = _create_fallback_result_data(environmental_data)
-                    
-            except Exception as e:
-                logger.warning(f"⚠️ SHAP API call failed: {e}, using fallback")
-                result_data = _create_fallback_result_data(environmental_data)
+            # 创建简单的fallback result_data
+            result_data = _create_fallback_result_data(environmental_data)
             
             # 创建prediction记录
             cur.execute("""
@@ -943,140 +841,140 @@ def upload_image():
                 json.dumps(environmental_data),
                 json.dumps(result_data),
                 'SHAP-based environmental analysis for telescope image',
-                environmental_data.get('city', 'Unknown Location'),
+                'Unknown Location',
                 datetime.now()
             ))
-            logger.info(f"✅ Enhanced prediction record created with ID: {prediction_id_int}")
-        
-        # 现在插入image记录
-        cur.execute("""
-            INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
-            VALUES (%s, %s, %s, %s, %s) 
-            RETURNING id, created_at
-        """, (image_url, thumbnail_url, description, prediction_id_int, datetime.now()))
-        
-        result = cur.fetchone()
-        image_id, created_at = result
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        logger.info(f"Image record saved to database with ID: {image_id}")
-        
-    except Exception as e:
-        logger.error(f"Database insert failed: {e}")
-        
-        # 检查是否是数据库连接问题或架构问题
-        database_issues = [
-            "nodename nor servname provided",
-            "could not translate host name", 
-            "column \"temperature\" of relation \"predictions\" does not exist",
-            "relation \"predictions\" does not exist",
-            "does not exist"
-        ]
-        
-        is_database_issue = any(issue in str(e) for issue in database_issues)
-        
-        if is_database_issue:
-            logger.info(f"Database issue detected - using local storage mode")
+            logger.info(f"✅ Prediction record created with ID: {prediction_id_int}")
             
-            # 生成本地ID
-            new_image_id = max(LOCAL_IMAGES_STORE.keys()) + 1 if LOCAL_IMAGES_STORE else 1
+            # 现在插入image记录
+            cur.execute("""
+                INSERT INTO images (url, thumbnail_url, description, prediction_id, created_at) 
+                VALUES (%s, %s, %s, %s, %s) 
+                RETURNING id, created_at
+            """, (image_url, thumbnail_url, description, prediction_id_int, datetime.now()))
             
-            # 创建本地记录
-            LOCAL_IMAGES_STORE[new_image_id] = {
-                'id': new_image_id,
-                'url': image_url,
-                'thumbnail_url': thumbnail_url,
-                'description': description,
-                'prediction_id': int(prediction_id),
-                'created_at': datetime.now(),
-                'location': 'Fallback Local Storage'
-            }
+            result = cur.fetchone()
+            image_id, created_at = result
             
-            logger.info(f"Image stored locally with ID: {new_image_id}")
+            conn.commit()
+            cur.close()
+            conn.close()
             
-            # 启动后台分析任务
-            import threading
+            logger.info(f"Image record saved to database with ID: {image_id}")
             
-            def run_analysis():
-                try:
-                    # 运行分析
-                    result = process_image_analysis(new_image_id, image_url, description, int(prediction_id))
-                    logger.info(f"📊 Analysis completed for image {new_image_id}: {result['status']}")
-                except Exception as e:
-                    logger.error(f"❌ Background analysis failed: {e}")
-            
-            # 在后台线程中运行分析
-            analysis_thread = threading.Thread(target=run_analysis)
-            analysis_thread.daemon = True
-            analysis_thread.start()
-            
-            # 构建图片数据用于WebSocket事件
-            image_data_fallback = {
-                "id": new_image_id,
-                "url": image_url,
-                "thumbnail_url": thumbnail_url,
-                "description": description,
-                "prediction_id": int(prediction_id),
-                "created_at": datetime.now().isoformat()
-            }
-            
-            # 发送WebSocket事件
-            emit_new_image_event(image_data_fallback)
-            
-            return jsonify({
-                "success": True,
-                "image": image_data_fallback,
-                "message": "Image uploaded successfully (fallback local storage mode)",
-                "analysis_status": "processing",
-                "timestamp": datetime.now().isoformat()
-            }), 201
-        else:
-            return jsonify({
-                "success": False,
-                "error": f"Database save failed: {str(e)}",
-                "timestamp": datetime.now().isoformat()
-            }), 500
-    
-    # 启动后台分析任务（数据库模式）
-    import threading
-    
-    def run_analysis():
-        try:
-            # 运行分析
-            result = process_image_analysis(image_id, image_url, description, int(prediction_id))
-            logger.info(f"📊 Analysis completed for image {image_id}: {result['status']}")
         except Exception as e:
-            logger.error(f"❌ Background analysis failed: {e}")
-    
-    # 在后台线程中运行分析
-    analysis_thread = threading.Thread(target=run_analysis)
-    analysis_thread.daemon = True
-    analysis_thread.start()
-    
-    # 构建图片数据用于WebSocket事件
-    image_data_main = {
-        "id": image_id,
-        "url": image_url,
-        "thumbnail_url": thumbnail_url,
-        "description": description,
-        "prediction_id": int(prediction_id),
-        "created_at": created_at.isoformat()
-    }
-    
-    # 发送WebSocket事件
-    emit_new_image_event(image_data_main)
-    
-    # 返回成功响应
-    return jsonify({
-        "success": True,
-        "image": image_data_main,
-        "message": "Image uploaded successfully",
-        "analysis_status": "processing",
-        "timestamp": datetime.now().isoformat()
-    }), 201
+            logger.error(f"Database insert failed: {e}")
+            
+            # 检查是否是数据库连接问题或架构问题
+            database_issues = [
+                "nodename nor servname provided",
+                "could not translate host name", 
+                "column \"temperature\" of relation \"predictions\" does not exist",
+                "relation \"predictions\" does not exist",
+                "does not exist"
+            ]
+            
+            is_database_issue = any(issue in str(e) for issue in database_issues)
+            
+            if is_database_issue:
+                logger.info(f"Database issue detected - using local storage mode")
+                
+                # 生成本地ID
+                new_image_id = max(LOCAL_IMAGES_STORE.keys()) + 1 if LOCAL_IMAGES_STORE else 1
+                
+                # 创建本地记录
+                LOCAL_IMAGES_STORE[new_image_id] = {
+                    'id': new_image_id,
+                    'url': image_url,
+                    'thumbnail_url': thumbnail_url,
+                    'description': description,
+                    'prediction_id': int(prediction_id),
+                    'created_at': datetime.now(),
+                    'location': 'Fallback Local Storage'
+                }
+                
+                logger.info(f"Image stored locally with ID: {new_image_id}")
+                
+                # 启动后台分析任务
+                import threading
+                
+                def run_analysis():
+                    try:
+                        # 运行分析
+                        result = process_image_analysis(new_image_id, image_url, description, int(prediction_id))
+                        logger.info(f"📊 Analysis completed for image {new_image_id}: {result['status']}")
+                    except Exception as e:
+                        logger.error(f"❌ Background analysis failed: {e}")
+                
+                # 在后台线程中运行分析
+                analysis_thread = threading.Thread(target=run_analysis)
+                analysis_thread.daemon = True
+                analysis_thread.start()
+                
+                # 构建图片数据用于WebSocket事件
+                image_data_fallback = {
+                    "id": new_image_id,
+                    "url": image_url,
+                    "thumbnail_url": thumbnail_url,
+                    "description": description,
+                    "prediction_id": int(prediction_id),
+                    "created_at": datetime.now().isoformat()
+                }
+                
+                # 发送WebSocket事件
+                emit_new_image_event(image_data_fallback)
+                
+                return jsonify({
+                    "success": True,
+                    "image": image_data_fallback,
+                    "message": "Image uploaded successfully (fallback local storage mode)",
+                    "analysis_status": "processing",
+                    "timestamp": datetime.now().isoformat()
+                }), 201
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": f"Database save failed: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }), 500
+        
+        # 启动后台分析任务（数据库模式）
+        import threading
+        
+        def run_analysis():
+            try:
+                # 运行分析
+                result = process_image_analysis(image_id, image_url, description, int(prediction_id))
+                logger.info(f"📊 Analysis completed for image {image_id}: {result['status']}")
+            except Exception as e:
+                logger.error(f"❌ Background analysis failed: {e}")
+        
+        # 在后台线程中运行分析
+        analysis_thread = threading.Thread(target=run_analysis)
+        analysis_thread.daemon = True
+        analysis_thread.start()
+        
+        # 构建图片数据用于WebSocket事件
+        image_data_main = {
+            "id": image_id,
+            "url": image_url,
+            "thumbnail_url": thumbnail_url,
+            "description": description,
+            "prediction_id": int(prediction_id),
+            "created_at": created_at.isoformat()
+        }
+        
+        # 发送WebSocket事件
+        emit_new_image_event(image_data_main)
+        
+        # 返回成功响应
+        return jsonify({
+            "success": True,
+            "image": image_data_main,
+            "message": "Image uploaded successfully",
+            "analysis_status": "processing",
+            "timestamp": datetime.now().isoformat()
+        }), 201
         
     except Exception as e:
         logger.error(f"Unexpected error in upload_image: {e}")
