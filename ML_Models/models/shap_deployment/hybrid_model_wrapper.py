@@ -26,14 +26,19 @@ logger = logging.getLogger(__name__)
 class HybridSHAPModelWrapper:
     """混合模型SHAP包装器"""
     
-    def __init__(self, models_directory: str = "trained_models_66"):
+    def __init__(self, models_directory: str = None):
         """
         初始化混合模型包装器
         
         Args:
             models_directory: 训练好的模型目录
         """
-        self.models_dir = Path(models_directory)
+        if models_directory is None:
+            # 默认使用相对于当前文件的路径
+            current_file = Path(__file__)
+            self.models_dir = current_file.parent / "trained_models_66"
+        else:
+            self.models_dir = Path(models_directory)
         self.loaded_models = {}
         self.scaler = None
         self.feature_engineer = None

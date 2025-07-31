@@ -32,6 +32,6 @@ python3 -c "import requests, datetime, json, os" 2>/dev/null || {
 
 # 启动程序
 echo "🚀 Launching telescope..."
-python3 main.py
+python3 main.py --mode exhibition
 
 echo "🔭 Telescope session ended." 

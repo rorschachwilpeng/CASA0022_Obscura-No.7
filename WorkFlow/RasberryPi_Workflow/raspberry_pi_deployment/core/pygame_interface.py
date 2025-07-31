@@ -8,6 +8,7 @@ Features:
 - Full-screen image display
 - Touch to continue interaction
 - State-based UI rendering
+- Scientific time eye animation for future prediction
 """
 
 import pygame
@@ -20,6 +21,7 @@ from datetime import datetime, timedelta
 import logging
 
 from .exhibition_state_machine import ExhibitionState, StateContext
+from .time_eye_animation import TimeEyeAnimation
 
 # Initialize Pygame
 pygame.init()
@@ -50,13 +52,13 @@ COLORS = {
     'transparent': (0, 0, 0, 0)        # Transparent
 }
 
-# Font sizes
+# Font sizes - 针对HyperPixel模糊显示进行优化，大幅增加字体大小
 FONT_SIZES = {
-    'title': 32,
-    'subtitle': 24,
-    'normal': 18,
-    'small': 14,
-    'large': 28
+    'title': 48,        # 从32增加到48 (+50%)
+    'subtitle': 36,     # 从24增加到36 (+50%)
+    'normal': 28,       # 从18增加到28 (+55%)
+    'small': 22,        # 从14增加到22 (+57%)
+    'large': 42         # 从28增加到42 (+50%)
 }
 
 class ButtonState(Enum):
@@ -72,7 +74,11 @@ class Button:
                  button_type: str = 'normal'):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
-        self.font = pygame.font.Font(None, font_size)
+        # 使用加粗字体提升按钮文字可读性
+        try:
+            self.font = pygame.font.SysFont('arial', font_size, bold=True)
+        except:
+            self.font = pygame.font.Font(None, font_size)
         self.state = ButtonState.NORMAL
         self.enabled = True
         self.callback = None
@@ -161,12 +167,27 @@ class CircularKnob:
         self.max_value = max_value
         self.current_value = current_value
         self.label = label
-        self.font = pygame.font.Font(None, FONT_SIZES['normal'])
-        self.small_font = pygame.font.Font(None, FONT_SIZES['small'])
+        # 增大字体尺寸，让数值和标签更清晰可读
+        self.font = pygame.font.Font(None, FONT_SIZES['large'])  # 数值用大字体
+        self.small_font = pygame.font.Font(None, FONT_SIZES['large'])  # 标签也改为大字体，让Distance/Angle/Time Offset更显眼
     
     def set_value(self, value: float):
-        """Update the current value"""
-        self.current_value = max(self.min_value, min(self.max_value, value))
+        """Update the current value with circular wrapping logic"""
+        # 循环逻辑：当超过最大值时，从最小值重新开始
+        value_range = self.max_value - self.min_value
+        if value > self.max_value:
+            # 超过最大值，计算循环后的位置
+            excess = value - self.max_value
+            wrapped_value = self.min_value + (excess % value_range)
+            self.current_value = wrapped_value
+        elif value < self.min_value:
+            # 低于最小值，从最大值向下循环
+            deficit = self.min_value - value
+            wrapped_value = self.max_value - (deficit % value_range)
+            self.current_value = wrapped_value
+        else:
+            # 在正常范围内
+            self.current_value = value
     
     def draw(self, surface):
         """Draw the circular knob"""
@@ -174,9 +195,10 @@ class CircularKnob:
         pygame.draw.circle(surface, COLORS['accent'], 
                          (self.center_x, self.center_y), self.radius, 3)
         
-        # Calculate angle for current value (0 degrees = top, clockwise)
+        # Calculate angle for current value - 360度循环逻辑
         normalized_value = (self.current_value - self.min_value) / (self.max_value - self.min_value)
-        angle = -90 + (normalized_value * 270)  # -90 to start at top, 270 degrees total
+        # 使用360度范围，-90度开始（12点方向），顺时针旋转
+        angle = -90 + (normalized_value * 360)  # -90度到270度，完整360度范围
         angle_rad = math.radians(angle)
         
         # Draw indicator line
@@ -189,18 +211,29 @@ class CircularKnob:
         pygame.draw.circle(surface, COLORS['primary'], 
                          (self.center_x, self.center_y), 8)
         
-        # Draw value text
+        # Draw value text - 增加数值显示的醒目度
         value_text = f"{self.current_value:.1f}"
-        if self.label == "Time Offset":
+        if self.label == "Time Offset (y)":
             value_text = f"{int(self.current_value)}"
         
+        # 使用更醒目的颜色和粗体效果
         text_surface = self.font.render(value_text, True, COLORS['primary'])
-        text_rect = text_surface.get_rect(center=(self.center_x, self.center_y + self.radius + 25))
+        # 绘制文本阴影增加对比度
+        shadow_surface = self.font.render(value_text, True, (0, 0, 0))
+        shadow_rect = shadow_surface.get_rect(center=(self.center_x + 2, self.center_y + self.radius + 35))  # 从27增加到35
+        surface.blit(shadow_surface, shadow_rect)
+        
+        text_rect = text_surface.get_rect(center=(self.center_x, self.center_y + self.radius + 33))  # 从25增加到33
         surface.blit(text_surface, text_rect)
         
-        # Draw label
-        label_surface = self.small_font.render(self.label, True, COLORS['secondary'])
-        label_rect = label_surface.get_rect(center=(self.center_x, self.center_y + self.radius + 45))
+        # Draw label - 标签颜色和字体调整，更显眼，增加与数值的距离
+        label_surface = self.small_font.render(self.label, True, COLORS['primary'])  # 从accent改为primary，使用白色更显眼
+        # 绘制标签阴影
+        label_shadow = self.small_font.render(self.label, True, (0, 0, 0))
+        label_shadow_rect = label_shadow.get_rect(center=(self.center_x + 1, self.center_y + self.radius + 60))  # 从46增加到60，增加间距
+        surface.blit(label_shadow, label_shadow_rect)
+        
+        label_rect = label_surface.get_rect(center=(self.center_x, self.center_y + self.radius + 58))  # 从45增加到58，增加间距
         surface.blit(label_surface, label_rect)
 
 class ProgressBar:
@@ -262,19 +295,22 @@ class PygameInterface:
         if fullscreen:
             pygame.mouse.set_visible(False)
         
-        # Initialize fonts - 增加容错处理
+        # Initialize fonts - 使用加粗字体提升模糊屏幕可读性
         self.fonts = {}
         for size_name, size in FONT_SIZES.items():
             try:
-                self.fonts[size_name] = pygame.font.Font(None, size)
+                # 尝试使用系统字体并设置为粗体
+                self.fonts[size_name] = pygame.font.SysFont('arial', size, bold=True)
+                self.logger.info(f"字体 '{size_name}' 使用Arial粗体 {size}px")
             except pygame.error:
-                # 字体初始化失败时的回退机制
                 try:
-                    self.fonts[size_name] = pygame.font.SysFont('arial', size)
-                    self.logger.warning(f"字体 '{size_name}' 使用系统arial字体")
+                    # 回退：使用默认字体
+                    self.fonts[size_name] = pygame.font.Font(None, size)
+                    self.logger.warning(f"字体 '{size_name}' 使用默认字体 {size}px")
                 except pygame.error:
+                    # 最终回退
                     self.fonts[size_name] = pygame.font.SysFont(None, size)
-                    self.logger.warning(f"字体 '{size_name}' 使用系统默认字体")
+                    self.logger.warning(f"字体 '{size_name}' 使用系统默认字体 {size}px")
         
         # Initialize UI elements
         self._init_ui_elements()
@@ -301,42 +337,53 @@ class PygameInterface:
             'on_parameter_change': None
         }
         
+        # Initialize time eye animation
+        # self.time_eye_animation = TimeEyeAnimation(SCREEN_WIDTH, SCREEN_HEIGHT)
+        # 改为动态创建，以便传递实时的location和time信息
+        self.time_eye_animation = None
+        
         self.logger.info("Pygame interface initialized")
     
     def _init_ui_elements(self):
         """Initialize UI elements"""
-        # Parameter knobs
-        self.distance_knob = CircularKnob(150, 200, 60, 1.0, 50.0, 25.0, "Distance (km)")
-        self.angle_knob = CircularKnob(400, 200, 60, 0.0, 360.0, 0.0, "Angle (°)")
-        self.time_knob = CircularKnob(650, 200, 60, -50.0, 50.0, 0.0, "Time Offset (y)")
+        # Parameter knobs - 上移位置，从220调整到180
+        self.distance_knob = CircularKnob(150, 180, 90, 1.0, 50.0, 1.0, "Distance (km)")
+        self.angle_knob = CircularKnob(400, 180, 90, 0.0, 360.0, 0.0, "Angle (°)")
+        self.time_knob = CircularKnob(650, 180, 90, -50.0, 50.0, -50.0, "Time Offset (y)")
         
-        # City selection buttons
+        # City selection buttons - 调整尺寸和位置，增大宽度适应Manchester，整体向左移动
         self.city_buttons = {}
         city_names = ["London", "Edinburgh", "Manchester"]
-        button_width = 200
-        button_height = 80
-        start_x = (SCREEN_WIDTH - (len(city_names) * button_width + (len(city_names)-1) * 50)) // 2
+        button_width = 240  # 从220增加到240，为Manchester提供更多空间
+        button_height = 100  # 保持100不变
+        button_spacing = 40  # 保持40不变
+        # 计算总宽度：240*3 + 40*2 = 720 + 80 = 800px，正好填满屏幕
+        # 向左平移：减少start_x的值，让按钮组整体左移
+        calculated_start_x = (SCREEN_WIDTH - (len(city_names) * button_width + (len(city_names)-1) * button_spacing)) // 2
+        start_x = calculated_start_x - 15  # 向左平移15像素
         
         for i, city in enumerate(city_names):
-            x = start_x + i * (button_width + 50)
+            x = start_x + i * (button_width + button_spacing)
             y = 200
             button = Button(x, y, button_width, button_height, city, 
                           FONT_SIZES['large'], 'city')
             button.set_callback(lambda c=city: self._on_city_selected(c))
             self.city_buttons[city] = button
         
-        # Main control buttons
-        self.fetch_button = Button(300, 320, 200, 60, "GENERATE ART", FONT_SIZES['large'])
+        # Main control buttons - 扩大PREDICT THE FUTURE按钮完全包裹文字
+        self.fetch_button = Button(170, 380, 460, 120, "PREDICT THE FUTURE", FONT_SIZES['large'])  # 宽度从420增加到460，X从190调整到170居中
         self.fetch_button.set_callback(self._on_fetch_button_click)
         
-        self.continue_button = Button(300, 380, 200, 60, "TOUCH TO CONTINUE", FONT_SIZES['normal'])
+        # 其他按钮位置调整
+        self.continue_button = Button(250, 420, 300, 90, "TOUCH TO CONTINUE", FONT_SIZES['normal'])
         self.continue_button.set_callback(self._on_continue_button_click)
         
-        self.reset_button = Button(50, 400, 120, 50, "RESET", FONT_SIZES['normal'])
+        # Reset按钮 - 进一步缩小尺寸，让整体构图更协调
+        self.reset_button = Button(20, 350, 130, 50, "RESET", FONT_SIZES['normal'])  # 从(20,350,150,60)调整为(20,350,130,50)
         self.reset_button.set_callback(self._on_reset_button_click)
         
-        # Progress bar
-        self.progress_bar = ProgressBar(200, 250, 400, 30)
+        # Progress bar - 增大尺寸50%，width从400增加到600，height从30增加到45
+        self.progress_bar = ProgressBar(100, 260, 600, 45)
         
         # UI element lists for easy management
         self.buttons = [self.fetch_button, self.continue_button, self.reset_button]
@@ -430,21 +477,25 @@ class PygameInterface:
                 elif event.key == pygame.K_r:
                     self._on_reset_button_click()
             
-            # Handle button events
-            for button in self.buttons:
-                if button.handle_event(event):
-                    break  # Only one button should be clicked at a time
+            # Handle button events - 确保按钮事件被正确处理
+            button_handled = False
             
-            # Handle city button events
+            # Handle city button events first
             for button in self.city_buttons.values():
                 if button.handle_event(event):
+                    button_handled = True
                     break
             
-            # Handle touch events (treat as mouse clicks)
-            if event.type == pygame.MOUSEBUTTONUP:
-                # If we're in waiting interaction state, any touch continues
-                if self.current_state == ExhibitionState.WAITING_INTERACTION:
-                    self._on_continue_button_click()
+            # Handle other buttons if no city button was clicked
+            if not button_handled:
+                for button in self.buttons:
+                    if button.handle_event(event):
+                        button_handled = True
+                        break  # Only one button should be clicked at a time
+            
+            # 移除全屏触摸继续逻辑 - 修复用户报告的问题
+            # 现在只有点击"Touch to continue"按钮才会触发返回事件
+            # 这解决了"随意点击屏幕都会触发返回事件"的问题
         
         return True
     
@@ -455,87 +506,123 @@ class PygameInterface:
         
         # Update progress based on state
         if self.current_state == ExhibitionState.PROCESSING:
-            # Simulate processing progress (in real implementation, this would come from the workflow)
-            if self.context:
-                elapsed = pygame.time.get_ticks() - (self.context.state_start_time * 1000)
-                progress = min(elapsed / (self.context.processing_timeout * 1000), 0.95)
-                self.progress_bar.set_progress(progress)
+            # 动态创建或更新时间之眼动画，传递最新的location和future_time信息
+            if self.time_eye_animation is None:
+                location_info = self._get_location_display_text()
+                future_time = self._get_future_time_display_text()
+                self.time_eye_animation = TimeEyeAnimation(SCREEN_WIDTH, SCREEN_HEIGHT, location_info, future_time)
+            
+            # 使用科技动感版"时间之眼"动效替代旧的进度条
+            # 更新动画状态
+            dt = self.clock.get_time() / 1000.0  # 转换为秒
+            self.time_eye_animation.update(dt)
+            
+            # 绘制时间之眼动效（全屏黑色背景 + 动画）
+            self.time_eye_animation.draw(self.screen)
         else:
+            # 其他状态时清除动画对象
+            self.time_eye_animation = None
             self.progress_bar.set_progress(0.0)
     
     def draw(self):
         """Draw the interface"""
-        # Clear screen
-        self.screen.fill(COLORS['background'])
-        
-        # Draw steampunk background elements
-        self._draw_steampunk_background()
-        
-        if self.current_state == ExhibitionState.CITY_SELECTION:
-            self._draw_city_selection()
-        elif self.current_state == ExhibitionState.RESULT_DISPLAY:
-            self._draw_result_display()
-        elif self.current_state == ExhibitionState.WAITING_INTERACTION:
-            self._draw_waiting_interaction()
+        # 特殊处理：PROCESSING状态使用全屏时间之眼动效
+        if self.current_state == ExhibitionState.PROCESSING:
+            # 确保动画对象存在
+            if self.time_eye_animation is None:
+                location_info = self._get_location_display_text()
+                future_time = self._get_future_time_display_text()
+                self.time_eye_animation = TimeEyeAnimation(SCREEN_WIDTH, SCREEN_HEIGHT, location_info, future_time)
+            
+            # 更新动画状态
+            dt = self.clock.get_time() / 1000.0  # 转换为秒
+            self.time_eye_animation.update(dt)
+            
+            # 绘制时间之眼动效（包含全黑背景）
+            self.time_eye_animation.draw(self.screen)
+            
+            # 只绘制状态指示器，不绘制其他元素
+            self._draw_state_indicator()
         else:
-            self._draw_main_interface()
-        
-        # Always draw current state indicator in top-right corner
-        self._draw_state_indicator()
+            # 其他状态的正常绘制流程
+            # Clear screen
+            self.screen.fill(COLORS['background'])
+            
+            # Draw steampunk background elements
+            self._draw_steampunk_background()
+            
+            if self.current_state == ExhibitionState.CITY_SELECTION:
+                self._draw_city_selection()
+            elif self.current_state == ExhibitionState.RESULT_DISPLAY:
+                self._draw_result_display()
+            elif self.current_state == ExhibitionState.WAITING_INTERACTION:
+                self._draw_waiting_interaction()
+            else:
+                self._draw_main_interface()
+            
+            # Always draw current state indicator in top-right corner
+            self._draw_state_indicator()
         
         # Update display
         pygame.display.flip()
 
     def _draw_steampunk_background(self):
         """Draw steampunk-style background elements"""
-        # Draw copper pipes
+        # Draw copper pipes - 增大管道宽度50%，从8像素增加到12像素
         pipe_color = COLORS['copper']
         # Horizontal pipes
-        pygame.draw.rect(self.screen, pipe_color, (0, 100, SCREEN_WIDTH, 8))
-        pygame.draw.rect(self.screen, pipe_color, (0, 350, SCREEN_WIDTH, 8))
+        pygame.draw.rect(self.screen, pipe_color, (0, 100, SCREEN_WIDTH, 12))
+        pygame.draw.rect(self.screen, pipe_color, (0, 350, SCREEN_WIDTH, 12))
         # Vertical pipes
-        pygame.draw.rect(self.screen, pipe_color, (100, 0, 8, SCREEN_HEIGHT))
-        pygame.draw.rect(self.screen, pipe_color, (SCREEN_WIDTH-108, 0, 8, SCREEN_HEIGHT))
+        pygame.draw.rect(self.screen, pipe_color, (100, 0, 12, SCREEN_HEIGHT))
+        pygame.draw.rect(self.screen, pipe_color, (SCREEN_WIDTH-108, 0, 12, SCREEN_HEIGHT))
         
-        # Draw gears
+        # Draw gears - 增大齿轮半径50%，从25增加到38
         gear_color = COLORS['gear']
         # Corner gears
-        pygame.draw.circle(self.screen, gear_color, (80, 80), 25, 3)
-        pygame.draw.circle(self.screen, gear_color, (SCREEN_WIDTH-80, 80), 25, 3)
-        pygame.draw.circle(self.screen, gear_color, (80, SCREEN_HEIGHT-80), 25, 3)
-        pygame.draw.circle(self.screen, gear_color, (SCREEN_WIDTH-80, SCREEN_HEIGHT-80), 25, 3)
+        pygame.draw.circle(self.screen, gear_color, (80, 80), 38, 5)
+        pygame.draw.circle(self.screen, gear_color, (SCREEN_WIDTH-80, 80), 38, 5)
+        pygame.draw.circle(self.screen, gear_color, (80, SCREEN_HEIGHT-80), 38, 5)
+        pygame.draw.circle(self.screen, gear_color, (SCREEN_WIDTH-80, SCREEN_HEIGHT-80), 38, 5)
         
-        # Gear teeth (simple lines)
+        # Gear teeth (simple lines) - 增大齿轮齿尺寸50%
         for gear_pos in [(80, 80), (SCREEN_WIDTH-80, 80), (80, SCREEN_HEIGHT-80), (SCREEN_WIDTH-80, SCREEN_HEIGHT-80)]:
             for angle in range(0, 360, 45):
-                x = gear_pos[0] + 30 * math.cos(math.radians(angle))
-                y = gear_pos[1] + 30 * math.sin(math.radians(angle))
-                pygame.draw.line(self.screen, gear_color, gear_pos, (x, y), 2)
+                x = gear_pos[0] + 45 * math.cos(math.radians(angle))  # 从30增加到45 (+50%)
+                y = gear_pos[1] + 45 * math.sin(math.radians(angle))  # 从30增加到45 (+50%)
+                pygame.draw.line(self.screen, gear_color, gear_pos, (x, y), 3)  # 线条宽度从2增加到3
 
     def _draw_city_selection(self):
         """Draw city selection interface"""
-        # Title
+        # Title - 位置稍微下移以适应更大字体
         title_text = self.fonts['title'].render("OBSCURA No.7", True, COLORS['primary'])
-        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 60))  # 从50增加到60
         self.screen.blit(title_text, title_rect)
         
-        subtitle_text = self.fonts['subtitle'].render("Virtual Time-Space Telescope", True, COLORS['accent'])
-        subtitle_rect = subtitle_text.get_rect(center=(SCREEN_WIDTH // 2, 85))
+        # Subtitle - 调整颜色和位置，避免与背景重叠，添加背景增强可读性
+        subtitle_text = self.fonts['subtitle'].render("Virtual Time-Space Telescope", True, COLORS['primary'])  # 改为主色调
+        subtitle_rect = subtitle_text.get_rect(center=(SCREEN_WIDTH // 2, 105))  # 从85增加到105
+        
+        # 为副标题添加背景，增强可读性
+        bg_rect = subtitle_rect.inflate(20, 10)
+        pygame.draw.rect(self.screen, (*COLORS['background'], 180), bg_rect, border_radius=5)
+        pygame.draw.rect(self.screen, COLORS['accent'], bg_rect, 2, border_radius=5)
+        
         self.screen.blit(subtitle_text, subtitle_rect)
         
-        # Instructions
-        instruction_text = self.fonts['normal'].render("Select a destination city for your temporal exploration:", True, COLORS['secondary'])
-        instruction_rect = instruction_text.get_rect(center=(SCREEN_WIDTH // 2, 150))
+        # Instructions - 位置下移以适应更大的标题，调整颜色增强对比度
+        instruction_text = self.fonts['normal'].render("Select a destination city for your temporal exploration:", True, COLORS['primary'])  # 改为主色调
+        instruction_rect = instruction_text.get_rect(center=(SCREEN_WIDTH // 2, 160))  # 从170调整到160，上移一点
         self.screen.blit(instruction_text, instruction_rect)
         
         # Draw city buttons
         for button in self.city_buttons.values():
             button.draw(self.screen)
         
-        # Draw selected city info if any
+        # Draw selected city info if any - 位置下移
         if self.context and self.context.selected_city:
             selected_text = self.fonts['normal'].render(f"Selected: {self.context.selected_city}", True, COLORS['success'])
-            selected_rect = selected_text.get_rect(center=(SCREEN_WIDTH // 2, 320))
+            selected_rect = selected_text.get_rect(center=(SCREEN_WIDTH // 2, 360))  # 从340增加到360，为按钮让出空间
             self.screen.blit(selected_text, selected_rect)
         
         # Draw decorative steam
@@ -555,32 +642,27 @@ class PygameInterface:
     
     def _draw_main_interface(self):
         """Draw the main parameter interface"""
-        # Title
+        # Title - 向上移动避免与旋钮重叠
         title_text = self.fonts['title'].render("OBSCURA No.7", True, COLORS['primary'])
-        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 50))
+        title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, 35))  # 从50上移到35
         self.screen.blit(title_text, title_rect)
         
-        subtitle_text = self.fonts['subtitle'].render("Temporal Environmental Observatory", True, COLORS['accent'])
-        subtitle_rect = subtitle_text.get_rect(center=(SCREEN_WIDTH // 2, 80))
-        self.screen.blit(subtitle_text, subtitle_rect)
+        # 删除副标题"Temporal Environmental Observatory"，为其他控件提供更多空间
         
-        # Show selected city
+        # Show selected city - 向上移动避免与旋钮重叠
         if self.context and self.context.selected_city:
-            city_text = self.fonts['normal'].render(f"Destination: {self.context.selected_city}", True, COLORS['success'])
-            city_rect = city_text.get_rect(center=(SCREEN_WIDTH // 2, 110))
+            city_text = self.fonts['large'].render(f"Destination: {self.context.selected_city}", True, COLORS['success'])  # 从normal改为large
+            city_rect = city_text.get_rect(center=(SCREEN_WIDTH // 2, 70))  # 从85上移到70
             self.screen.blit(city_text, city_rect)
         
-        # Draw parameter knobs
+        # Draw parameter knobs - 旋钮会通过_init_ui_elements中的位置调整来上移
         for knob in self.knobs:
             knob.draw(self.screen)
         
         # Draw buttons based on state
         if self.current_state == ExhibitionState.PARAMETER_INPUT:
-            # Show instruction text
-            instruction_text = self.fonts['normal'].render(
-                "Adjust parameters using hardware encoders", True, COLORS['secondary'])
-            instruction_rect = instruction_text.get_rect(center=(SCREEN_WIDTH // 2, 300))
-            self.screen.blit(instruction_text, instruction_rect)
+            # 删除"Adjust parameters using hardware encoders"说明文字
+            pass
             
             # Show generate art button
             self.fetch_button.draw(self.screen)
@@ -588,18 +670,7 @@ class PygameInterface:
         elif self.current_state == ExhibitionState.DATA_FETCH_CONFIRMATION:
             self.fetch_button.draw(self.screen)
         
-        elif self.current_state == ExhibitionState.PROCESSING:
-            # Show processing message and progress
-            processing_text = self.fonts['large'].render("PROCESSING...", True, COLORS['primary'])
-            processing_rect = processing_text.get_rect(center=(SCREEN_WIDTH // 2, 200))
-            self.screen.blit(processing_text, processing_rect)
-            
-            status_text = self.fonts['normal'].render(
-                "Fetching environmental data and generating image", True, COLORS['secondary'])
-            status_rect = status_text.get_rect(center=(SCREEN_WIDTH // 2, 230))
-            self.screen.blit(status_text, status_rect)
-            
-            self.progress_bar.draw(self.screen)
+        # PROCESSING状态现在在draw()方法中独立处理，不在这里处理
         
         elif self.current_state == ExhibitionState.ERROR:
             # Show error message
@@ -693,6 +764,104 @@ class PygameInterface:
         """Clean up and quit pygame"""
         pygame.quit()
         self.logger.info("Pygame interface shut down")
+
+    def _get_location_display_text(self) -> str:
+        """获取位置显示文本"""
+        # 优先使用工作流获取的真实地址信息
+        if (self.context and 
+            hasattr(self.context, 'map_info') and 
+            self.context.map_info and 
+            self.context.map_info.get('success')):
+            
+            # 获取完整地址信息
+            location_info = self.context.map_info.get('location_info', '')
+            location_details = self.context.map_info.get('location_details', {})
+            
+            # 优先使用完整地址并智能简化
+            if location_info:
+                # 清理地址：移除邮编、国家后缀等
+                simplified_address = location_info.replace('英国', '').replace('UK', '').replace('United Kingdom', '').strip()
+                
+                # 移除邮编（匹配英国邮编格式）
+                import re
+                simplified_address = re.sub(r'\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b', '', simplified_address).strip()
+                
+                # 清理多余的逗号和空格
+                simplified_address = re.sub(r',\s*,', ',', simplified_address)  # 连续逗号
+                simplified_address = re.sub(r',\s*$', '', simplified_address)   # 末尾逗号
+                simplified_address = simplified_address.strip(', ')
+                
+                # 如果地址太长，智能截取最重要的部分
+                if len(simplified_address) > 35:
+                    parts = [part.strip() for part in simplified_address.split(',')]
+                    if len(parts) >= 2:
+                        # 取前两个最重要的部分：通常是街道名和区域名
+                        return f"{parts[0]}, {parts[1]}"
+                    else:
+                        return simplified_address[:35] + "..."
+                
+                return simplified_address
+            
+            # 如果完整地址不可用，尝试从详细组件构建
+            if location_details:
+                # 提取关键地址组件
+                street_number = location_details.get('street_number', '')
+                route = location_details.get('route', '')  # 街道名称
+                locality = location_details.get('locality', '')  # 城市
+                sublocality = location_details.get('sublocality', '')  # 子区域
+                admin_area = location_details.get('administrative_area_level_1', '')  # 州/省
+                
+                # 构建显示文本：优先显示街道信息
+                if street_number and route:
+                    street_info = f"{street_number} {route}"
+                    if locality:
+                        return f"{street_info}, {locality}"
+                    elif sublocality:
+                        return f"{street_info}, {sublocality}"
+                    elif admin_area:
+                        return f"{street_info}, {admin_area}"
+                    else:
+                        return street_info
+                elif route:
+                    if locality:
+                        return f"{route}, {locality}"
+                    elif sublocality:
+                        return f"{route}, {sublocality}"
+                    elif admin_area:
+                        return f"{route}, {admin_area}"
+                    else:
+                        return route
+                elif sublocality and locality:
+                    return f"{sublocality}, {locality}"
+                elif locality:
+                    return locality
+        
+        # 回退到默认的城市名称
+        if self.context and self.context.selected_city:
+            city = self.context.selected_city
+            if city in {"London", "Edinburgh", "Manchester"}:
+                # 添加简化的地理名称，更易读
+                city_display_names = {
+                    "London": "London, England",
+                    "Edinburgh": "Edinburgh, Scotland", 
+                    "Manchester": "Manchester, England"
+                }
+                if city in city_display_names:
+                    return city_display_names[city]
+            return city
+        return "Unknown Location"
+    
+    def _get_future_time_display_text(self) -> str:
+        """获取未来时间显示文本"""
+        if self.context and hasattr(self.context, 'time_offset_years'):
+            years_offset = self.context.time_offset_years
+            if years_offset == 0:
+                return "Present Time"
+            elif years_offset > 0:
+                return f"+{years_offset} years from now"
+            else:
+                return f"{abs(years_offset)} years ago"
+        return "Unknown Time"
 
 # Example usage and testing
 if __name__ == "__main__":

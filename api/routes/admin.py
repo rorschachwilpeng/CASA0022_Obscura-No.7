@@ -340,4 +340,45 @@ def test_ml_model():
             'success': False,
             'message': f'测试执行失败: {str(e)}',
             'error': str(e)
+        })
+
+@admin_bp.route('/check-dependencies', methods=['GET'])
+def check_dependencies():
+    """检查依赖包是否正常安装"""
+    try:
+        import subprocess
+        import sys
+        import os
+        
+        # 获取项目根目录
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        
+        # 运行依赖检查脚本
+        deps_script = os.path.join(project_root, 'api', 'test_dependencies.py')
+        
+        result = subprocess.run([
+            sys.executable, deps_script
+        ], capture_output=True, text=True, cwd=project_root)
+        
+        if result.returncode == 0:
+            return jsonify({
+                'success': True,
+                'message': '依赖检查完成',
+                'output': result.stdout,
+                'error': result.stderr
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '依赖检查失败',
+                'output': result.stdout,
+                'error': result.stderr,
+                'return_code': result.returncode
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'依赖检查执行失败: {str(e)}',
+            'error': str(e)
         }) 

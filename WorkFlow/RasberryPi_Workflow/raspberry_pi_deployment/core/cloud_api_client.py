@@ -41,8 +41,13 @@ def json_serializer(obj):
             raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 class CloudAPIClient:
-    def __init__(self, config_manager=None):
-        """初始化云端API客户端"""
+    def __init__(self, config_manager=None, maps_client=None):
+        """初始化云端API客户端
+        
+        Args:
+            config_manager: 配置管理器实例
+            maps_client: Maps客户端实例，用于获取建筑信息
+        """
         # 如果没有传入配置管理器，创建一个新的
         if config_manager is None:
             self.config_manager = ConfigManager()
@@ -78,9 +83,12 @@ class CloudAPIClient:
         self.retry_delay = self.config_manager.get('retry_settings.retry_delay_seconds', 2)
         self.timeout = 120  # 增加到120秒，处理大文件上传
         
-        # 初始化升级后的ImagePromptBuilder - 统一写实风格
-        self.prompt_builder = ImagePromptBuilder()
-        print("🎨 统一写实风格Prompt构建器已初始化")
+        # 初始化升级后的ImagePromptBuilder - 统一写实风格，支持建筑信息
+        self.prompt_builder = ImagePromptBuilder(maps_client=maps_client)
+        if maps_client:
+            print("🎨 统一写实风格Prompt构建器已初始化（支持建筑信息获取）")
+        else:
+            print("🎨 统一写实风格Prompt构建器已初始化（无建筑信息功能）")
     
     def predict_environmental_data(self, latitude, longitude, month=None, future_years=0):
         """
@@ -206,6 +214,9 @@ class CloudAPIClient:
         except Exception as e:
             print(f"⚠️ Prompt构建错误，使用默认prompt: {e}")
             prompt = "A beautiful landscape photograph with atmospheric conditions, high quality, professional photography."
+        
+        # 保存生成的prompt到实例变量，供后续上传时使用
+        self.last_generated_prompt = prompt
         
         # 按优先级尝试不同的生成方案
         image_path = None
@@ -417,12 +428,12 @@ class CloudAPIClient:
     def _clean_metadata_for_json(self, metadata):
         """清理元数据以便JSON序列化"""
         def clean_value(value):
-            if isinstance(value, bytes):
+            if isinstance(value, datetime):
+                return value.isoformat()
+            elif isinstance(value, bytes):
                 # 将bytes转换为base64字符串
                 import base64
                 return {"_type": "bytes", "_data": base64.b64encode(value).decode('utf-8')}
-            elif isinstance(value, datetime):
-                return value.isoformat()
             elif isinstance(value, dict):
                 return {k: clean_value(v) for k, v in value.items()}
             elif isinstance(value, list):
@@ -586,11 +597,19 @@ class CloudAPIClient:
     def _notify_website_api(self, image_url, metadata):
         """通知网站API记录Cloudinary图像"""
         try:
+            # 使用实际生成的prompt作为描述，如果没有则使用备用描述
+            if hasattr(self, 'last_generated_prompt') and self.last_generated_prompt:
+                description = self.last_generated_prompt
+                print(f"📝 使用实际生成的Prompt作为Vision Description (长度: {len(description)}字符)")
+            else:
+                description = f"Telescope generated artwork based on {metadata.get('style', {}).get('prediction_type', 'unknown')} style"
+                print("⚠️ 未找到生成的Prompt，使用默认描述")
+            
             # 构建API通知数据 - 清理数据确保JSON兼容
             api_data = {
                 'url': image_url,
                 'source': 'cloudinary_telescope',
-                'description': f"Telescope generated artwork based on {metadata.get('style', {}).get('prediction_type', 'unknown')} style",
+                'description': description,
                 'metadata': self._clean_metadata_for_api(metadata)
             }
             
@@ -680,8 +699,17 @@ class CloudAPIClient:
             
             with open(image_path, 'rb') as img_file:
                 files = {'file': img_file}
+                
+                # 使用实际生成的prompt作为描述，如果没有则使用备用描述
+                if hasattr(self, 'last_generated_prompt') and self.last_generated_prompt:
+                    description = self.last_generated_prompt
+                    print(f"📝 使用实际生成的Prompt作为Vision Description (长度: {len(description)}字符)")
+                else:
+                    description = f"Telescope generated artwork based on {metadata.get('style', {}).get('prediction_type', 'unknown')} style"
+                    print("⚠️ 未找到生成的Prompt，使用默认描述")
+                
                 data = {
-                    'description': f"Telescope generated artwork based on {metadata.get('style', {}).get('prediction_type', 'unknown')} style",
+                    'description': description,
                     'prediction_id': str(prediction_id)
                 }
                 
@@ -726,17 +754,17 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
     def _build_art_prompt(self, style_prediction, weather_data, location_info):
         """构建图像生成的详细提示词 - 使用升级后的ImagePromptBuilder"""
         try:
-            print("🎨 使用统一写实风格Prompt构建器...")
+            print("🎨 使用多风格艺术Prompt构建器（随机选择风格）...")
             
-            # 使用升级后的ImagePromptBuilder类构建高质量写实风格prompt
+            # 🎨 使用升级后的ImagePromptBuilder类构建多风格prompt（随机选择）
             prompt = self.prompt_builder.build_comprehensive_prompt(
                 weather_data=weather_data,
                 location_info=location_info,
                 prediction_data=style_prediction,
-                style_preference="realistic"
+                style_preference="random"  # 🔧 修复：启用随机风格选择
             )
             
-            print(f"✅ 统一写实风格Prompt构建完成，长度: {len(prompt)}字符")
+            print(f"✅ 多风格艺术Prompt构建完成，长度: {len(prompt)}字符")
             return prompt
             
         except Exception as e:
@@ -905,7 +933,7 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             return None
     
     def _call_openai_dalle(self, prompt):
-        """调用OpenAI DALL-E生成图像并保存到文件"""
+        """调用OpenAI DALL-E生成图像并保存到文件 - 使用base64格式避免Azure下载问题"""
         if not self.openai_key or self.openai_key == "YOUR_OPENAI_API_KEY_HERE":
             print("⚠️ OpenAI API密钥未配置")
             return None
@@ -926,7 +954,7 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             "prompt": prompt,
             "n": 1,
             "size": "1024x1024",
-            "response_format": "url"
+            "response_format": "b64_json"  # 使用base64格式而不是URL，避免Azure下载问题
         }
         
         try:
@@ -934,29 +962,28 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             if response.status_code == 200:
                 data = response.json()
                 if data.get('data') and len(data['data']) > 0:
-                    image_url = data['data'][0]['url']
-                    print(f"✅ OpenAI DALL-E生成成功，正在下载图像...")
+                    # 获取base64编码的图像数据
+                    b64_image = data['data'][0]['b64_json']
+                    print(f"✅ OpenAI DALL-E生成成功，正在保存图像...")
                     
-                    # 下载图像
-                    img_response = self.session.get(image_url, timeout=60)
-                    if img_response.status_code == 200:
-                        # 保存图像到文件
-                        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                        filename = f'telescope_art_{timestamp}_openai_dalle.png'
-                        filepath = os.path.join('outputs', 'images', filename)
-                        
-                        # 确保目录存在
-                        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                        
-                        # 保存图像
-                        with open(filepath, 'wb') as f:
-                            f.write(img_response.content)
-                        
-                        print(f"💾 OpenAI图像已保存: {filename}")
-                        return filepath
-                    else:
-                        print(f"❌ 下载OpenAI图像失败: {img_response.status_code}")
-                        return None
+                    # 解码base64图像数据
+                    import base64
+                    image_data = base64.b64decode(b64_image)
+                    
+                    # 保存图像到文件
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    filename = f'telescope_art_{timestamp}_openai_dalle.png'
+                    filepath = os.path.join('outputs', 'images', filename)
+                    
+                    # 确保目录存在
+                    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                    
+                    # 保存图像
+                    with open(filepath, 'wb') as f:
+                        f.write(image_data)
+                    
+                    print(f"💾 OpenAI图像已保存: {filename}")
+                    return filepath
                 else:
                     print("❌ OpenAI DALL-E响应中没有图像数据")
                     return None

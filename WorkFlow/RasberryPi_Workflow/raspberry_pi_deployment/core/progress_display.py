@@ -365,11 +365,20 @@ if __name__ == "__main__":
         step.update("Preparing ML input features...")
         step.update("Calling prediction model...")
         
-        # Mock prediction result
+        # Mock prediction result - 使用动态预测而不是硬编码
+        import random
+        prediction_types = [
+            'Photorealistic Landscape', 
+            'Environmental Documentation', 
+            'Atmospheric Photography',
+            'Natural Scenic View',
+            'Weather-based Scene'
+        ]
+        
         mock_prediction = {
-            'prediction_type': 'Impressionist Landscape',
-            'confidence': 0.87,
-            'style_recommendation': 'Warm tones, soft brushstrokes'
+            'prediction_type': random.choice(prediction_types),
+            'confidence': round(random.uniform(0.75, 0.95), 2),
+            'style_recommendation': 'Professional documentary photography with natural lighting'
         }
         progress.show_ml_prediction(mock_prediction)
         step.success("AI prediction completed")

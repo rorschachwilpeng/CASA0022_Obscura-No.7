@@ -42,6 +42,7 @@ class StateContext:
     environmental_data: Optional[Dict[str, Any]] = None
     shap_prediction: Optional[Dict[str, Any]] = None
     generated_image_path: Optional[str] = None
+    map_info: Optional[Dict[str, Any]] = None  # 存储Google Maps API获取的地图和地址信息
     
     # State management
     current_state: ExhibitionState = ExhibitionState.CITY_SELECTION
@@ -178,12 +179,17 @@ class ExhibitionStateMachine:
     
     def set_processing_result(self, environmental_data: Dict[str, Any], 
                             shap_prediction: Dict[str, Any], 
-                            image_path: str):
+                            image_path: str,
+                            map_info: Optional[Dict[str, Any]] = None):
         """Set the results from processing workflow"""
         self.context.environmental_data = environmental_data
         self.context.shap_prediction = shap_prediction
         self.context.generated_image_path = image_path
+        self.context.map_info = map_info  # 设置地图信息
         self.logger.info(f"Processing results set: image={image_path}")
+        if map_info and map_info.get('success'):
+            location_info = map_info.get('location_info', 'Unknown')
+            self.logger.info(f"Map info set: {location_info}")
     
     def set_error(self, error_message: str):
         """Set error state with message"""

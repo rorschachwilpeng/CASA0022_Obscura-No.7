@@ -1,0 +1,36 @@
+{
+  "workflow_id": "pi_telescope_20250716_072932",
+  "timestamp": "2025-07-16T07:29:32.162816",
+  "device_type": "raspberry_pi",
+  "hardware_status": {
+    "hardware_available": false,
+    "encoder_available": false,
+    "compass_available": false,
+    "button_available": false
+  },
+  "success": true,
+  "execution_time": 2e-05,
+  "data": {
+    "hardware_input": {
+      "distance_km": 25.0,
+      "direction_degrees": 0.0,
+      "time_offset_years": 0
+    },
+    "coordinates": {
+      "latitude": 51.5074,
+      "longitude": -0.1278
+    },
+    "weather_data": {
+      "current_weather": {
+        "temperature": 15.0
+      }
+    },
+    "style_prediction": {
+      "predicted_style": "abstract"
+    },
+    "generated_image": "/fake/path/to/image.png",
+    "sync_result": {
+      "success": true
+    }
+  }
+}

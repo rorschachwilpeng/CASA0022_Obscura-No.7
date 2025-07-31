@@ -164,27 +164,62 @@ class ExhibitionController:
                 self.logger.info("Initializing telescope workflow...")
                 self.telescope_workflow = RaspberryPiTelescopeWorkflow()
             
-            # Run the telescope workflow
-            # Note: For now we'll use the simplified session runner
-            # TODO: Integrate distance, angle, time_offset parameters
-            result = self.telescope_workflow.run_telescope_session()
+            # 🔧 修复：传递展览控制器的硬件参数给望远镜工作流
+            hardware_params = {
+                'distance_km': self.last_distance,
+                'direction_degrees': self.last_angle,
+                'time_offset_years': self.last_time_offset
+            }
             
-            if result and 'generated_image_path' in result:
+            self.logger.info(f"Using exhibition controller parameters: distance={self.last_distance}km, "
+                           f"direction={self.last_angle}°, time_offset={self.last_time_offset}years")
+            
+            # Run the telescope workflow with parameters
+            result = self.telescope_workflow.run_telescope_session(hardware_params=hardware_params)
+            
+            # 修复数据结构匹配问题
+            # telescope workflow返回的结构是：result['data']['generated_image']
+            if (result and 
+                result.get('success') and 
+                result.get('data') and 
+                result['data'].get('generated_image')):
+                
+                image_path = result['data']['generated_image']
+                self.logger.info(f"Workflow successful, image generated: {image_path}")
+                
                 # Load the generated image
-                if self.interface.load_image(result['generated_image_path']):
-                    # Set processing results
+                if self.interface.load_image(image_path):
+                    # Set processing results with correct data structure
                     self.state_machine.set_processing_result(
-                        environmental_data=result.get('environmental_data', {}),
-                        shap_prediction=result.get('shap_prediction', {}),
-                        image_path=result['generated_image_path']
+                        environmental_data=result['data'].get('weather_data', {}),
+                        shap_prediction=result['data'].get('style_prediction', {}),
+                        image_path=image_path,
+                        map_info=result['data'].get('map_info', {})  # 添加地图信息
                     )
+                    self.logger.info("GUI state updated successfully")
                 else:
+                    self.logger.error(f"Failed to load generated image: {image_path}")
                     self.state_machine.set_error("Failed to load generated image")
             else:
-                self.state_machine.set_error("Telescope workflow failed")
+                # 提供更详细的错误信息
+                if result is None:
+                    error_msg = "Workflow returned None"
+                elif not result.get('success'):
+                    error_msg = f"Workflow failed: {result.get('error', 'Unknown error')}"
+                elif not result.get('data'):
+                    error_msg = "Workflow returned no data"
+                elif not result['data'].get('generated_image'):
+                    error_msg = "No image generated in workflow data"
+                else:
+                    error_msg = "Unknown workflow structure issue"
+                
+                self.logger.error(f"Workflow issue: {error_msg}")
+                self.state_machine.set_error(f"Telescope workflow issue: {error_msg}")
         
         except Exception as e:
             self.logger.error(f"Error in telescope workflow: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             self.state_machine.set_error(f"Processing error: {str(e)}")
         
         finally:
@@ -460,37 +495,40 @@ class DevelopmentMode:
             print("\n" + "="*60)
             print("🔭 Obscura No.7 Virtual Telescope - Development Mode")
             print("="*60)
-            print("1. 🎯 Test Complete Telescope Workflow")
-            print("2. 🌍 Test Data Fetching Only")
-            print("3. 🎨 Test Image Generation Only")
-            print("4. 🔧 Test Hardware Connection")
-            print("5. 📊 View Last Results")
-            print("6. 🚪 Exit")
-            print("💡 提示: 直接按回车键快速生成图像")
+            print("1. 🎯 Test Complete Telescope Workflow (键盘输入参数)")
+            print("2. 🎨 Test Multi-Style Image Generation (多风格测试)")
+            print("3. 🌍 Test Data Fetching Only")
+            print("4. 🖼️ Test Image Generation Only") 
+            print("5. 🔧 Test Hardware Connection")
+            print("6. 📊 View Last Results")
+            print("7. 🚪 Exit")
+            print("💡 提示: 选项1支持键盘输入，选项2专门测试多种艺术风格")
             print("="*60)
             
             try:
-                choice = input("Select operation (1-6): ").strip()
+                choice = input("Select operation (1-7): ").strip()
                 
                 if choice == '':  # 空输入（回车键）
-                    print("🎨 Quick Image Generation (Enter key pressed)")
-                    self._test_image_generation()
+                    print("🎨 Quick Multi-Style Generation (Enter key pressed)")
+                    self._test_multi_style_generation()
                     continue
                 elif choice == '1':
                     self._run_telescope_workflow_interactive()
                 elif choice == '2':
-                    self._test_data_fetching()
+                    self._test_multi_style_generation()
                 elif choice == '3':
-                    self._test_image_generation()
+                    self._test_data_fetching()
                 elif choice == '4':
-                    self._test_hardware()
+                    self._test_image_generation()
                 elif choice == '5':
-                    self._view_last_results()
+                    self._test_hardware()
                 elif choice == '6':
+                    self._view_last_results()
+                elif choice == '7':
                     print("👋 Goodbye!")
                     break
                 else:
-                    print("❌ Invalid choice. Please select 1-6 or press Enter for quick image generation.")
+                    print("❌ Invalid choice. Please select 1-7 or press Enter for multi-style generation.")
                     
             except KeyboardInterrupt:
                 print("\n\n👋 Development mode interrupted.")
@@ -525,13 +563,20 @@ class DevelopmentMode:
             print(f"   🧭 Direction: {direction_deg}°")
             print(f"   ⏰ Time offset: +{time_offset} years")
             
+            # 🔧 修复：准备硬件参数
+            hardware_params = {
+                'distance_km': distance_km,
+                'direction_degrees': direction_deg,
+                'time_offset_years': time_offset
+            }
+            
             # Run workflow
             if not self.telescope_workflow:
                 print("🔄 Initializing telescope workflow...")
                 self.telescope_workflow = RaspberryPiTelescopeWorkflow()
             
             print("🚀 Running telescope workflow...")
-            result = self.telescope_workflow.run_telescope_session()
+            result = self.telescope_workflow.run_telescope_session(hardware_params=hardware_params)
             
             if result and result.get('success', False):
                 print("✅ Workflow completed successfully!")
@@ -548,6 +593,124 @@ class DevelopmentMode:
         except Exception as e:
             print(f"❌ Error: {e}")
             self.logger.error(f"Interactive workflow error: {e}")
+
+    def _test_multi_style_generation(self):
+        """Test multiple art style generation with same parameters"""
+        print("\n🎨 多风格艺术图像生成测试")
+        print("="*60)
+        print("🎯 此测试将使用相同参数生成不同风格的图像，展示随机风格选择功能")
+        print("💡 提示: 每次运行会随机选择不同的艺术风格")
+        print()
+        
+        try:
+            # 获取用户输入参数
+            user_input = input("📏 输入距离 (km, 1-50，回车默认25): ").strip()
+            if user_input == '':
+                distance_km = 25.0
+            else:
+                distance_km = float(user_input)
+                distance_km = max(1.0, min(50.0, distance_km))
+            
+            direction_input = input("🧭 输入方向 (度, 0-360，回车默认0): ").strip()
+            if direction_input == '':
+                direction_deg = 0.0
+            else:
+                direction_deg = float(direction_input) % 360
+            
+            time_input = input("⏰ 输入时间偏移 (年, 0-50，回车默认0): ").strip()
+            if time_input == '':
+                time_offset = 0.0
+            else:
+                time_offset = max(0.0, min(50.0, float(time_input)))
+            
+            # 询问生成次数
+            count_input = input("🔢 生成图像数量 (1-5，回车默认3): ").strip()
+            if count_input == '':
+                generation_count = 3
+            else:
+                generation_count = max(1, min(5, int(count_input)))
+            
+            print(f"\n✅ 测试参数:")
+            print(f"   📏 距离: {distance_km} km")
+            print(f"   🧭 方向: {direction_deg}°")
+            print(f"   ⏰ 时间偏移: +{time_offset} 年")
+            print(f"   🔢 生成数量: {generation_count} 张")
+            print()
+            
+            # 准备硬件参数
+            hardware_params = {
+                'distance_km': distance_km,
+                'direction_degrees': direction_deg,
+                'time_offset_years': time_offset
+            }
+            
+            # 生成多张不同风格的图像
+            successful_generations = 0
+            generated_images = []
+            
+            for i in range(generation_count):
+                print(f"🎨 正在生成第 {i+1}/{generation_count} 张图像...")
+                print("-" * 50)
+                
+                try:
+                    # 确保telescope workflow已初始化
+                    if not self.telescope_workflow:
+                        print("🔄 初始化 telescope workflow...")
+                        self.telescope_workflow = RaspberryPiTelescopeWorkflow()
+                    
+                    # 运行工作流
+                    result = self.telescope_workflow.run_telescope_session(hardware_params=hardware_params)
+                    
+                    if result and result.get('success', False):
+                        successful_generations += 1
+                        if result.get('data', {}).get('generated_image'):
+                            image_path = result['data']['generated_image']
+                            generated_images.append(image_path)
+                            print(f"✅ 第 {i+1} 张图像生成成功!")
+                            print(f"   📁 图像路径: {image_path}")
+                            
+                            # 显示风格信息（如果可用）
+                            style_info = result.get('data', {}).get('style_prediction', {})
+                            if 'style_used' in style_info:
+                                print(f"   🎨 使用风格: {style_info['style_used']}")
+                        else:
+                            print(f"❌ 第 {i+1} 张图像生成失败: 无图像输出")
+                    else:
+                        error_msg = result.get('error', '未知错误') if result else '工作流返回None'
+                        print(f"❌ 第 {i+1} 张图像生成失败: {error_msg}")
+                
+                except Exception as e:
+                    print(f"❌ 第 {i+1} 张图像生成出错: {e}")
+                    self.logger.error(f"Multi-style generation error: {e}")
+                
+                # 在生成之间稍作停顿
+                if i < generation_count - 1:
+                    print("⏳ 等待3秒后继续...")
+                    time.sleep(3)
+                    print()
+            
+            # 显示总结
+            print("=" * 60)
+            print("📊 多风格生成测试总结")
+            print("=" * 60)
+            print(f"🎯 计划生成: {generation_count} 张")
+            print(f"✅ 成功生成: {successful_generations} 张")
+            print(f"❌ 失败生成: {generation_count - successful_generations} 张")
+            print(f"📊 成功率: {(successful_generations/generation_count)*100:.1f}%")
+            
+            if generated_images:
+                print(f"\n🖼️ 生成的图像:")
+                for i, image_path in enumerate(generated_images, 1):
+                    print(f"   {i}. {image_path}")
+                print()
+                print("💡 提示: 每张图像都是使用相同参数但不同随机艺术风格生成的!")
+                print("🎨 您可以对比这些图像来查看不同风格的效果差异")
+            
+        except ValueError:
+            print("❌ 输入无效，请输入有效的数字")
+        except Exception as e:
+            print(f"❌ 多风格测试出错: {e}")
+            self.logger.error(f"Multi-style test error: {e}")
 
     def _test_data_fetching(self):
         """Test data fetching functionality"""

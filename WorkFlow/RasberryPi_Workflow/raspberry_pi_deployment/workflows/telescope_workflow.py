@@ -54,8 +54,6 @@ class RaspberryPiTelescopeWorkflow:
         self.weather_client = OpenMeteoClient()
         print("🌤️ Open-Meteo client initialized (免费API，无需密钥)")
         
-        self.cloud_client = CloudAPIClient(self.config_manager)
-        
         # Initialize map client
         google_maps_key = self.config_manager.get('google_maps_api_key')
         if google_maps_key:
@@ -64,6 +62,9 @@ class RaspberryPiTelescopeWorkflow:
         else:
             self.maps_client = None
             print("⚠️ Google Maps API key not configured, map functionality will be skipped")
+        
+        # Initialize cloud client with maps client for building information
+        self.cloud_client = CloudAPIClient(self.config_manager, maps_client=self.maps_client)
         
         # Initialize hardware interface
         self.hardware = RaspberryPiHardware(self.config_manager.config)
@@ -101,14 +102,27 @@ class RaspberryPiTelescopeWorkflow:
             
         return " | ".join(indicators)
     
-    def run_telescope_session(self) -> Dict[str, Any]:
-        """Run complete telescope session"""
+    def run_telescope_session(self, hardware_params=None) -> Dict[str, Any]:
+        """Run complete telescope session
+        
+        Args:
+            hardware_params: Optional hardware parameters from exhibition controller
+                            {distance_km, direction_degrees, time_offset_years}
+        """
         print("\n🔭 Starting Obscura No.7 Virtual Telescope")
         print("=" * 60)
         
+        # Store hardware parameters for use in workflow
+        self._provided_hardware_params = hardware_params
+        
         try:
-            # Show welcome message
-            self._show_welcome_message()
+            if hardware_params:
+                print(f"📊 Using provided parameters: distance={hardware_params['distance_km']}km, "
+                     f"direction={hardware_params['direction_degrees']}°, "
+                     f"time_offset={hardware_params['time_offset_years']}years")
+            else:
+                # Show welcome message only when collecting parameters interactively
+                self._show_welcome_message()
             
             # Run 6-step workflow
             result = self._execute_workflow()
@@ -216,17 +230,33 @@ class RaspberryPiTelescopeWorkflow:
         return final_result
     
     def _collect_hardware_input(self) -> Dict[str, float]:
-        """Collect hardware input data - using three-parameter synchronized input"""
-        print("\n🎮 Three-parameter synchronized setup...")
+        """Collect hardware input data - using provided parameters or hardware input"""
         
-        # Use new three-parameter synchronized input system
-        distance, direction, time_offset = self.hardware.read_three_parameter_input(timeout=120)
-        
-        return {
-            'distance_km': distance,
-            'direction_degrees': direction,
-            'time_offset_years': time_offset
-        }
+        # 🔧 修复：优先使用提供的硬件参数
+        if hasattr(self, '_provided_hardware_params') and self._provided_hardware_params:
+            params = self._provided_hardware_params
+            print(f"\n✅ Using provided hardware parameters:")
+            print(f"   📏 Distance: {params['distance_km']} km")
+            print(f"   🧭 Direction: {params['direction_degrees']}°")
+            print(f"   ⏰ Time offset: {params['time_offset_years']} years")
+            
+            return {
+                'distance_km': params['distance_km'],
+                'direction_degrees': params['direction_degrees'],
+                'time_offset_years': params['time_offset_years']
+            }
+        else:
+            # 如果没有提供参数，使用原来的硬件读取方式
+            print("\n🎮 Three-parameter synchronized setup...")
+            
+            # Use new three-parameter synchronized input system
+            distance, direction, time_offset = self.hardware.read_three_parameter_input(timeout=120)
+            
+            return {
+                'distance_km': distance,
+                'direction_degrees': direction,
+                'time_offset_years': time_offset
+            }
     
     def _calculate_target_coordinates(self, hardware_data: Dict) -> Dict:
         """Calculate target coordinates"""

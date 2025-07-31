@@ -390,7 +390,7 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             return None
     
     def _call_openai_dalle(self, prompt):
-        """调用OpenAI DALL-E生成图像"""
+        """调用OpenAI DALL-E生成图像 - 使用base64格式避免Azure下载问题"""
         if not self.openai_key or self.openai_key == "YOUR_OPENAI_API_KEY_HERE":
             return None
         
@@ -409,7 +409,7 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             "prompt": prompt,
             "n": 1,
             "size": "1024x1024",
-            "response_format": "url"
+            "response_format": "b64_json"  # 使用base64格式而不是URL，避免Azure下载问题
         }
         
         try:
@@ -417,11 +417,11 @@ Suggest a specific art style (like Impressionism, Realism, Abstract, etc.) and c
             if response.status_code == 200:
                 data = response.json()
                 if data.get('data') and len(data['data']) > 0:
-                    image_url = data['data'][0]['url']
-                    # 下载图像
-                    img_response = self.session.get(image_url, timeout=30)
-                    if img_response.status_code == 200:
-                        return img_response.content
+                    # 获取base64编码的图像数据并解码
+                    import base64
+                    b64_image = data['data'][0]['b64_json']
+                    image_data = base64.b64decode(b64_image)
+                    return image_data  # 直接返回图像字节数据
                 return None
             else:
                 print(f"❌ OpenAI DALL-E错误: {response.status_code}")
