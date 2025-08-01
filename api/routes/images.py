@@ -351,7 +351,7 @@ def generate_pack_chart_data(dimension_scores, final_score):
                         "value": importance,
                         "itemStyle": {"color": dimension_colors.get(dimension, '#888888')},
                         "tooltip": {
-                            "formatter": f"{feature.replace('_', ' ').title()}: {importance:.3f}"
+                "formatter": f"{feature.replace('_', ' ').title()}: {importance:.3f}"
                         }
                     }
                     dimension_node["children"].append(feature_node)
@@ -794,39 +794,39 @@ def upload_image():
             prediction_id_int = cur.fetchone()[0]
             
             logger.info(f"Creating new prediction record with ID: {prediction_id_int}")
-                
+            
             # 使用默认环境数据
-                        environmental_data = {
-                            'latitude': 51.5074,
-                            'longitude': -0.1278,
-                            'temperature': 15.0,
-                            'humidity': 60.0,
-                            'pressure': 1013.0,
-                            'wind_speed': 0.0,
-                            'weather_description': 'clear',
-                            'timestamp': datetime.now().isoformat(),
-                            'month': datetime.now().month,
-                            'future_years': 0
-                        }
-                
+            environmental_data = {
+                'latitude': 51.5074,
+                'longitude': -0.1278,
+                'temperature': 15.0,
+                'humidity': 60.0,
+                'pressure': 1013.0,
+                'wind_speed': 0.0,
+                'weather_description': 'clear',
+                'timestamp': datetime.now().isoformat(),
+                'month': datetime.now().month,
+                'future_years': 0
+            }
+            
             # 创建简单的fallback result_data
-                    result_data = _create_fallback_result_data(environmental_data)
-                
-                # 创建prediction记录
-                cur.execute("""
-                    INSERT INTO predictions (
-                        id, input_data, result_data, prompt, location, created_at
-                    ) VALUES (
-                        %s, %s, %s, %s, %s, %s
-                    ) ON CONFLICT (id) DO NOTHING
-                """, (
-                    prediction_id_int,
-                    json.dumps(environmental_data),
-                    json.dumps(result_data),
-                    'SHAP-based environmental analysis for telescope image',
+            result_data = _create_fallback_result_data(environmental_data)
+            
+            # 创建prediction记录
+            cur.execute("""
+                INSERT INTO predictions (
+                    id, input_data, result_data, prompt, location, created_at
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s
+                ) ON CONFLICT (id) DO NOTHING
+            """, (
+                prediction_id_int,
+                json.dumps(environmental_data),
+                json.dumps(result_data),
+                'SHAP-based environmental analysis for telescope image',
                 'Unknown Location',
-                    datetime.now()
-                ))
+                datetime.now()
+            ))
             logger.info(f"✅ Prediction record created with ID: {prediction_id_int}")
             
             # 现在插入image记录
@@ -1054,8 +1054,8 @@ def register_image():
                         "climate_type": "temperate",
                         "vegetation_index": 0.75,
                         "predictions": {
-                            "short_term": "System generated placeholder",
-                            "long_term": "Stable conditions expected"
+                "short_term": "System generated placeholder",
+                "long_term": "Stable conditions expected"
                         }
                     }),
                     'System generated prediction for image registration',
@@ -1605,11 +1605,11 @@ def get_image_shap_analysis(image_id):
                     "data": {
                         **enhanced_shap_analysis,
                         "integration_metadata": {
-                            "analysis_timestamp": created_at.isoformat(),
-                            "model_version": result_data.get('analysis_metadata', {}).get('model_version', 'unknown'),
-                            "analysis_source": "predictions_table",
-                            "note": "Retrieved from predictions table",
-                            "data_format_version": "1.2.0"
+                "analysis_timestamp": created_at.isoformat(),
+                "model_version": result_data.get('analysis_metadata', {}).get('model_version', 'unknown'),
+                "analysis_source": "predictions_table",
+                "note": "Retrieved from predictions table",
+                "data_format_version": "1.2.0"
                         },
                         "data_validation": validation_result
                     },
@@ -1694,11 +1694,11 @@ def get_image_shap_analysis(image_id):
                         **enhanced_shap_analysis,
                         'ai_story': stored_analysis['ai_story'],
                         "integration_metadata": {
-                            "analysis_timestamp": stored_analysis.get('generated_at', datetime.now().isoformat()),
-                            "model_version": "local_storage_v1.0",
-                            "analysis_source": "local_fallback",
-                            "note": "Retrieved from local storage due to database unavailability",
-                            "data_format_version": "1.0.0"
+                "analysis_timestamp": stored_analysis.get('generated_at', datetime.now().isoformat()),
+                "model_version": "local_storage_v1.0",
+                "analysis_source": "local_fallback",
+                "note": "Retrieved from local storage due to database unavailability",
+                "data_format_version": "1.0.0"
                         },
                         "data_validation": validation_result
                     },
@@ -1820,21 +1820,21 @@ def download_image(image_id):
                         filename = f"{safe_description[:50]}.jpg"  # 限制长度
                         
                         def generate():
-                            for chunk in response.iter_content(chunk_size=8192):
-                                if chunk:
-                                    yield chunk
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        yield chunk
                         
                         logger.info(f"Image download streaming from local storage for ID: {image_id}")
                         
                         from flask import Response
                         return Response(
-                            generate(),
-                            content_type='image/jpeg',
-                            headers={
-                                'Content-Disposition': f'attachment; filename="{filename}"',
-                                'Content-Type': 'image/jpeg',
-                                'Cache-Control': 'no-cache'
-                            }
+                generate(),
+                content_type='image/jpeg',
+                headers={
+                    'Content-Disposition': f'attachment; filename="{filename}"',
+                    'Content-Type': 'image/jpeg',
+                    'Cache-Control': 'no-cache'
+                }
                         )
                 except Exception as fallback_error:
                     logger.error(f"Fallback download failed: {fallback_error}")
@@ -2469,10 +2469,10 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                         
                         # 分析元数据
                         "analysis_metadata": {
-                            "generated_at": datetime.now().isoformat(),
+                "generated_at": datetime.now().isoformat(),
                         "model_version": "hybrid_ml_v1.0.0",
                         "api_source": "real_ml_prediction", 
-                            "location": location_name,
+                "location": location_name,
                         "image_id": image_id,
                         "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
                         "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
