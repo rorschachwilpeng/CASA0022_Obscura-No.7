@@ -809,8 +809,9 @@ def upload_image():
                 'future_years': 0
             }
             
-            # 创建简单的fallback result_data
-            result_data = _create_fallback_result_data(environmental_data)
+            # 🔧 修复：使用ML预测结果而不是fallback数据
+            # 先创建prediction记录，稍后更新为ML结果
+            initial_result_data = _create_fallback_result_data(environmental_data)
             
             # 创建prediction记录
             cur.execute("""
@@ -822,7 +823,7 @@ def upload_image():
             """, (
                 prediction_id_int,
                 json.dumps(environmental_data),
-                json.dumps(result_data),
+                json.dumps(initial_result_data),
                 'SHAP-based environmental analysis for telescope image',
                 'Unknown Location',
                 datetime.now()
@@ -845,6 +846,51 @@ def upload_image():
             
             logger.info(f"Image record saved to database with ID: {image_id}")
             
+            # 🔧 修复：启动后台ML分析任务，更新prediction记录
+            import threading
+            
+            def run_ml_analysis():
+                try:
+                    logger.info(f"🔄 Starting ML analysis for image {image_id}")
+                    # 运行ML分析
+                    ml_result = generate_dynamic_image_analysis(image_id)
+                    
+                    if ml_result and ml_result.get('result_data'):
+                        # 更新prediction记录为ML结果
+                        try:
+                            conn = psycopg2.connect(os.environ['DATABASE_URL'])
+                            cur = conn.cursor()
+                            
+                            cur.execute("""
+                                UPDATE predictions 
+                                SET result_data = %s, 
+                                    prompt = %s,
+                                    location = %s
+                                WHERE id = %s
+                            """, (
+                                json.dumps(ml_result['result_data']),
+                                ml_result.get('prompt', 'ML-based environmental analysis'),
+                                ml_result.get('location', 'Unknown Location'),
+                                prediction_id_int
+                            ))
+                            
+                            conn.commit()
+                            cur.close()
+                            conn.close()
+                            
+                            logger.info(f"✅ ML analysis completed and saved to database for image {image_id}")
+                            
+                        except Exception as db_error:
+                            logger.error(f"❌ Failed to update prediction record: {db_error}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ ML analysis failed for image {image_id}: {e}")
+            
+            # 在后台线程中运行ML分析
+            analysis_thread = threading.Thread(target=run_ml_analysis)
+            analysis_thread.daemon = True
+            analysis_thread.start()
+        
         except Exception as e:
             logger.error(f"Database insert failed: {e}")
             
