@@ -482,7 +482,8 @@ class ImageDetailPage {
         // 总体分数（保持绝对值显示）
         const overallScoreElement = document.querySelector('#overallScore');
         if (overallScoreElement) {
-            overallScoreElement.textContent = `${(overallScore * 100).toFixed(1)}%`;
+            // 🔧 修复：数据库中的值已经是百分比，不需要再乘以100
+            overallScoreElement.textContent = `${overallScore.toFixed(1)}%`;
         }
         
         // 🔧 修复：使用正确的字段名 - climate_score 而不是 climate_change
@@ -491,7 +492,8 @@ class ImageDetailPage {
             const score = shapData.climate_score;
             const sign = score >= 0 ? '+' : '';
             const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
-            climateScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
+            // 🔧 修复：数据库中的值已经是百分比，不需要再乘以100
+            climateScore.innerHTML = `<span class="${colorClass}">${sign}${score.toFixed(1)}%</span>`;
         }
 
         // 🔧 修复：使用正确的字段名 - geographic_score 而不是 geographic_change
@@ -500,7 +502,8 @@ class ImageDetailPage {
             const score = shapData.geographic_score;
             const sign = score >= 0 ? '+' : '';
             const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
-            geographicScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
+            // 🔧 修复：数据库中的值已经是百分比，不需要再乘以100
+            geographicScore.innerHTML = `<span class="${colorClass}">${sign}${score.toFixed(1)}%</span>`;
         }
 
         // 🔧 修复：使用正确的字段名 - economic_score 而不是 economic_change
@@ -509,10 +512,11 @@ class ImageDetailPage {
             const score = shapData.economic_score;
             const sign = score >= 0 ? '+' : '';
             const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
-            economicScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
+            // 🔧 修复：数据库中的值已经是百分比，不需要再乘以100
+            economicScore.innerHTML = `<span class="${colorClass}">${sign}${score.toFixed(1)}%</span>`;
         }
 
-        console.log('✅ Simplified scores populated with correct field names:', {
+        console.log('✅ Simplified scores populated with correct field names and unit conversion:', {
             climate: shapData.climate_score,
             geographic: shapData.geographic_score,
             economic: shapData.economic_score,
