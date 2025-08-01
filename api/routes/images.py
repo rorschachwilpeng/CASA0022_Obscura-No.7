@@ -2512,7 +2512,10 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
     
     # 如果ML预测成功，返回结果
     if ml_result:
+        logger.info(f"✅ ML预测成功，返回ML结果: model_version={ml_result.get('result_data', {}).get('analysis_metadata', {}).get('model_version')}")
         return ml_result
+    else:
+        logger.warning(f"⚠️ ML预测失败，ml_result为None或False，进入fallback模式")
     
     # 第三步：ML预测失败，使用fallback模式
     logger.info(f"🔄 Generating fallback SHAP analysis for image {image_id}")
