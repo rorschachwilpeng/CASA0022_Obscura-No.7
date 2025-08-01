@@ -2538,9 +2538,9 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         }
     }
     
-    # 生成AI故事
+        # 生成AI故事
     try:
-    ai_story = generate_ai_environmental_story(shap_data)
+        ai_story = generate_ai_environmental_story(shap_data)
     except Exception as story_error:
         logger.warning(f"⚠️ AI story generation failed in fallback mode: {story_error}")
         ai_story = generate_fallback_story(shap_data)
