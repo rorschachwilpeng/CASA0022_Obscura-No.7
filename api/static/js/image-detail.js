@@ -474,8 +474,9 @@ class ImageDetailPage {
      * 填充简化的三维度评分和总体分数
      */
     populateSimplifiedScores(shapData) {
-        // 计算总体分数 (Output Score)
-        const overallScore = shapData.output_score || 
+        // 🔧 修复：使用正确的字段名
+        // 计算总体分数 (Final Score)
+        const overallScore = shapData.final_score || 
                            ((shapData.climate_score + shapData.geographic_score + shapData.economic_score) / 3);
         
         // 总体分数（保持绝对值显示）
@@ -484,37 +485,37 @@ class ImageDetailPage {
             overallScoreElement.textContent = `${(overallScore * 100).toFixed(1)}%`;
         }
         
-        // 气候评分（显示正负变化）
+        // 🔧 修复：使用正确的字段名 - climate_score 而不是 climate_change
         const climateScore = document.querySelector('#climateScore');
-        if (climateScore && shapData.climate_change !== undefined) {
-            const change = shapData.climate_change;
-            const sign = change >= 0 ? '+' : '';
-            const colorClass = change >= 0 ? 'positive-change' : 'negative-change';
-            climateScore.innerHTML = `<span class="${colorClass}">${sign}${change.toFixed(1)}%</span>`;
+        if (climateScore && shapData.climate_score !== undefined) {
+            const score = shapData.climate_score;
+            const sign = score >= 0 ? '+' : '';
+            const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
+            climateScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
         }
 
-        // 地理评分（显示正负变化）
+        // 🔧 修复：使用正确的字段名 - geographic_score 而不是 geographic_change
         const geographicScore = document.querySelector('#geographicScore');
-        if (geographicScore && shapData.geographic_change !== undefined) {
-            const change = shapData.geographic_change;
-            const sign = change >= 0 ? '+' : '';
-            const colorClass = change >= 0 ? 'positive-change' : 'negative-change';
-            geographicScore.innerHTML = `<span class="${colorClass}">${sign}${change.toFixed(1)}%</span>`;
+        if (geographicScore && shapData.geographic_score !== undefined) {
+            const score = shapData.geographic_score;
+            const sign = score >= 0 ? '+' : '';
+            const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
+            geographicScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
         }
 
-        // 经济评分（显示正负变化）
+        // 🔧 修复：使用正确的字段名 - economic_score 而不是 economic_change
         const economicScore = document.querySelector('#economicScore');
-        if (economicScore && shapData.economic_change !== undefined) {
-            const change = shapData.economic_change;
-            const sign = change >= 0 ? '+' : '';
-            const colorClass = change >= 0 ? 'positive-change' : 'negative-change';
-            economicScore.innerHTML = `<span class="${colorClass}">${sign}${change.toFixed(1)}%</span>`;
+        if (economicScore && shapData.economic_score !== undefined) {
+            const score = shapData.economic_score;
+            const sign = score >= 0 ? '+' : '';
+            const colorClass = score >= 0 ? 'positive-change' : 'negative-change';
+            economicScore.innerHTML = `<span class="${colorClass}">${sign}${(score * 100).toFixed(1)}%</span>`;
         }
 
-        console.log('✅ Simplified scores populated with changes:', {
-            climate: shapData.climate_change,
-            geographic: shapData.geographic_change,
-            economic: shapData.economic_change,
+        console.log('✅ Simplified scores populated with correct field names:', {
+            climate: shapData.climate_score,
+            geographic: shapData.geographic_score,
+            economic: shapData.economic_score,
             overall: overallScore
         });
     }
