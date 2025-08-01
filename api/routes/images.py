@@ -2092,47 +2092,50 @@ def _generate_process_flow_data():
 
 def _determine_climate_type(shap_data):
     """根据SHAP分析结果确定气候类型"""
-    climate_score = shap_data.get('climate_score', 0.5)
-    city = shap_data.get('city', 'Unknown')
+    # 从归一化分数中获取climate分数
+    climate_score = shap_data.get('normalized_scores', {}).get('climate', 50.0)
     
-    if climate_score > 0.8:
+    if climate_score > 80:
         return "optimal"
-    elif climate_score > 0.6:
+    elif climate_score > 60:
         return "temperate"
-    elif climate_score > 0.4:
+    elif climate_score > 40:
         return "moderate"
     else:
         return "challenging"
 
 def _calculate_vegetation_index(shap_data):
     """根据SHAP分析计算植被指数"""
-    geographic_score = shap_data.get('geographic_score', 0.5)
-    climate_score = shap_data.get('climate_score', 0.5)
+    # 从归一化分数中获取geographic和climate分数
+    geographic_score = shap_data.get('normalized_scores', {}).get('geographic', 50.0)
+    climate_score = shap_data.get('normalized_scores', {}).get('climate', 50.0)
     
     # 简化的植被指数计算，基于地理和气候评分
-    vegetation_index = (geographic_score * 0.6 + climate_score * 0.4)
+    vegetation_index = (geographic_score * 0.6 + climate_score * 0.4) / 100.0
     return max(0.0, min(1.0, vegetation_index))
 
 def _generate_short_term_prediction(shap_data):
     """生成短期预测文本"""
-    final_score = shap_data.get('final_score', 0.5)
+    # 从归一化分数中获取最终分数
+    final_score = shap_data.get('environment_change_outcome', 50.0)
     city = shap_data.get('city', 'Unknown')
     
-    if final_score > 0.7:
+    if final_score > 70:
         return f"Favorable environmental conditions expected for {city} region"
-    elif final_score > 0.5:
+    elif final_score > 50:
         return f"Moderate environmental stability predicted for {city}"
     else:
         return f"Variable environmental conditions forecasted for {city}"
 
 def _generate_long_term_prediction(shap_data):
     """生成长期预测文本"""
-    climate_score = shap_data.get('climate_score', 0.5)
-    geographic_score = shap_data.get('geographic_score', 0.5)
+    # 从归一化分数中获取climate和geographic分数
+    climate_score = shap_data.get('normalized_scores', {}).get('climate', 50.0)
+    geographic_score = shap_data.get('normalized_scores', {}).get('geographic', 50.0)
     
-    if climate_score > 0.6 and geographic_score > 0.6:
+    if climate_score > 60 and geographic_score > 60:
         return "Long-term environmental resilience indicated"
-    elif climate_score > 0.4 or geographic_score > 0.4:
+    elif climate_score > 40 or geographic_score > 40:
         return "Moderate long-term environmental stability expected"
     else:
         return "Environmental monitoring recommended for long-term planning"
@@ -2449,8 +2452,8 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                     "input_data": environmental_data,
                     "result_data": {
                         # 基础环境数据
-                    "temperature": normalized_result.get('climate_score', 0.5) * 40 + 10,  # 转换为温度
-                    "humidity": normalized_result.get('geographic_score', 0.5) * 60 + 30,  # 转换为湿度
+                    "temperature": normalized_result.get('normalized_scores', {}).get('climate', 0.5) * 40 + 10,  # 转换为温度
+                    "humidity": normalized_result.get('normalized_scores', {}).get('geographic', 0.5) * 60 + 30,  # 转换为湿度
                     "confidence": normalized_result.get('overall_confidence', 0.85),
                     "climate_type": _determine_climate_type(normalized_result),
                     "vegetation_index": _calculate_vegetation_index(normalized_result),
@@ -2460,10 +2463,10 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                         },
                         
                         # 完整SHAP分析
-                    "climate_score": normalized_result.get('climate_score', 0.5),
-                    "geographic_score": normalized_result.get('geographic_score', 0.5),
-                    "economic_score": normalized_result.get('economic_score', 0.5),
-                    "final_score": normalized_result.get('final_score', 0.5),
+                    "climate_score": normalized_result.get('normalized_scores', {}).get('climate', 0.5),
+                    "geographic_score": normalized_result.get('normalized_scores', {}).get('geographic', 0.5),
+                    "economic_score": normalized_result.get('normalized_scores', {}).get('economic', 0.5),
+                    "final_score": normalized_result.get('environment_change_outcome', 0.5),
                     "city": normalized_result.get('city', location_name),
                     "shap_analysis": normalized_result.get('shap_analysis', {}),
                         
