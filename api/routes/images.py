@@ -2457,48 +2457,48 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
             normalizer = get_score_normalizer()
             normalized_result = normalizer.normalize_shap_result(shap_data)
                 
-                # 生成AI故事
+            # 生成AI故事
             ai_story = generate_ai_environmental_story(normalized_result)
-                
-                # 构建完整预测数据
-                return {
-                    "id": image_id,
-                    "input_data": environmental_data,
-                    "result_data": {
-                        # 基础环境数据
+            
+            # 构建完整预测数据
+            return {
+                "id": image_id,
+                "input_data": environmental_data,
+                "result_data": {
+                    # 基础环境数据
                     "temperature": normalized_result.get('climate_score', 0.5) * 40 + 10,  # 转换为温度
                     "humidity": normalized_result.get('geographic_score', 0.5) * 60 + 30,  # 转换为湿度
                     "confidence": normalized_result.get('overall_confidence', 0.85),
                     "climate_type": _determine_climate_type(normalized_result),
                     "vegetation_index": _calculate_vegetation_index(normalized_result),
-                        "predictions": {
+                    "predictions": {
                         "short_term": _generate_short_term_prediction(normalized_result),
                         "long_term": _generate_long_term_prediction(normalized_result)
-                        },
-                        
-                        # 完整SHAP分析
+                    },
+                    
+                    # 完整SHAP分析
                     "climate_score": normalized_result.get('climate_score', 0.5),
                     "geographic_score": normalized_result.get('geographic_score', 0.5),
                     "economic_score": normalized_result.get('economic_score', 0.5),
                     "final_score": normalized_result.get('final_score', 0.5),
                     "city": normalized_result.get('city', location_name),
                     "shap_analysis": normalized_result.get('shap_analysis', {}),
-                        "ai_story": ai_story,
-                        
-                        # 分析元数据
-                        "analysis_metadata": {
-                            "generated_at": datetime.now().isoformat(),
+                    "ai_story": ai_story,
+                    
+                    # 分析元数据
+                    "analysis_metadata": {
+                        "generated_at": datetime.now().isoformat(),
                         "model_version": "hybrid_ml_v1.0.0",
                         "api_source": "real_ml_prediction", 
-                            "location": location_name,
+                        "location": location_name,
                         "image_id": image_id,
                         "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
                         "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
-                        }
-                    },
-                    "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
-                    "location": location_name
-                }
+                    }
+                },
+                "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
+                "location": location_name
+            }
         
     except Exception as e:
         logger.warning(f"⚠️ ML prediction failed for image {image_id}: {e}")
