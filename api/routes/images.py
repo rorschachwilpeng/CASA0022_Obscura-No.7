@@ -497,7 +497,6 @@ def generate_ai_environmental_story(shap_data, force_unique=True):
         
         # 🔧 修复：增强随机性，确保每次刷新都生成完全不同的故事
         import time
-        import os
         
         # 使用多重随机源确保唯一性
         current_time = time.time()
@@ -2433,7 +2432,9 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         'timestamp': datetime.now().isoformat()
     }
     
-    # 🔧 修复：直接调用ML模型而不是模拟数据
+    # 🔧 重构：分离ML预测和AI故事生成
+    # 第一步：执行ML预测（核心功能）
+    ml_result = None
     try:
         logger.info(f"🔮 Generating real ML prediction for image {image_id} at {location_name}")
         
@@ -2456,12 +2457,9 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
             from utils.score_normalizer import get_score_normalizer
             normalizer = get_score_normalizer()
             normalized_result = normalizer.normalize_shap_result(shap_data)
-                
-            # 生成AI故事
-            ai_story = generate_ai_environmental_story(normalized_result)
             
-            # 构建完整预测数据
-            return {
+            # 构建ML预测结果（不包含AI故事）
+            ml_result = {
                 "id": image_id,
                 "input_data": environmental_data,
                 "result_data": {
@@ -2483,7 +2481,6 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                     "final_score": normalized_result.get('final_score', 0.5),
                     "city": normalized_result.get('city', location_name),
                     "shap_analysis": normalized_result.get('shap_analysis', {}),
-                    "ai_story": ai_story,
                     
                     # 分析元数据
                     "analysis_metadata": {
@@ -2499,11 +2496,37 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                 "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
                 "location": location_name
             }
-        
+            
+        else:
+            logger.warning(f"⚠️ ML prediction returned unsuccessful result for image {image_id}")
+            
     except Exception as e:
-        logger.warning(f"⚠️ ML prediction failed for image {image_id}: {e}")
+        logger.error(f"❌ ML prediction failed for image {image_id}: {e}")
     
-    # Fallback: 生成基于环境数据的模拟SHAP分析
+    # 第二步：生成AI故事（可选功能）
+    ai_story = None
+    if ml_result:
+        # 如果ML预测成功，尝试生成AI故事
+        try:
+            ai_story = generate_ai_environmental_story(normalized_result)
+            ml_result["result_data"]["ai_story"] = ai_story
+            logger.info(f"✅ AI story generated successfully for image {image_id}")
+        except Exception as story_error:
+            logger.warning(f"⚠️ AI story generation failed for image {image_id}: {story_error}")
+            # AI故事失败不影响ML结果，使用fallback故事
+            try:
+                fallback_story = generate_fallback_story(normalized_result)
+                ml_result["result_data"]["ai_story"] = fallback_story
+                logger.info(f"✅ Fallback story used for image {image_id}")
+            except Exception as fallback_error:
+                logger.error(f"❌ Even fallback story failed for image {image_id}: {fallback_error}")
+                ml_result["result_data"]["ai_story"] = "Environmental analysis completed successfully."
+    
+    # 如果ML预测成功，返回结果
+    if ml_result:
+        return ml_result
+    
+    # 第三步：ML预测失败，使用fallback模式
     logger.info(f"🔄 Generating fallback SHAP analysis for image {image_id}")
     
     # 基于真实坐标计算分数
@@ -2531,7 +2554,11 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
     }
     
     # 生成AI故事
-    ai_story = generate_ai_environmental_story(shap_data)
+    try:
+        ai_story = generate_ai_environmental_story(shap_data)
+    except Exception as story_error:
+        logger.warning(f"⚠️ AI story generation failed in fallback mode: {story_error}")
+        ai_story = generate_fallback_story(shap_data)
     
     return {
         "id": image_id,
@@ -2559,15 +2586,15 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
             # 分析元数据
             "analysis_metadata": {
                 "generated_at": datetime.now().isoformat(),
-                "model_version": "fallback_dynamic_v1.0.0",
-                "api_source": "fallback_generation",
+                "model_version": "fallback_v1.0.0",
+                "api_source": "fallback_algorithm", 
                 "location": location_name,
                 "image_id": image_id,
-                "ml_models_used": ["fallback_simulation"],
+                "ml_models_used": [],
                 "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
             }
         },
-        "prompt": f"Dynamic environmental analysis for {location_name} based on telescope observation #{image_id}",
+        "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
         "location": location_name
     }
 
