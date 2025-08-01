@@ -347,13 +347,24 @@ class HybridSHAPModelWrapper:
     def get_model_status(self) -> Dict[str, Any]:
         """获取模型状态 (兼容性方法)"""
         info = self.get_model_info()
+        
+        # 检查模型是否成功加载
+        models_loaded = len(self.loaded_models) > 0
+        scaler_available = self.scaler is not None
+        
+        # 构建城市列表（基于可用的城市中心坐标）
+        available_cities = list(self.city_centers.keys()) if self.city_centers else []
+        
         status = {
-            'status': 'ready' if len(self.loaded_models) > 0 else 'error',
+            'status': 'ready' if models_loaded else 'error',
             'models_loaded': len(self.loaded_models),
             'hybrid_strategy': True,
             'available_models': list(self.loaded_models.keys()),
-            'scaler_available': self.scaler is not None,
-            'details': info
+            'scaler_available': scaler_available,
+            'details': info,
+            # 添加SHAP API期望的字段
+            'manifest_loaded': models_loaded and scaler_available,  # 模型和标准化器都加载成功
+            'available_cities': available_cities  # 可用的城市列表
         }
         return status
 

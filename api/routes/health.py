@@ -22,7 +22,7 @@ def health_check():
             'timestamp': '2025-07-31'
         })
     except Exception as e:
-        return jsonify({
+    return jsonify({
             'status': 'error',
             'message': f'服务器错误: {str(e)}',
             'timestamp': '2025-07-31'

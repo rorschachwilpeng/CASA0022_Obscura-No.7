@@ -240,11 +240,11 @@ def setup_error_handlers(app):
             return '''
             <html>
                 <head><title>404 - Page Not Found</title></head>
-                <body>
-                    <h1>404 - Page Not Found</h1>
+            <body>
+                <h1>404 - Page Not Found</h1>
                     <p>The requested page was not found.</p>
-                    <a href="/">Return to Home</a>
-                </body>
+                <a href="/">Return to Home</a>
+            </body>
             </html>
             ''', 404
     
@@ -272,11 +272,11 @@ def setup_error_handlers(app):
             return '''
             <html>
                 <head><title>500 - Internal Server Error</title></head>
-                <body>
-                    <h1>500 - Internal Server Error</h1>
+            <body>
+                <h1>500 - Internal Server Error</h1>
                     <p>An internal server error occurred.</p>
-                    <a href="/">Return to Home</a>
-                </body>
+                <a href="/">Return to Home</a>
+            </body>
             </html>
             ''', 500
     
@@ -297,15 +297,15 @@ def setup_error_handlers(app):
             }), 500
         
         # 否则返回简单错误页面
-        return '''
-        <html>
+            return '''
+            <html>
             <head><title>Error</title></head>
             <body>
                 <h1>An error occurred</h1>
                 <p>Please try again later.</p>
                 <a href="/">Return to Home</a>
             </body>
-        </html>
+            </html>
         ''', 500
 
 def startup_check(app):

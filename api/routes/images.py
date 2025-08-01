@@ -125,24 +125,8 @@ def process_image_analysis(image_id, image_url, description, prediction_id):
         
         # 4. 存储分析结果
         try:
-            # 尝试存储到数据库
-            conn = psycopg2.connect(os.environ['DATABASE_URL'])
-            cur = conn.cursor()
-            
-            cur.execute("""
-                INSERT INTO image_analysis (image_id, shap_data, ai_story, generated_at) 
-                VALUES (%s, %s, %s, %s)
-                ON CONFLICT (image_id) DO UPDATE SET
-                    shap_data = EXCLUDED.shap_data,
-                    ai_story = EXCLUDED.ai_story,
-                    generated_at = EXCLUDED.generated_at
-            """, (image_id, json.dumps(shap_data), json.dumps(story_data), datetime.now()))
-            
-            conn.commit()
-            cur.close()
-            conn.close()
-            
-            logger.info(f"✅ Analysis stored in database for image {image_id}")
+            # 分析结果已经存储在predictions表中，这里只需要记录日志
+            logger.info(f"✅ Analysis completed for image {image_id}")
             
         except Exception as db_error:
             logger.error(f"Database storage failed: {db_error}")
@@ -810,39 +794,39 @@ def upload_image():
             prediction_id_int = cur.fetchone()[0]
             
             logger.info(f"Creating new prediction record with ID: {prediction_id_int}")
-            
+                
             # 使用默认环境数据
-            environmental_data = {
-                'latitude': 51.5074,
-                'longitude': -0.1278,
-                'temperature': 15.0,
-                'humidity': 60.0,
-                'pressure': 1013.0,
-                'wind_speed': 0.0,
-                'weather_description': 'clear',
-                'timestamp': datetime.now().isoformat(),
-                'month': datetime.now().month,
-                'future_years': 0
-            }
-            
+                        environmental_data = {
+                            'latitude': 51.5074,
+                            'longitude': -0.1278,
+                            'temperature': 15.0,
+                            'humidity': 60.0,
+                            'pressure': 1013.0,
+                            'wind_speed': 0.0,
+                            'weather_description': 'clear',
+                            'timestamp': datetime.now().isoformat(),
+                            'month': datetime.now().month,
+                            'future_years': 0
+                        }
+                
             # 创建简单的fallback result_data
-            result_data = _create_fallback_result_data(environmental_data)
-            
-            # 创建prediction记录
-            cur.execute("""
-                INSERT INTO predictions (
-                    id, input_data, result_data, prompt, location, created_at
-                ) VALUES (
-                    %s, %s, %s, %s, %s, %s
-                ) ON CONFLICT (id) DO NOTHING
-            """, (
-                prediction_id_int,
-                json.dumps(environmental_data),
-                json.dumps(result_data),
-                'SHAP-based environmental analysis for telescope image',
+                    result_data = _create_fallback_result_data(environmental_data)
+                
+                # 创建prediction记录
+                cur.execute("""
+                    INSERT INTO predictions (
+                        id, input_data, result_data, prompt, location, created_at
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s
+                    ) ON CONFLICT (id) DO NOTHING
+                """, (
+                    prediction_id_int,
+                    json.dumps(environmental_data),
+                    json.dumps(result_data),
+                    'SHAP-based environmental analysis for telescope image',
                 'Unknown Location',
-                datetime.now()
-            ))
+                    datetime.now()
+                ))
             logger.info(f"✅ Prediction record created with ID: {prediction_id_int}")
             
             # 现在插入image记录
@@ -1586,30 +1570,32 @@ def get_image_shap_analysis(image_id):
         # 如果没有存储的完整分析结果，回退到实时生成
         logger.info(f"🔄 No complete SHAP analysis found, generating fallback for image {image_id}")
         
-        # 尝试从旧的image_analysis表获取数据（向后兼容）
+        # 尝试从predictions表获取数据（新的存储方式）
         try:
             conn = psycopg2.connect(os.environ['DATABASE_URL'])
             cur = conn.cursor()
             
             cur.execute("""
-                SELECT shap_data, ai_story, generated_at 
-                FROM image_analysis 
-                WHERE image_id = %s
+                SELECT p.result_data, p.created_at 
+                FROM images i
+                LEFT JOIN predictions p ON i.prediction_id = p.id
+                WHERE i.id = %s
             """, (image_id,))
             
             analysis_row = cur.fetchone()
             
-            if analysis_row:
+            if analysis_row and analysis_row[0]:
                 # 返回存储的分析结果
-                shap_data, ai_story, generated_at = analysis_row
+                result_data = analysis_row[0]
+                created_at = analysis_row[1]
                 
-                logger.info(f"✅ Retrieved legacy analysis for image {image_id}")
+                logger.info(f"✅ Retrieved analysis from predictions table for image {image_id}")
                 
                 cur.close()
                 conn.close()
                 
                 # 转换为层次化结构
-                enhanced_shap_analysis = transform_to_hierarchical_shap_data(json.loads(shap_data))
+                enhanced_shap_analysis = transform_to_hierarchical_shap_data(result_data)
                 
                 # 验证数据完整性
                 validation_result = validate_hierarchical_shap_data(enhanced_shap_analysis)
@@ -1618,25 +1604,24 @@ def get_image_shap_analysis(image_id):
                     "success": True,
                     "data": {
                         **enhanced_shap_analysis,
-                        'ai_story': json.loads(ai_story),
                         "integration_metadata": {
-                            "analysis_timestamp": generated_at.isoformat(),
-                            "model_version": "legacy_v1.1",
-                            "analysis_source": "legacy_image_analysis_table",
-                            "note": "Retrieved from legacy analysis table",
-                            "data_format_version": "1.1.0"
+                            "analysis_timestamp": created_at.isoformat(),
+                            "model_version": result_data.get('analysis_metadata', {}).get('model_version', 'unknown'),
+                            "analysis_source": "predictions_table",
+                            "note": "Retrieved from predictions table",
+                            "data_format_version": "1.2.0"
                         },
                         "data_validation": validation_result
                     },
                     "timestamp": datetime.now().isoformat(),
-                    "mode": "legacy_analysis"
+                    "mode": "stored_analysis"
                 }), 200
             
             cur.close()
             conn.close()
             
-        except Exception as legacy_error:
-            logger.warning(f"⚠️ Legacy analysis table unavailable: {legacy_error}")
+        except Exception as db_error:
+            logger.warning(f"⚠️ Predictions table query failed: {db_error}")
         
         # 最终回退：生成实时分析
         logger.info(f"🔄 Generating real-time analysis for image {image_id}")
@@ -2452,51 +2437,51 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
         if shap_result.get('success'):
             shap_data = shap_result
             logger.info(f"✅ ML prediction successful for {location_name}")
-            
+                
             # 应用分数归一化
             from utils.score_normalizer import get_score_normalizer
             normalizer = get_score_normalizer()
             normalized_result = normalizer.normalize_shap_result(shap_data)
-            
+                
             # 构建ML预测结果（不包含AI故事）
             ml_result = {
-                "id": image_id,
-                "input_data": environmental_data,
-                "result_data": {
-                    # 基础环境数据
+                    "id": image_id,
+                    "input_data": environmental_data,
+                    "result_data": {
+                        # 基础环境数据
                     "temperature": normalized_result.get('climate_score', 0.5) * 40 + 10,  # 转换为温度
                     "humidity": normalized_result.get('geographic_score', 0.5) * 60 + 30,  # 转换为湿度
                     "confidence": normalized_result.get('overall_confidence', 0.85),
                     "climate_type": _determine_climate_type(normalized_result),
                     "vegetation_index": _calculate_vegetation_index(normalized_result),
-                    "predictions": {
+                        "predictions": {
                         "short_term": _generate_short_term_prediction(normalized_result),
                         "long_term": _generate_long_term_prediction(normalized_result)
-                    },
-                    
-                    # 完整SHAP分析
+                        },
+                        
+                        # 完整SHAP分析
                     "climate_score": normalized_result.get('climate_score', 0.5),
                     "geographic_score": normalized_result.get('geographic_score', 0.5),
                     "economic_score": normalized_result.get('economic_score', 0.5),
                     "final_score": normalized_result.get('final_score', 0.5),
                     "city": normalized_result.get('city', location_name),
                     "shap_analysis": normalized_result.get('shap_analysis', {}),
-                    
-                    # 分析元数据
-                    "analysis_metadata": {
-                        "generated_at": datetime.now().isoformat(),
+                        
+                        # 分析元数据
+                        "analysis_metadata": {
+                            "generated_at": datetime.now().isoformat(),
                         "model_version": "hybrid_ml_v1.0.0",
                         "api_source": "real_ml_prediction", 
-                        "location": location_name,
+                            "location": location_name,
                         "image_id": image_id,
                         "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
                         "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
-                    }
-                },
-                "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
-                "location": location_name
-            }
-            
+                        }
+                    },
+                    "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
+                    "location": location_name
+                }
+        
         else:
             logger.warning(f"⚠️ ML prediction returned unsuccessful result for image {image_id}")
             
@@ -2555,7 +2540,7 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
     
     # 生成AI故事
     try:
-        ai_story = generate_ai_environmental_story(shap_data)
+    ai_story = generate_ai_environmental_story(shap_data)
     except Exception as story_error:
         logger.warning(f"⚠️ AI story generation failed in fallback mode: {story_error}")
         ai_story = generate_fallback_story(shap_data)
@@ -2606,23 +2591,8 @@ def refresh_image_story(image_id):
     try:
         logger.info(f"🔄 Forcing story refresh for image {image_id}")
         
-        # 1. 删除数据库中的缓存记录
-        try:
-            conn = psycopg2.connect(os.environ['DATABASE_URL'])
-            cur = conn.cursor()
-            
-            # 删除旧的分析记录
-            cur.execute("DELETE FROM image_analysis WHERE image_id = %s", (image_id,))
-            deleted_count = cur.rowcount
-            
-            conn.commit()
-            cur.close()
-            conn.close()
-            
-            logger.info(f"✅ Deleted {deleted_count} cached analysis records for image {image_id}")
-            
-        except Exception as db_error:
-            logger.warning(f"⚠️ Database cleanup failed: {db_error}")
+        # 1. 删除数据库中的缓存记录（现在使用predictions表，不需要清理）
+        logger.info(f"✅ No cache cleanup needed for image {image_id} (using predictions table)")
         
         # 2. 强制生成新的分析和故事
         analysis_result = process_image_analysis(
@@ -2668,10 +2638,6 @@ def refresh_all_stories():
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
-        # 清空所有缓存
-        cur.execute("DELETE FROM image_analysis")
-        deleted_count = cur.rowcount
-        
         # 获取所有图片ID
         cur.execute("SELECT id FROM images ORDER BY id")
         image_ids = [row[0] for row in cur.fetchall()]
@@ -2680,13 +2646,12 @@ def refresh_all_stories():
         cur.close()
         conn.close()
         
-        logger.info(f"✅ Cleared {deleted_count} cached records, found {len(image_ids)} images to refresh")
+        logger.info(f"✅ Found {len(image_ids)} images to refresh")
         
         return jsonify({
             "success": True,
-            "message": f"Cleared all cached stories for {len(image_ids)} images",
+            "message": f"Ready to refresh stories for {len(image_ids)} images",
             "data": {
-                "cleared_cache_count": deleted_count,
                 "total_images": len(image_ids),
                 "refresh_timestamp": datetime.now().isoformat(),
                 "note": "Stories will be regenerated when images are next viewed"
