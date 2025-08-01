@@ -1820,21 +1820,21 @@ def download_image(image_id):
                         filename = f"{safe_description[:50]}.jpg"  # 限制长度
                         
                         def generate():
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        yield chunk
+                            for chunk in response.iter_content(chunk_size=8192):
+                                if chunk:
+                                    yield chunk
                         
                         logger.info(f"Image download streaming from local storage for ID: {image_id}")
                         
                         from flask import Response
                         return Response(
-                generate(),
-                content_type='image/jpeg',
-                headers={
-                    'Content-Disposition': f'attachment; filename="{filename}"',
-                    'Content-Type': 'image/jpeg',
-                    'Cache-Control': 'no-cache'
-                }
+                            generate(),
+                            content_type='image/jpeg',
+                            headers={
+                                'Content-Disposition': f'attachment; filename="{filename}"',
+                                'Content-Type': 'image/jpeg',
+                                'Cache-Control': 'no-cache'
+                            }
                         )
                 except Exception as fallback_error:
                     logger.error(f"Fallback download failed: {fallback_error}")
@@ -2467,15 +2467,15 @@ def generate_dynamic_image_analysis(image_id, local_image_data=None):
                     "city": normalized_result.get('city', location_name),
                     "shap_analysis": normalized_result.get('shap_analysis', {}),
                         
-                        # 分析元数据
+                    # 分析元数据
                         "analysis_metadata": {
-                "generated_at": datetime.now().isoformat(),
-                        "model_version": "hybrid_ml_v1.0.0",
-                        "api_source": "real_ml_prediction", 
-                "location": location_name,
-                        "image_id": image_id,
-                        "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
-                        "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
+                            "generated_at": datetime.now().isoformat(),
+                            "model_version": "hybrid_ml_v1.0.0",
+                            "api_source": "real_ml_prediction", 
+                            "location": location_name,
+                            "image_id": image_id,
+                            "ml_models_used": ["RandomForest_climate", "LSTM_geographic"],
+                            "coordinates_source": "user_input" if latitude != 51.5074 or longitude != -0.1278 else "default"
                         }
                     },
                     "prompt": f"AI environmental analysis for {location_name} based on telescope observation",
