@@ -1,4 +1,4 @@
-# 🔭 Obscura No.7 - AI-Powered Environmental Prediction & Art Generation System
+# 🔭 Obscura No.7 - An AI-driven Telescope for Data-Driven Environmental Scenario Exploration
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue) ![Flask](https://img.shields.io/badge/Flask-2.3.3-green) ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-orange) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0-blue) ![SHAP](https://img.shields.io/badge/SHAP-Explainable_AI-purple)
 
@@ -115,16 +115,30 @@ CASA0022_Obscura-No.7/
 │   │   ├── images.py            # Image generation and SHAP analysis
 │   │   ├── ml_predict.py        # Machine learning predictions
 │   │   ├── shap_predict.py      # SHAP explainability analysis
-│   │   └── environmental.py     # Environmental data processing
+│   │   ├── environmental.py     # Environmental data processing
+│   │   ├── admin.py             # Administrative functions
+│   │   ├── frontend.py          # Frontend route handlers
+│   │   └── health.py            # Health check endpoints
 │   ├── utils/                    # Utility modules
 │   │   ├── real_time_environmental_data_collector.py
 │   │   ├── simplified_feature_engineer.py
 │   │   ├── score_normalizer.py
-│   │   └── responses.py
-│   ├── templates/               # HTML templates
+│   │   ├── improved_economic_calculator.py
+│   │   ├── model_downloader.py
+│   │   ├── responses.py
+│   │   └── validators.py
+│   ├── templates/               # HTML templates and UI components
+│   │   ├── components/          # Reusable UI components
+│   │   ├── gallery.html
+│   │   ├── prediction.html
+│   │   └── image_detail.html
 │   ├── static/                  # CSS, JavaScript, and static assets
+│   │   ├── css/                 # Stylesheets
+│   │   ├── js/                  # JavaScript modules
+│   │   └── images/              # Static images
 │   ├── models/                  # Trained ML models
 │   ├── schemas/                 # Data validation schemas
+│   ├── logs/                    # API logs
 │   └── app.py                   # Main Flask application
 ├── ML_Models/                   # Machine learning components
 │   ├── models/                  # Model training and deployment
@@ -132,22 +146,32 @@ CASA0022_Obscura-No.7/
 │   │   ├── shap_deployment/     # SHAP framework deployment
 │   │   └── model_deployment/    # Production model deployment
 │   ├── predictions/             # Prediction outputs and logs
-│   └── validation_reports/      # Model validation and performance reports
+│   ├── validation_reports/      # Model validation and performance reports
+│   ├── requirements.txt         # ML-specific dependencies
+│   └── README.md               # ML framework documentation
 ├── WorkFlow/                    # Workflow automation
 │   ├── RasberryPi_Workflow/    # Raspberry Pi integration
-│   │   ├── raspberry_pi_deployment/
-│   │   └── task16_cloud_integration/
+│   │   ├── raspberry_pi_deployment/  # Complete Pi deployment
+│   │   └── task16_cloud_integration/ # Cloud API integration
 │   └── NonRasberryPi_Workflow/ # Local development workflow
 ├── Hardware/                    # Hardware integration code
 │   ├── HMC5833L/               # Compass sensor integration
 │   └── I2C_Encoder/            # Rotary encoder handling
-├── visualization/              # Data analysis and visualization scripts
 ├── Documentation/              # Project documentation and reports
 │   ├── Meetings/               # Supervisor meeting notes
-│   └── Weekly Progress Reports/
-├── img/                        # Project concept images
+│   ├── README.md              # Main documentation
+│   └── Weekly Reports/         # Development progress tracking
+├── img/                        # Project images and visualizations
+│   ├── readme_imgs/           # Documentation images
+│   │   ├── workflow/          # Workflow diagrams
+│   │   ├── hardware_components.png
+│   │   └── schematics.png
+│   └── visualization/         # Data analysis charts
+│       ├── art_style/
+│       ├── map/
+│       └── shap_analysis/
 ├── logs/                       # System logs and debugging
-└── requirements.txt            # Python dependencies
+└── requirements.txt            # Global Python dependencies
 ```
 
 ### Key Components
