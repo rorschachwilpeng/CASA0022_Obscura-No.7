@@ -220,10 +220,10 @@ gantt
 | 2025/05/12 | Stage 1 Complete - Basic Hardware Setup | ✅ |
 | 2025/06/01 | Hardware Integration Complete | ✅ |
 | 2025/06/15 | Core Workflow Development | ✅ |
-| 2025/06/19 | Exhibition Proposal Submission | 📋 |
-| 2025/07/02 | QR Code Integration Ready | 📋 |
-| 2025/07/17 | Exhibition Installation Complete | 📋 |
-| 2025/08/22 | Final Dissertation Submission | 📋 |
+| 2025/06/19 | Exhibition Proposal Submission | ✅ |
+| 2025/07/02 | QR Code Integration Ready | ✅ |
+| 2025/07/17 | Exhibition Installation Complete | ✅ |
+| 2025/08/22 | Final Dissertation Submission | ✅ |
 
 ---
 
