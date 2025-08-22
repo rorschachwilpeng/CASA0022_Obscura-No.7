@@ -1,109 +1,109 @@
-# 🧠 智能数据管理系统 & 环境预测框架
+# 🧠 Intelligent Data Management System & Environmental Prediction Framework
 
-## 概述
+## Overview
 
-这个目录包含了为CASA0022 Obscura No.7项目开发的智能数据管理系统和环境预测变量框架。系统提供了全面的数据管理解决方案，支持多维度环境数据的收集、处理、分析和管理。
+This directory contains the Intelligent Data Management System and Environmental Prediction Variable Framework developed for the CASA0022 Obscura No.7 project. The system provides comprehensive data management solutions, supporting multi-dimensional environmental data collection, processing, analysis, and management.
 
-## 📁 目录结构
+## 📁 Directory Structure
 
 ```
 ML_Models/
-├── 🌍 environmental_prediction_framework/     # 环境预测框架
-│   ├── meteorological_climate_factors/       # 气象与气候因子
-│   ├── human_activities_socioeconomic_factors/ # 人类活动与社会经济因子
-│   └── geospatial_topographic_factors/       # 地理空间与地形因子
-├── 🧠 intelligent_data_manager.py            # 智能数据管理器主程序
-├── 📊 usage_example.py                       # 使用示例
-├── 📋 requirements.txt                       # 依赖包列表
-├── 🗂️ data_cache/                           # 数据缓存目录
-├── 📈 metadata/                             # 元数据存储
-└── 📝 README.md                             # 本文件
+├── 🌍 environmental_prediction_framework/     # Environmental prediction framework
+│   ├── meteorological_climate_factors/       # Meteorological and climate factors
+│   ├── human_activities_socioeconomic_factors/ # Human activities and socioeconomic factors
+│   └── geospatial_topographic_factors/       # Geospatial and topographic factors
+├── 🧠 intelligent_data_manager.py            # Intelligent data manager main program
+├── 📊 usage_example.py                       # Usage examples
+├── 📋 requirements.txt                       # Dependency list
+├── 🗂️ data_cache/                           # Data cache directory
+├── 📈 metadata/                             # Metadata storage
+└── 📝 README.md                             # This file
 ```
 
-## 🎯 主要功能
+## 🎯 Key Features
 
-### 1. 环境预测框架
-- **三维度数据分类**：气象、社会经济、地理空间
-- **标准化数据源**：每个数据类别都有详细的英文文档
-- **数据源映射**：明确的数据来源和获取方式
-- **环境意义说明**：每个变量的环境预测重要性
+### 1. Environmental Prediction Framework
+- **Three-dimensional Data Classification**: Meteorological, socioeconomic, and geospatial
+- **Standardized Data Sources**: Detailed English documentation for each data category
+- **Data Source Mapping**: Clear data sources and acquisition methods
+- **Environmental Significance**: Environmental prediction importance for each variable
 
-### 2. 智能数据管理器
-- **自动数据下载**：支持多种数据格式（CSV、Excel、JSON、API）
-- **缓存管理**：智能缓存策略，避免重复下载
-- **数据质量检查**：自动分析数据质量，检测异常值
-- **元数据管理**：完整的数据血缘和版本控制
-- **自动调度**：支持定时数据更新和备份
-- **多格式支持**：统一的数据加载接口
+### 2. Intelligent Data Manager
+- **Automatic Data Download**: Support for multiple data formats (CSV, Excel, JSON, API)
+- **Cache Management**: Intelligent caching strategy to avoid redundant downloads
+- **Data Quality Checks**: Automatic data quality analysis and anomaly detection
+- **Metadata Management**: Complete data lineage and version control
+- **Automatic Scheduling**: Support for scheduled data updates and backups
+- **Multi-format Support**: Unified data loading interface
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 安装依赖
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 运行示例
+### 2. Run Examples
 ```bash
 python usage_example.py
 ```
 
-### 3. 使用数据管理器
+### 3. Use Data Manager
 ```python
 from intelligent_data_manager import IntelligentDataManager
 
-# 初始化
+# Initialize
 dm = IntelligentDataManager()
 
-# 更新所有数据
+# Update all data
 dm.update_all_data()
 
-# 按类别更新数据
+# Update data by category
 dm.update_all_data(category='meteorological')
 
-# 加载数据
+# Load data
 df = dm.load_data('temperature_data')
 
-# 生成报告
+# Generate report
 report = dm.generate_report()
 print(report)
 ```
 
-## 📊 环境预测框架结构
+## 📊 Environmental Prediction Framework Structure
 
-### 🌤️ 气象与气候因子
-- **温度**：气温、地表水温、水柱温度
-- **湿度**：相对湿度、绝对湿度
-- **风速**：10米高度风速、风向
-- **大气压力**：海平面气压、气压梯度
-- **太阳辐射**：全球太阳辐射、直射辐射
-- **降水**：强度、累积、持续时间、模式
-- **海平面**：平均海平面、潮汐变化
+### 🌤️ Meteorological and Climate Factors
+- **Temperature**: Air temperature, surface water temperature, water column temperature
+- **Humidity**: Relative humidity, absolute humidity
+- **Wind Speed**: 10-meter height wind speed, wind direction
+- **Atmospheric Pressure**: Sea level pressure, pressure gradient
+- **Solar Radiation**: Global solar radiation, direct radiation
+- **Precipitation**: Intensity, accumulation, duration, patterns
+- **Sea Level**: Mean sea level, tidal variations
 
-### 🏙️ 人类活动与社会经济因子
-- **土地利用/土地覆盖**：城市建设、农业、林业、水体
-- **人口分布**：人口密度、年龄结构、人口预测
-- **经济活动指标**：GDP、GVA、人均收入
-- **铁路基础设施**：铁路密度、网络连通性
-- **生活质量指标**：平均寿命、健康指标
+### 🏙️ Human Activities and Socioeconomic Factors
+- **Land Use/Land Cover**: Urban development, agriculture, forestry, water bodies
+- **Population Distribution**: Population density, age structure, population projections
+- **Economic Activity Indicators**: GDP, GVA, per capita income
+- **Railway Infrastructure**: Railway density, network connectivity
+- **Quality of Life Indicators**: Life expectancy, health indicators
 
-### 🏔️ 地理空间与地形因子
-- **水文网络**：河流密度、流域特征
-- **地质与土壤**：土壤类型、土壤湿度、地质构造
-- **植被与水体健康**：NDVI、NDWI、生态系统指标
-- **城市洪水风险**：洪水易发区、排水能力
+### 🏔️ Geospatial and Topographic Factors
+- **Hydrological Network**: River density, watershed characteristics
+- **Geology and Soil**: Soil types, soil moisture, geological structure
+- **Vegetation and Water Body Health**: NDVI, NDWI, ecosystem indicators
+- **Urban Flood Risk**: Flood-prone areas, drainage capacity
 
-## 🔧 配置说明
+## 🔧 Configuration Instructions
 
-### 数据源配置
-系统会自动生成`data_config.json`配置文件，包含：
-- 数据源URL和格式
-- 更新频率设置
-- API密钥配置
-- 缓存策略配置
+### Data Source Configuration
+The system automatically generates a `data_config.json` configuration file containing:
+- Data source URLs and formats
+- Update frequency settings
+- API key configuration
+- Caching strategy configuration
 
-### 自定义数据源
-可以通过修改配置文件添加新的数据源：
+### Custom Data Sources
+New data sources can be added by modifying the configuration file:
 ```json
 {
   "name": "custom_data",
@@ -116,80 +116,80 @@ print(report)
 }
 ```
 
-## 📈 数据质量管理
+## 📈 Data Quality Management
 
-系统提供自动数据质量检查：
-- **缺失值检测**：计算缺失值比例
-- **重复记录检测**：识别重复数据
-- **异常值检测**：使用IQR方法检测异常值
-- **数据完整性验证**：验证数据格式和结构
+The system provides automatic data quality checks:
+- **Missing Value Detection**: Calculate missing value ratios
+- **Duplicate Record Detection**: Identify duplicate data
+- **Anomaly Detection**: Use IQR method to detect outliers
+- **Data Integrity Validation**: Validate data format and structure
 
-## 🔄 自动调度功能
+## 🔄 Automatic Scheduling Features
 
-支持后台自动运行：
-- **每日数据更新**：02:00自动更新所有数据源
-- **每日备份**：01:00自动备份数据
-- **每周清理**：自动清理过期缓存文件
-- **故障恢复**：自动重试失败的下载任务
+Support for background automatic operations:
+- **Daily Data Updates**: Automatic update of all data sources at 02:00
+- **Daily Backups**: Automatic data backup at 01:00
+- **Weekly Cleanup**: Automatic cleanup of expired cache files
+- **Failure Recovery**: Automatic retry of failed download tasks
 
-## 📚 文档说明
+## 📚 Documentation
 
-每个数据类别都包含详细的英文README文档，包括：
-- 数据源介绍和链接
-- 数据格式和特征说明
-- 环境预测意义
-- 数据处理建议
-- 相关变量关系
+Each data category includes detailed English README documentation containing:
+- Data source introduction and links
+- Data format and feature descriptions
+- Environmental prediction significance
+- Data processing recommendations
+- Related variable relationships
 
-## 🛠️ 开发指南
+## 🛠️ Development Guide
 
-### 扩展新数据源
-1. 在配置文件中添加数据源定义
-2. 在相应框架目录中创建README文档
-3. 测试数据下载和处理功能
+### Extending New Data Sources
+1. Add data source definition in configuration file
+2. Create README documentation in corresponding framework directory
+3. Test data download and processing functionality
 
-### 自定义数据处理
+### Custom Data Processing
 ```python
-# 自定义数据处理函数
+# Custom data processing function
 def custom_data_processor(df):
-    # 数据清洗和转换
+    # Data cleaning and transformation
     processed_df = df.dropna()
     return processed_df
 
-# 使用自定义处理器
+# Use custom processor
 dm = IntelligentDataManager()
 df = dm.load_data('your_data_source')
 processed_df = custom_data_processor(df)
 ```
 
-## 🔍 故障排除
+## 🔍 Troubleshooting
 
-### 常见问题
-1. **API密钥错误**：检查配置文件中的API密钥设置
-2. **网络连接问题**：检查网络连接和代理设置
-3. **磁盘空间不足**：运行缓存清理或增加存储空间
-4. **数据格式错误**：检查数据源格式设置
+### Common Issues
+1. **API Key Error**: Check API key settings in configuration file
+2. **Network Connection Issues**: Check network connection and proxy settings
+3. **Insufficient Disk Space**: Run cache cleanup or increase storage space
+4. **Data Format Error**: Check data source format settings
 
-### 日志查看
-系统会自动生成日志文件：
+### Log Viewing
+The system automatically generates log files:
 ```bash
 tail -f ML_Models/data_manager.log
 ```
 
-## 🤝 贡献指南
+## 🤝 Contribution Guidelines
 
-1. 遵循现有的代码风格和文档格式
-2. 添加新功能前先创建issue讨论
-3. 提供完整的测试用例
-4. 更新相关文档
+1. Follow existing code style and documentation format
+2. Create issues for discussion before adding new features
+3. Provide complete test cases
+4. Update relevant documentation
 
-## 📄 许可证
+## 📄 License
 
-本项目为CASA0022 Obscura No.7项目的一部分，遵循项目整体的许可证协议。
+This project is part of the CASA0022 Obscura No.7 project and follows the overall project license agreement.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-感谢所有数据源提供方：
+Thanks to all data source providers:
 - UK Met Office Climate Data Portal
 - Open-Meteo Historical Weather API
 - London Datastore
@@ -197,5 +197,5 @@ tail -f ML_Models/data_manager.log
 
 ---
 
-*最后更新：2025年7月*  
-*项目：CASA0022 Obscura No.7 环境预测系统* 
+*Last Updated: July 2025*  
+*Project: CASA0022 Obscura No.7 Environmental Prediction System* 
