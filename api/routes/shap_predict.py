@@ -237,8 +237,7 @@ def predict():
         result = model.predict_environmental_scores(
             latitude=latitude,
             longitude=longitude,
-            month=month,
-            analyze_shap=analyze_shap
+            month=month
         )
         
         # 计算响应时间
