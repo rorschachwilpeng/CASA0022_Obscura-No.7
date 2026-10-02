@@ -70,3 +70,7 @@ package-lock.json
 # 临时文件
 *.tmp
 *.temp 
+# Local secret overrides
+.env.local
+.env.*.local
+!.env.example
