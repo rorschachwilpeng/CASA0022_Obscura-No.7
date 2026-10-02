@@ -798,8 +798,10 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 def main():
-    # Google Maps API密钥
-    API_KEY = "AIzaSyClOdMUhS3lWQqycXGkU2cT9FNdnRuyjro"
+    # Supply credentials locally; never commit an API key.
+    API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY", "")
+    if not API_KEY:
+        raise RuntimeError("Set GOOGLE_MAPS_API_KEY before running this script")
     
     signal.signal(signal.SIGINT, signal_handler)
     
